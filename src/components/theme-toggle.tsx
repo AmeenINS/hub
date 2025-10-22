@@ -33,30 +33,45 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <SunIcon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="relative transition-colors"
+        >
+          <div className="relative w-[1.2rem] h-[1.2rem] flex items-center justify-center">
+            <SunIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all duration-200 dark:-rotate-90 dark:scale-0" />
+            <MoonIcon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all duration-200 dark:rotate-0 dark:scale-100" />
+          </div>
           <span className="sr-only">{t('common.theme')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-[10rem]">
         <DropdownMenuItem 
           onClick={() => setTheme('light')}
-          className={cn(theme === 'light' && 'bg-accent')}
+          className={cn(
+            "cursor-pointer my-0.5",
+            theme === 'light' && 'bg-accent'
+          )}
         >
           <SunIcon className={cn("h-4 w-4", dir === 'rtl' ? 'ml-2' : 'mr-2')} />
           <span>{t('common.light')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('dark')}
-          className={cn(theme === 'dark' && 'bg-accent')}
+          className={cn(
+            "cursor-pointer my-0.5",
+            theme === 'dark' && 'bg-accent'
+          )}
         >
           <MoonIcon className={cn("h-4 w-4", dir === 'rtl' ? 'ml-2' : 'mr-2')} />
           <span>{t('common.dark')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme('system')}
-          className={cn(theme === 'system' && 'bg-accent')}
+          className={cn(
+            "cursor-pointer my-0.5",
+            theme === 'system' && 'bg-accent'
+          )}
         >
           <DesktopIcon className={cn("h-4 w-4", dir === 'rtl' ? 'ml-2' : 'mr-2')} />
           <span>System</span>
@@ -65,3 +80,4 @@ export function ThemeToggle() {
     </DropdownMenu>
   );
 }
+

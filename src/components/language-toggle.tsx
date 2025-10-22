@@ -31,27 +31,38 @@ export function LanguageToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" disabled={isChanging}>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          disabled={isChanging}
+          className="relative overflow-hidden transition-colors"
+        >
           <GlobeIcon className={cn(
-            "h-[1.2rem] w-[1.2rem] transition-transform",
+            "h-[1.2rem] w-[1.2rem] transition-transform duration-300",
             isChanging && "animate-spin"
           )} />
           <span className="sr-only">{t('common.language')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-[10rem]">
         <DropdownMenuItem 
           onClick={() => setLocale('en')}
-          className={cn(locale === 'en' && 'bg-accent')}
           disabled={isChanging}
+          className={cn(
+            "cursor-pointer my-0.5",
+            locale === 'en' && 'bg-accent'
+          )}
         >
           <span className={cn(dir === 'rtl' ? 'ml-2' : 'mr-2')}>🇬🇧</span>
           <span>English</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setLocale('ar')}
-          className={cn(locale === 'ar' && 'bg-accent')}
           disabled={isChanging}
+          className={cn(
+            "cursor-pointer my-0.5",
+            locale === 'ar' && 'bg-accent'
+          )}
         >
           <span className={cn(dir === 'rtl' ? 'ml-2' : 'mr-2')}>🇸🇦</span>
           <span>العربية</span>
@@ -60,3 +71,4 @@ export function LanguageToggle() {
     </DropdownMenu>
   );
 }
+

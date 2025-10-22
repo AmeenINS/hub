@@ -51,6 +51,7 @@
     "jsonwebtoken": "^9.0.2",
     "lmdb": "^3.2.2",
     "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
     "msgpackr": "^1.11.5",
     "nanoid": "^5.0.9",
     "next": "16.0.0",
