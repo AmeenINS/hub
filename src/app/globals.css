@@ -120,3 +120,62 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+}
+
+/* RTL Sidebar fixes */
+[dir="rtl"] .sidebar {
+  @apply border-l-0 border-r;
+}
+
+[dir="rtl"] .sidebar-rail {
+  @apply left-auto right-full;
+}
+
+/* RTL Menu fixes */
+[dir="rtl"] .ml-auto {
+  @apply ml-0 mr-auto;
+}
+
+[dir="rtl"] .mr-2 {
+  @apply mr-0 ml-2;
+}
+
+[dir="rtl"] .pl-4 {
+  @apply pl-0 pr-4;
+}
+
+[dir="rtl"] .pr-4 {
+  @apply pr-0 pl-4;
+}
+
+/* RTL Chevron rotation */
+[dir="rtl"] .group-data-\[state\=open\]\/collapsible\:rotate-90 {
+  @apply group-data-[state=open]/collapsible:-rotate-90;
+}
+
+/* RTL Dropdown positioning */
+[dir="rtl"] [data-side="right"] {
+  --radix-popper-anchor-width: auto;
+}
+
+[dir="rtl"] [data-side="left"] {
+  --radix-popper-anchor-width: auto;
+}
+
+/* Better font support for Arabic */
+[dir="rtl"] {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Smooth transitions */
+* {
+  @apply transition-colors duration-200;
+}

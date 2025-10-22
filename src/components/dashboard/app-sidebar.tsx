@@ -2,15 +2,10 @@
 
 import * as React from 'react';
 import {
-  BookOpen,
   Bot,
   ChevronRight,
   ChevronsUpDown,
-  Frame,
   LifeBuoy,
-  Map,
-  PieChart,
-  Send,
   Settings2,
   SquareTerminal,
   Users,
@@ -44,7 +39,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
