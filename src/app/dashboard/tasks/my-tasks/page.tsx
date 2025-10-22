@@ -8,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { Task, TaskStatus } from '@/types/database';
 import KanbanBoard from '@/components/tasks/kanban-board';
 import TaskDetailDialog from '@/components/tasks/task-detail-dialog';
+import { toast } from 'sonner';
 
 const getAuthToken = () => {
   return document.cookie
@@ -86,15 +87,63 @@ export default function MyTasksPage() {
   };
 
   const handleStatusChange = async (taskId: string, newStatus: TaskStatus) => {
-    await handleTaskUpdate(taskId, { status: newStatus });
+    // Optimistic update - update UI immediately
+    setTasks(prevTasks => 
+      prevTasks.map(task => 
+        task.id === taskId 
+          ? { ...task, status: newStatus }
+          : task
+      )
+    );
+
+    // Then update on server
+    try {
+      const token = getAuthToken();
+
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        await fetchTasks();
+        toast.error('Failed to update task status');
+        throw new Error('Failed to update task');
+      } else {
+        // Success feedback
+        const statusLabels = {
+          TODO: 'To Do',
+          IN_PROGRESS: 'In Progress',
+          DONE: 'Done',
+          CANCELLED: 'Cancelled',
+        };
+        toast.success(`Task moved to ${statusLabels[newStatus]}`);
+      }
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      // Already reverted by fetchTasks
+    }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading tasks...</p>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/30 border-t-primary mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-primary/10"></div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg font-medium text-foreground">Loading your tasks...</p>
+            <p className="text-sm text-muted-foreground">Please wait a moment</p>
+          </div>
         </div>
       </div>
     );
@@ -104,14 +153,20 @@ export default function MyTasksPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">My Tasks</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your tasks in Kanban board view
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            My Tasks
+          </h1>
+          <p className="text-muted-foreground">
+            Drag and drop tasks to update their status • {tasks.length} {tasks.length === 1 ? 'task' : 'tasks'} total
           </p>
         </div>
-        <Button onClick={() => router.push('/dashboard/tasks/new')}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={() => router.push('/dashboard/tasks/new')}
+          size="default"
+          className="shadow-sm"
+        >
+          <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
           New Task
         </Button>
       </div>

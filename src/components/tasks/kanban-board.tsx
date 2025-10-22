@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -15,24 +16,36 @@ interface KanbanBoardProps {
 }
 
 const statusColumns = [
-  { status: TaskStatus.TODO, label: 'To Do', color: 'bg-slate-100 dark:bg-slate-800' },
-  { status: TaskStatus.IN_PROGRESS, label: 'In Progress', color: 'bg-blue-100 dark:bg-blue-900/20' },
-  { status: TaskStatus.DONE, label: 'Done', color: 'bg-green-100 dark:bg-green-900/20' },
+  { 
+    status: TaskStatus.TODO, 
+    label: 'To Do',
+  },
+  { 
+    status: TaskStatus.IN_PROGRESS, 
+    label: 'In Progress',
+  },
+  { 
+    status: TaskStatus.DONE, 
+    label: 'Done',
+  },
 ];
 
 const priorityConfig = {
-  [TaskPriority.LOW]: { label: 'Low', color: 'bg-slate-500', emoji: '🟢' },
-  [TaskPriority.MEDIUM]: { label: 'Medium', color: 'bg-yellow-500', emoji: '🟡' },
-  [TaskPriority.HIGH]: { label: 'High', color: 'bg-orange-500', emoji: '🟠' },
-  [TaskPriority.URGENT]: { label: 'Urgent', color: 'bg-red-500', emoji: '🔴' },
+  [TaskPriority.LOW]: { label: 'Low', variant: 'secondary' as const },
+  [TaskPriority.MEDIUM]: { label: 'Medium', variant: 'default' as const },
+  [TaskPriority.HIGH]: { label: 'High', variant: 'default' as const },
+  [TaskPriority.URGENT]: { label: 'Urgent', variant: 'destructive' as const },
 };
 
 export default function KanbanBoard({ tasks, onTaskClick, onStatusChange }: KanbanBoardProps) {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
 
-  const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter((task) => task.status === status);
-  };
+  const getTasksByStatus = useMemo(() => {
+    return (status: TaskStatus) => {
+      return tasks.filter((task) => task.status === status);
+    };
+  }, [tasks]);
 
   const handleDragStart = (e: React.DragEvent, task: Task) => {
     setDraggedTask(task);
@@ -44,58 +57,88 @@ export default function KanbanBoard({ tasks, onTaskClick, onStatusChange }: Kanb
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const handleDragEnter = (status: TaskStatus) => {
+    setDragOverColumn(status);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColumn(null);
+  };
+
   const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
     e.preventDefault();
     if (draggedTask && draggedTask.status !== status) {
       onStatusChange(draggedTask.id, status);
     }
     setDraggedTask(null);
+    setDragOverColumn(null);
   };
 
   const handleDragEnd = () => {
     setDraggedTask(null);
+    setDragOverColumn(null);
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {statusColumns.map((column) => (
-        <div
-          key={column.status}
-          className="flex flex-col"
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, column.status)}
-        >
-          {/* Column Header */}
-          <div className={`p-4 rounded-t-lg ${column.color} border-b-2 border-border`}>
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-lg">{column.label}</h3>
-              <Badge variant="secondary" className="ml-2">
-                {getTasksByStatus(column.status).length}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Task Cards */}
-          <div className="flex-1 p-2 bg-muted/30 rounded-b-lg min-h-[500px] space-y-2">
-            {getTasksByStatus(column.status).map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onClick={() => onTaskClick(task)}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                isDragging={draggedTask?.id === task.id}
-              />
-            ))}
-            
-            {getTasksByStatus(column.status).length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No tasks
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {statusColumns.map((column) => {
+        const columnTasks = getTasksByStatus(column.status);
+        const isDropTarget = dragOverColumn === column.status && draggedTask?.status !== column.status;
+        
+        return (
+          <Card
+            key={column.status}
+            className="flex flex-col py-0"
+          >
+            <motion.div
+              onDragOver={handleDragOver}
+              onDragEnter={() => handleDragEnter(column.status)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, column.status)}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col h-full"
+            >
+              {/* Column Header */}
+              <div className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">{column.label}</h3>
+                  <Badge variant="secondary">
+                    {columnTasks.length}
+                  </Badge>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      ))}
+
+              {/* Task Cards Container */}
+              <div 
+                className={`flex-1 p-4 space-y-3 min-h-[400px] transition-colors ${
+                  isDropTarget ? 'bg-muted/50' : ''
+                }`}
+              >
+                <AnimatePresence mode="popLayout">
+                  {columnTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onClick={() => onTaskClick(task)}
+                      onDragStart={handleDragStart}
+                      onDragEnd={handleDragEnd}
+                      isDragging={draggedTask?.id === task.id}
+                    />
+                  ))}
+                </AnimatePresence>
+                
+                {columnTasks.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground text-sm">
+                    <p>No tasks</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -113,63 +156,72 @@ function TaskCard({ task, onClick, onDragStart, onDragEnd, isDragging }: TaskCar
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== TaskStatus.DONE;
 
   return (
-    <Card
-      draggable
-      onDragStart={(e) => onDragStart(e, task)}
-      onDragEnd={onDragEnd}
-      onClick={onClick}
-      className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-        isDragging ? 'opacity-50 scale-95' : 'opacity-100'
-      } ${isOverdue ? 'border-red-500 border-2' : ''}`}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: isDragging ? 0.5 : 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
     >
-      {/* Priority Badge */}
-      <div className="flex items-center justify-between mb-2">
-        <Badge variant="outline" className="text-xs">
-          <span className="mr-1">{priorityInfo.emoji}</span>
-          {priorityInfo.label}
-        </Badge>
-        {isOverdue && (
-          <Badge variant="destructive" className="text-xs">
-            Overdue
-          </Badge>
-        )}
-      </div>
-
-      {/* Title */}
-      <h4 className="font-medium text-sm mb-2 line-clamp-2">{task.title}</h4>
-
-      {/* Description */}
-      {task.description && (
-        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-          {task.description}
-        </p>
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        {/* Due Date */}
-        {task.dueDate && (
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>{format(new Date(task.dueDate), 'MMM dd')}</span>
+      <Card
+        draggable
+        onDragStart={(e) => onDragStart(e, task)}
+        onDragEnd={onDragEnd}
+        onClick={onClick}
+        className={`cursor-grab active:cursor-grabbing transition-shadow py-0 ${
+          isDragging ? 'opacity-50' : 'hover:shadow-md'
+        }`}
+      >
+        <div className="p-3 space-y-2">
+          {/* Priority & Overdue */}
+          <div className="flex items-center justify-between">
+            <Badge variant={priorityInfo.variant} className="text-xs">
+              {priorityInfo.label}
+            </Badge>
+            {isOverdue && (
+              <Badge variant="destructive" className="text-xs">
+                Overdue
+              </Badge>
+            )}
           </div>
-        )}
 
-        {/* Created Time */}
-        <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          <span>{format(new Date(task.createdAt), 'MMM dd')}</span>
+          {/* Title */}
+          <h4 className="font-medium text-sm line-clamp-2">
+            {task.title}
+          </h4>
+
+          {/* Description */}
+          {task.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {task.description}
+            </p>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-2 border-t">
+            {task.dueDate && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                <span>{format(new Date(task.dueDate), 'MMM dd')}</span>
+              </div>
+            )}
+
+            {!task.dueDate && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>{format(new Date(task.createdAt), 'MMM dd')}</span>
+              </div>
+            )}
+
+            <Avatar className="h-6 w-6">
+              <AvatarFallback className="text-xs">
+                {task.createdBy?.slice(0, 2).toUpperCase() || 'UK'}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
-      </div>
-
-      {/* Assignees */}
-      <div className="flex items-center gap-1 mt-3">
-        <Avatar className="h-6 w-6">
-          <AvatarFallback className="text-xs">
-            {task.createdBy?.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-    </Card>
+      </Card>
+    </motion.div>
   );
 }
+
