@@ -58,7 +58,7 @@ export class DatabaseInitializer {
    * Create default permissions
    */
   private async createDefaultPermissions() {
-    const modules = ['users', 'roles', 'permissions', 'tasks', 'departments', 'reports'];
+    const modules = ['users', 'roles', 'permissions', 'tasks', 'departments', 'reports', 'notifications', 'support'];
     const actions = ['create', 'read', 'update', 'delete'];
 
     const permissions = [];
@@ -82,6 +82,9 @@ export class DatabaseInitializer {
       { module: 'users', action: 'manage_roles', description: 'Manage user roles' },
       { module: 'system', action: 'admin', description: 'Full system access' },
       { module: 'reports', action: 'export', description: 'Export reports' },
+      { module: 'notifications', action: 'view_all', description: 'View all notifications' },
+      { module: 'support', action: 'reply', description: 'Reply to support messages' },
+      { module: 'support', action: 'view_all', description: 'View all support messages' },
     ];
 
     for (const perm of specialPermissions) {

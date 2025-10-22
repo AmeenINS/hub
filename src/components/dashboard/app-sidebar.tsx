@@ -55,100 +55,155 @@ import { LanguageToggle } from '@/components/language-toggle';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t, dir } = useI18n();
-  const { user, logout } = useAuthStore();
+  const { user, logout, token } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
+  const [loading, setLoading] = React.useState(true);
+
+  // Fetch user permissions
+  React.useEffect(() => {
+    const fetchPermissions = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const modules = ['users', 'tasks', 'roles', 'reports', 'notifications', 'support'];
+        const response = await fetch(`/api/users/me/permissions?modules=${modules.join(',')}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setPermissions(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch permissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPermissions();
+  }, [token]);
 
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
 
-  // Navigation data based on user role
+  // Check if user has access to a module
+  const hasModuleAccess = (moduleName: string) => {
+    if (loading) return true; // Show all while loading
+    return permissions[moduleName] && permissions[moduleName].length > 0;
+  };
+
+  // Navigation data based on user permissions
+  const allNavItems = [
+    {
+      title: t('nav.dashboard'),
+      url: '/dashboard',
+      icon: SquareTerminal,
+      isActive: pathname === '/dashboard',
+      module: 'dashboard', // Dashboard is always accessible
+    },
+    {
+      title: t('nav.users'),
+      url: '/dashboard/users',
+      icon: Users,
+      isActive: pathname?.startsWith('/dashboard/users'),
+      module: 'users',
+      items: [
+        {
+          title: t('users.allUsers'),
+          url: '/dashboard/users',
+        },
+        {
+          title: t('users.createUser'),
+          url: '/dashboard/users/new',
+        },
+      ],
+    },
+    {
+      title: t('nav.tasks'),
+      url: '/dashboard/tasks',
+      icon: ListTodo,
+      isActive: pathname?.startsWith('/dashboard/tasks'),
+      module: 'tasks',
+      items: [
+        {
+          title: t('tasks.allTasks'),
+          url: '/dashboard/tasks',
+        },
+        {
+          title: t('tasks.createTask'),
+          url: '/dashboard/tasks/new',
+        },
+        {
+          title: t('tasks.myTasks'),
+          url: '/dashboard/tasks/my-tasks',
+        },
+      ],
+    },
+    {
+      title: t('nav.roles'),
+      url: '/dashboard/roles',
+      icon: Shield,
+      isActive: pathname?.startsWith('/dashboard/roles'),
+      module: 'roles',
+      items: [
+        {
+          title: t('roles.allRoles'),
+          url: '/dashboard/roles',
+        },
+        {
+          title: t('roles.permissions'),
+          url: '/dashboard/roles/permissions',
+        },
+      ],
+    },
+    {
+      title: t('nav.reports'),
+      url: '/dashboard/reports',
+      icon: BarChart3,
+      isActive: pathname?.startsWith('/dashboard/reports'),
+      module: 'reports',
+    },
+  ];
+
+  const allNavSecondary = [
+    {
+      title: t('nav.notifications'),
+      url: '/dashboard/notifications',
+      icon: Bell,
+      module: 'notifications',
+    },
+    {
+      title: t('nav.settings'),
+      url: '/dashboard/settings',
+      icon: Settings2,
+      module: 'settings', // Settings is always accessible
+    },
+    {
+      title: t('common.support'),
+      url: '/dashboard/support',
+      icon: LifeBuoy,
+      module: 'support',
+    },
+  ];
+
+  // Filter navigation based on permissions
   const data = {
-    navMain: [
-      {
-        title: t('nav.dashboard'),
-        url: '/dashboard',
-        icon: SquareTerminal,
-        isActive: pathname === '/dashboard',
-      },
-      {
-        title: t('nav.users'),
-        url: '/dashboard/users',
-        icon: Users,
-        isActive: pathname?.startsWith('/dashboard/users'),
-        items: [
-          {
-            title: t('users.allUsers'),
-            url: '/dashboard/users',
-          },
-          {
-            title: t('users.createUser'),
-            url: '/dashboard/users/new',
-          },
-        ],
-      },
-      {
-        title: t('nav.tasks'),
-        url: '/dashboard/tasks',
-        icon: ListTodo,
-        isActive: pathname?.startsWith('/dashboard/tasks'),
-        items: [
-          {
-            title: t('tasks.allTasks'),
-            url: '/dashboard/tasks',
-          },
-          {
-            title: t('tasks.createTask'),
-            url: '/dashboard/tasks/new',
-          },
-          {
-            title: t('tasks.myTasks'),
-            url: '/dashboard/tasks/my-tasks',
-          },
-        ],
-      },
-      {
-        title: t('nav.roles'),
-        url: '/dashboard/roles',
-        icon: Shield,
-        isActive: pathname?.startsWith('/dashboard/roles'),
-        items: [
-          {
-            title: t('roles.allRoles'),
-            url: '/dashboard/roles',
-          },
-          {
-            title: t('roles.permissions'),
-            url: '/dashboard/roles/permissions',
-          },
-        ],
-      },
-      {
-        title: t('nav.reports'),
-        url: '/dashboard/reports',
-        icon: BarChart3,
-        isActive: pathname?.startsWith('/dashboard/reports'),
-      },
-    ],
-    navSecondary: [
-      {
-        title: t('nav.notifications'),
-        url: '/dashboard/notifications',
-        icon: Bell,
-      },
-      {
-        title: t('nav.settings'),
-        url: '/dashboard/settings',
-        icon: Settings2,
-      },
-      {
-        title: t('common.support'),
-        url: '#',
-        icon: LifeBuoy,
-      },
-    ],
+    navMain: allNavItems.filter(item => 
+      item.module === 'dashboard' || hasModuleAccess(item.module)
+    ),
+    navSecondary: allNavSecondary.filter(item => 
+      item.module === 'settings' || hasModuleAccess(item.module)
+    ),
   };
 
   return (

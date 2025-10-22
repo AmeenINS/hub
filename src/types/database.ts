@@ -225,6 +225,27 @@ export interface Department {
   updatedAt: string;
 }
 
+// ==================== Support ====================
+
+export enum SupportMessageStatus {
+  OPEN = 'OPEN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  CLOSED = 'CLOSED',
+}
+
+export interface SupportMessage {
+  id: string;
+  userId: string;
+  subject: string;
+  message: string;
+  status: SupportMessageStatus;
+  adminReply?: string;
+  repliedAt?: string;
+  repliedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ==================== Helper Types ====================
 
 export interface PaginationParams {

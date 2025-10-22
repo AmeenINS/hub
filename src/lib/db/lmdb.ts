@@ -75,6 +75,9 @@ class LMDBManager {
 
     // Notifications
     this.databases.set('notifications', this.db.openDB({ name: 'notifications' }));
+
+    // Support
+    this.databases.set('support_messages', this.db.openDB({ name: 'support_messages' }));
   }
 
   /**
