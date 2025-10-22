@@ -240,16 +240,16 @@ export default function LoginPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
-              className="p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg border border-blue-200 dark:border-blue-800"
+              className="p-3 bg-muted rounded-lg border"
             >
-              <p className="text-xs text-center text-blue-800 dark:text-blue-200 font-medium mb-1">
+              <p className="text-xs text-center text-muted-foreground font-medium mb-1">
                 🔐 Demo Credentials
               </p>
               <div className="text-xs text-center space-y-0.5">
-                <p className="text-blue-700 dark:text-blue-300">
+                <p className="text-muted-foreground">
                   <span className="font-mono">admin@ameen.com</span>
                 </p>
-                <p className="text-blue-700 dark:text-blue-300">
+                <p className="text-muted-foreground">
                   <span className="font-mono">Admin@123456</span>
                 </p>
               </div>

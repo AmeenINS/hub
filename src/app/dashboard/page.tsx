@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ListTodo, Shield, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Users, ListTodo, Shield, Clock, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/store/auth-store';
-import { AnimatedPage } from '@/components/ui/animated-page';
 import { motion } from 'motion/react';
 
 interface DashboardStats {
@@ -106,7 +105,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <AnimatedPage className="space-y-6">
+    <div className="space-y-6">
       {/* Welcome Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -156,7 +155,7 @@ export default function DashboardPage() {
                 visible: { opacity: 1, y: 0 }
               }}
             >
-              <Card className="hover:shadow-xl transition-all duration-300 border-blue-100 dark:border-blue-900">
+              <Card className="hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
                     {stat.title}
@@ -216,7 +215,7 @@ export default function DashboardPage() {
           >
             <motion.a href={action.href}>
               <Card 
-                className="cursor-pointer border-blue-100 dark:border-blue-900 overflow-hidden group"
+                className="cursor-pointer overflow-hidden group"
               >
                 <motion.div
                   whileHover={{ scale: 1.02 }}
@@ -224,7 +223,7 @@ export default function DashboardPage() {
                 >
                   <CardHeader className="relative">
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
                       initial={false}
                     />
                     <CardTitle className="flex items-center gap-2 relative z-10">
@@ -314,6 +313,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </motion.div>
-    </AnimatedPage>
+    </div>
   );
 }

@@ -3,13 +3,11 @@
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { cn } from '@/lib/utils';
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 
 export function RTLSidebarWrapper({ children }: { children: React.ReactNode }) {
   const { dir } = useI18n();
   
   const rtlClasses = React.useMemo(() => cn(
-    "transition-all duration-200",
     dir === 'rtl' && "[&_[data-sidebar-menu-sub]]:border-l-0 [&_[data-sidebar-menu-sub]]:border-r [&_[data-sidebar-menu-sub]]:-translate-x-px",
     dir === 'rtl' && "[&_.sidebar-rail]:left-auto [&_.sidebar-rail]:right-full",
     dir === 'rtl' && "[&_.ml-auto]:ml-0 [&_.ml-auto]:mr-auto",
@@ -26,20 +24,8 @@ export function RTLSidebarWrapper({ children }: { children: React.ReactNode }) {
   ), [dir]);
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div 
-        key={dir}
-        className={rtlClasses}
-        initial={{ opacity: 0.8, x: dir === 'rtl' ? -20 : 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0.8, x: dir === 'rtl' ? 20 : -20 }}
-        transition={{ 
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1]
-        }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div className={rtlClasses}>
+      {children}
+    </div>
   );
 }
