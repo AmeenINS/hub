@@ -10,7 +10,7 @@ export function RTLSidebarWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className={cn(
       "transition-all duration-300",
-      dir === 'rtl' && "[&_[data-sidebar]]:border-l-0 [&_[data-sidebar]]:border-r",
+      dir === 'rtl' && "[&_[data-sidebar-menu-sub]]:border-l-0 [&_[data-sidebar-menu-sub]]:border-r [&_[data-sidebar-menu-sub]]:-translate-x-px",
       dir === 'rtl' && "[&_.sidebar-rail]:left-auto [&_.sidebar-rail]:right-full",
       dir === 'rtl' && "[&_.ml-auto]:ml-0 [&_.ml-auto]:mr-auto",
       dir === 'rtl' && "[&_.mr-2]:mr-0 [&_.mr-2]:ml-2",
