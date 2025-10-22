@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, startTransition } from 'react';
 import Cookies from 'js-cookie';
 import { translations, Locale } from './translations';
+import { usePreventPointerEventsDisable } from '@/hooks/use-prevent-pointer-events-disable';
 
 interface I18nContextType {
   locale: Locale;
@@ -18,6 +19,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
   const [isChanging, setIsChanging] = useState(false);
   const initialized = useRef(false);
+  
+  // Prevent pointer events from being disabled
+  usePreventPointerEventsDisable();
 
   useEffect(() => {
     // Initialize locale from cookie after mount to avoid hydration mismatch
@@ -40,10 +44,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     if (isChanging) {
       const timer = setTimeout(() => {
         setIsChanging(false);
-      }, 100);
+        // Ensure pointer events are re-enabled
+        document.body.style.pointerEvents = '';
+      }, 50);
       return () => clearTimeout(timer);
     }
   }, [locale, isChanging]);
+
+
 
   const setLocale = (newLocale: Locale) => {
     if (newLocale === locale) return;

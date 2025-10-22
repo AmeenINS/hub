@@ -108,6 +108,8 @@ export const translations = {
       manageUsers: 'Manage users and permissions',
       manageTasks: 'Create and manage tasks',
       manageRoles: 'Manage roles and permissions',
+      welcomeToSystem: 'Welcome to Management System',
+      sidebarNavigation: 'You can access different sections of the system from the sidebar menu.',
     },
     
     // Tasks
@@ -356,6 +358,8 @@ export const translations = {
       manageUsers: 'إدارة المستخدمين والصلاحيات',
       manageTasks: 'إنشاء وإدارة المهام',
       manageRoles: 'إدارة الأدوار والصلاحيات',
+      welcomeToSystem: 'مرحباً بك في نظام الإدارة',
+      sidebarNavigation: 'يمكنك الوصول إلى أقسام النظام المختلفة من القائمة الجانبية.',
     },
     
     // Tasks
