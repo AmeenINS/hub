@@ -26,7 +26,7 @@ class LMDBManager {
     if (this.db) return;
 
     const dbPath = process.env.LMDB_PATH || './data/lmdb';
-    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '10');
+    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '15');
     const mapSize = parseInt(process.env.LMDB_MAP_SIZE || '10485760');
 
     try {
@@ -66,6 +66,7 @@ class LMDBManager {
     this.databases.set('taskAssignments', this.db.openDB({ name: 'taskAssignments' }));
     this.databases.set('taskComments', this.db.openDB({ name: 'taskComments' }));
     this.databases.set('taskAttachments', this.db.openDB({ name: 'taskAttachments' }));
+    this.databases.set('taskActivities', this.db.openDB({ name: 'taskActivities' }));
 
     // Audit & Security
     this.databases.set('auditLogs', this.db.openDB({ name: 'auditLogs' }));

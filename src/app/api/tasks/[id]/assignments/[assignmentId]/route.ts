@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { JWTService } from '@/lib/auth/jwt';
 import { TaskAssignmentService, TaskActivityService } from '@/lib/db/task-service';
 import { TaskActivityType } from '@/types/database';
@@ -16,8 +15,7 @@ export async function DELETE(
   { params }: { params: { id: string; assignmentId: string } }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -49,7 +47,7 @@ export async function DELETE(
       comment: `Unassigned user ${assignment.userId}`,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: 'User unassigned' });
   } catch (error) {
     console.error('Failed to unassign user:', error);
     return NextResponse.json(

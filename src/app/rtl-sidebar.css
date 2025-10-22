@@ -1,0 +1,30 @@
+/* RTL Sidebar specific fixes */
+
+/* Force sidebar position in RTL */
+[dir="rtl"] [data-slot="sidebar-container"][data-side="right"] {
+  left: 0 !important;
+  right: auto !important;
+}
+
+[dir="rtl"] [data-slot="sidebar-container"][data-side="left"] {
+  left: auto !important;
+  right: 0 !important;
+}
+
+/* Main content padding adjustment for RTL */
+[dir="rtl"] main {
+  padding-right: 0;
+}
+
+[dir="rtl"] .flex {
+  flex-direction: row;
+}
+
+/* Sidebar gap adjustment */
+[dir="rtl"] [data-slot="sidebar-gap"] {
+  order: 1;
+}
+
+[dir="rtl"] [data-slot="sidebar-container"] {
+  order: 0;
+}

@@ -9,6 +9,13 @@ import { Task, TaskStatus } from '@/types/database';
 import KanbanBoard from '@/components/tasks/kanban-board';
 import TaskDetailDialog from '@/components/tasks/task-detail-dialog';
 
+const getAuthToken = () => {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('auth-token='))
+    ?.split('=')[1];
+};
+
 export default function MyTasksPage() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
@@ -29,10 +36,17 @@ export default function MyTasksPage() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/tasks');
+      const token = getAuthToken();
+
+      const response = await fetch('/api/tasks', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       if (response.ok) {
-        const data = await response.json();
-        setTasks(data.tasks || []);
+        const result = await response.json();
+        setTasks(result.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
@@ -48,16 +62,23 @@ export default function MyTasksPage() {
 
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
     try {
+      const token = getAuthToken();
+
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(updates),
       });
 
       if (response.ok) {
         await fetchTasks();
-        const updatedTask = await response.json();
-        setSelectedTask(updatedTask.task);
+        const result = await response.json();
+        if (result.data) {
+          setSelectedTask(result.data);
+        }
       }
     } catch (error) {
       console.error('Failed to update task:', error);

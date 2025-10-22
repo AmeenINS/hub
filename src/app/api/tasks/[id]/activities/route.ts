@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { JWTService } from '@/lib/auth/jwt';
 import { TaskActivityService } from '@/lib/db/task-service';
 
@@ -14,8 +13,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,7 +27,7 @@ export async function GET(
     const taskId = params.id;
     const activities = await activityService.getActivitiesByTask(taskId);
 
-    return NextResponse.json({ activities });
+    return NextResponse.json({ success: true, data: activities });
   } catch (error) {
     console.error('Failed to fetch activities:', error);
     return NextResponse.json(

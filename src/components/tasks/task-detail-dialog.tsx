@@ -18,6 +18,13 @@ import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
+const getAuthToken = () => {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('auth-token='))
+    ?.split('=')[1];
+};
+
 interface TaskDetailDialogProps {
   task: Task;
   open: boolean;
@@ -65,25 +72,28 @@ export default function TaskDetailDialog({
 
   const fetchTaskDetails = async () => {
     try {
+      const token = getAuthToken();
+      const headers = { 'Authorization': `Bearer ${token}` };
+
       // Fetch comments
-      const commentsRes = await fetch(`/api/tasks/${task.id}/comments`);
+      const commentsRes = await fetch(`/api/tasks/${task.id}/comments`, { headers });
       if (commentsRes.ok) {
         const data = await commentsRes.json();
-        setComments(data.comments || []);
+        setComments(data.data || []);
       }
 
       // Fetch activities
-      const activitiesRes = await fetch(`/api/tasks/${task.id}/activities`);
+      const activitiesRes = await fetch(`/api/tasks/${task.id}/activities`, { headers });
       if (activitiesRes.ok) {
         const data = await activitiesRes.json();
-        setActivities(data.activities || []);
+        setActivities(data.data || []);
       }
 
       // Fetch assignments
-      const assignmentsRes = await fetch(`/api/tasks/${task.id}/assignments`);
+      const assignmentsRes = await fetch(`/api/tasks/${task.id}/assignments`, { headers });
       if (assignmentsRes.ok) {
         const data = await assignmentsRes.json();
-        setAssignments(data.assignments || []);
+        setAssignments(data.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch task details:', error);
@@ -92,10 +102,13 @@ export default function TaskDetailDialog({
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const token = getAuthToken();
+      const response = await fetch('/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.users || []);
+        setUsers(data.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -114,7 +127,7 @@ export default function TaskDetailDialog({
       setIsEditingDescription(false);
       toast.success('Description updated');
       await onRefresh();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update description');
     } finally {
       setLoading(false);
@@ -127,7 +140,7 @@ export default function TaskDetailDialog({
       await onUpdate(task.id, { status: newStatus });
       toast.success('Status updated');
       await fetchTaskDetails();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update status');
     } finally {
       setLoading(false);
@@ -140,7 +153,7 @@ export default function TaskDetailDialog({
       await onUpdate(task.id, { priority: newPriority });
       toast.success('Priority updated');
       await fetchTaskDetails();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update priority');
     } finally {
       setLoading(false);
@@ -152,9 +165,13 @@ export default function TaskDetailDialog({
 
     setLoading(true);
     try {
+      const token = getAuthToken();
       const response = await fetch(`/api/tasks/${task.id}/comments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ content: newComment }),
       });
 
@@ -165,7 +182,7 @@ export default function TaskDetailDialog({
       } else {
         toast.error('Failed to add comment');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to add comment');
     } finally {
       setLoading(false);
@@ -175,9 +192,13 @@ export default function TaskDetailDialog({
   const handleAssignUser = async (userId: string) => {
     setLoading(true);
     try {
+      const token = getAuthToken();
       const response = await fetch(`/api/tasks/${task.id}/assignments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ userId }),
       });
 
@@ -187,7 +208,7 @@ export default function TaskDetailDialog({
       } else {
         toast.error('Failed to assign user');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to assign user');
     } finally {
       setLoading(false);
@@ -197,8 +218,12 @@ export default function TaskDetailDialog({
   const handleUnassignUser = async (assignmentId: string) => {
     setLoading(true);
     try {
+      const token = getAuthToken();
       const response = await fetch(`/api/tasks/${task.id}/assignments/${assignmentId}`, {
         method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`
+        },
       });
 
       if (response.ok) {
@@ -207,7 +232,7 @@ export default function TaskDetailDialog({
       } else {
         toast.error('Failed to unassign user');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to unassign user');
     } finally {
       setLoading(false);

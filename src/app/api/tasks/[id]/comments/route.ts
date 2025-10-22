@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { JWTService } from '@/lib/auth/jwt';
 import { TaskCommentService, TaskActivityService } from '@/lib/db/task-service';
 import { TaskActivityType } from '@/types/database';
@@ -16,8 +15,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,7 +29,7 @@ export async function GET(
     const taskId = params.id;
     const comments = await commentService.getCommentsByTask(taskId);
 
-    return NextResponse.json({ comments });
+    return NextResponse.json({ success: true, data: comments });
   } catch (error) {
     console.error('Failed to fetch comments:', error);
     return NextResponse.json(
@@ -50,8 +48,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -79,7 +76,7 @@ export async function POST(
     // Log activity
     await activityService.logActivity(taskId, userId, TaskActivityType.COMMENT_ADDED);
 
-    return NextResponse.json({ comment }, { status: 201 });
+    return NextResponse.json({ success: true, data: comment }, { status: 201 });
   } catch (error) {
     console.error('Failed to add comment:', error);
     return NextResponse.json(

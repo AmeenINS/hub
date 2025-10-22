@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
 import { Spinner } from '@/components/ui/spinner';
+import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
 
 export default function DashboardLayout({
   children,
@@ -37,15 +38,17 @@ export default function DashboardLayout({
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto p-4 md:p-6 lg:p-8">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    <RTLSidebarWrapper>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full">
+          <AppSidebar />
+          <main className="flex-1 overflow-auto">
+            <div className="container mx-auto p-4 md:p-6 lg:p-8">
+              {children}
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    </RTLSidebarWrapper>
   );
 }
