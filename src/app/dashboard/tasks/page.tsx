@@ -257,7 +257,7 @@ export default function TasksPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push(`/dashboard/tasks/${task.id}`)}
+                            onClick={() => router.push(`/dashboard/tasks/${task.id}/edit`)}
                           >
                             {t('common.edit')}
                           </Button>

@@ -164,7 +164,7 @@ export default function RolesPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => router.push(`/dashboard/roles/${role.id}`)}
+                            onClick={() => router.push(`/dashboard/roles/${role.id}/edit`)}
                           >
                             {t('common.edit')}
                           </Button>

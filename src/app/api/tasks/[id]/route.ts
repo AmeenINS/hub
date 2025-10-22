@@ -210,6 +210,17 @@ export async function PATCH(
 }
 
 /**
+ * PUT /api/tasks/[id]
+ * Update task (alias for PATCH)
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PATCH(request, { params });
+}
+
+/**
  * DELETE /api/tasks/[id]
  * Delete task
  */
