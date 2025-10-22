@@ -92,6 +92,52 @@ export class UserService {
     const users = await lmdb.getAll<User>(this.dbName);
     return users.filter((user) => userIds.includes(user.id));
   }
+
+  /**
+   * Get direct subordinates (users where managerId === userId)
+   */
+  async getSubordinates(userId: string): Promise<User[]> {
+    const users = await lmdb.getAll<User>(this.dbName);
+    return users.filter((u) => u.managerId === userId);
+  }
+
+  /**
+   * Get all subordinates recursively (entire subtree)
+   */
+  async getAllSubordinates(userId: string): Promise<User[]> {
+    const users = await lmdb.getAll<User>(this.dbName);
+    const result: User[] = [];
+    const visited = new Set<string>();
+
+    const collectSubordinates = (managerId: string) => {
+      const directs = users.filter((u) => u.managerId === managerId && !visited.has(u.id));
+      directs.forEach((u) => {
+        visited.add(u.id);
+        result.push(u);
+        collectSubordinates(u.id);
+      });
+    };
+
+    collectSubordinates(userId);
+    return result;
+  }
+
+  /**
+   * Check if targetUserId is a subordinate (direct or indirect) of userId
+   */
+  async isSubordinate(userId: string, targetUserId: string): Promise<boolean> {
+    // BFS/DFS over manager relationships
+    const users = await lmdb.getAll<User>(this.dbName);
+    const map = new Map<string, User>();
+    users.forEach((u) => map.set(u.id, u));
+
+    let current = map.get(targetUserId);
+    while (current && current.managerId) {
+      if (current.managerId === userId) return true;
+      current = map.get(current.managerId);
+    }
+    return false;
+  }
 }
 
 /**
@@ -321,16 +367,23 @@ export class RolePermissionService {
     const userRoleService = new UserRoleService();
     const permissionService = new PermissionService();
 
+    console.log('=== getUserPermissions ===');
+    console.log('User ID:', userId);
+
     // Get user's roles
     const userRoles = await userRoleService.getUserRolesByUser(userId);
+    console.log('User Roles:', userRoles);
     const roleIds = userRoles.map((ur) => ur.roleId);
+    console.log('Role IDs:', roleIds);
 
     // Get permissions for each role
     const permissionIds = new Set<string>();
     for (const roleId of roleIds) {
       const rolePermissions = await this.getPermissionsByRole(roleId);
+      console.log(`Permissions for role ${roleId}:`, rolePermissions);
       rolePermissions.forEach((rp) => permissionIds.add(rp.permissionId));
     }
+    console.log('Permission IDs:', Array.from(permissionIds));
 
     // Fetch actual permission objects
     const permissions: Permission[] = [];
@@ -340,6 +393,9 @@ export class RolePermissionService {
         permissions.push(permission);
       }
     }
+    
+    console.log('Final Permissions:', permissions.map(p => `${p.module}:${p.action}`));
+    console.log('==========================');
 
     return permissions;
   }

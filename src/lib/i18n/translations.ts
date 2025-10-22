@@ -38,6 +38,11 @@ export const translations = {
       more: 'More',
       support: 'Support',
       viewAll: 'View all',
+      actions: 'Actions',
+      columns: 'Columns',
+      of: 'of',
+      rowsSelected: 'row(s) selected',
+      noResults: 'No results.',
     },
     
     // Auth
@@ -108,12 +113,15 @@ export const translations = {
       title: 'Tasks',
       myTasks: 'My Tasks',
       allTasks: 'All Tasks',
+      kanbanView: 'Kanban View',
       createTask: 'Create Task',
       editTask: 'Edit Task',
       deleteTask: 'Delete Task',
       taskDetails: 'Task Details',
+      taskTitle: 'Title',
       taskName: 'Task Name',
       taskDescription: 'Description',
+      description: 'Description',
       taskStatus: 'Status',
       taskPriority: 'Priority',
       dueDate: 'Due Date',
@@ -148,6 +156,7 @@ export const translations = {
     // Users
     users: {
       title: 'Users',
+      allUsers: 'All Users',
       createUser: 'Create User',
       editUser: 'Edit User',
       deleteUser: 'Delete User',
@@ -164,12 +173,18 @@ export const translations = {
       emailVerified: 'Email Verified',
       twoFactorEnabled: '2FA Enabled',
       lastLogin: 'Last Login',
+      createdAt: 'Created At',
       noUsers: 'No users found',
+      searchEmail: 'Search by email...',
+      copyId: 'Copy user ID',
+      activate: 'Activate',
+      deactivate: 'Deactivate',
     },
     
     // Roles & Permissions
     roles: {
       title: 'Roles',
+      allRoles: 'All Roles',
       createRole: 'Create Role',
       editRole: 'Edit Role',
       deleteRole: 'Delete Role',
@@ -221,7 +236,7 @@ export const translations = {
     messages: {
       success: 'Operation completed successfully',
       error: 'An error occurred',
-      deleteConfirm: 'Are you sure you want to delete this item?',
+      deleteConfirm: 'Are you sure you want to delete',
       saveSuccess: 'Saved successfully',
       saveError: 'Failed to save',
       deleteSuccess: 'Deleted successfully',
@@ -231,6 +246,7 @@ export const translations = {
       createSuccess: 'Created successfully',
       createError: 'Failed to create',
       noPermission: 'You do not have permission to perform this action',
+      errorFetchingData: 'Error fetching data',
     },
   },
   
@@ -268,6 +284,11 @@ export const translations = {
       more: 'المزيد',
       support: 'الدعم',
       viewAll: 'عرض الكل',
+      actions: 'الإجراءات',
+      columns: 'الأعمدة',
+      of: 'من',
+      rowsSelected: 'صف محدد',
+      noResults: 'لا توجد نتائج.',
     },
     
     // Auth
@@ -338,6 +359,7 @@ export const translations = {
       title: 'المهام',
       myTasks: 'مهامي',
       allTasks: 'جميع المهام',
+      kanbanView: 'عرض كانبان',
       createTask: 'إنشاء مهمة',
       editTask: 'تعديل مهمة',
       deleteTask: 'حذف مهمة',
@@ -378,6 +400,7 @@ export const translations = {
     // Users
     users: {
       title: 'المستخدمون',
+      allUsers: 'جميع المستخدمين',
       createUser: 'إنشاء مستخدم',
       editUser: 'تعديل مستخدم',
       deleteUser: 'حذف مستخدم',
@@ -394,12 +417,18 @@ export const translations = {
       emailVerified: 'البريد موثق',
       twoFactorEnabled: 'المصادقة الثنائية مفعلة',
       lastLogin: 'آخر تسجيل دخول',
+      createdAt: 'تاريخ الإنشاء',
       noUsers: 'لا يوجد مستخدمون',
+      searchEmail: 'البحث بالبريد الإلكتروني...',
+      copyId: 'نسخ معرف المستخدم',
+      activate: 'تفعيل',
+      deactivate: 'إلغاء التفعيل',
     },
     
     // Roles & Permissions
     roles: {
       title: 'الأدوار',
+      allRoles: 'جميع الأدوار',
       createRole: 'إنشاء دور',
       editRole: 'تعديل دور',
       deleteRole: 'حذف دور',
@@ -451,7 +480,7 @@ export const translations = {
     messages: {
       success: 'تمت العملية بنجاح',
       error: 'حدث خطأ',
-      deleteConfirm: 'هل أنت متأكد من حذف هذا العنصر؟',
+      deleteConfirm: 'هل أنت متأكد من حذف',
       saveSuccess: 'تم الحفظ بنجاح',
       saveError: 'فشل الحفظ',
       deleteSuccess: 'تم الحذف بنجاح',
@@ -461,6 +490,7 @@ export const translations = {
       createSuccess: 'تم الإنشاء بنجاح',
       createError: 'فشل الإنشاء',
       noPermission: 'ليس لديك إذن لتنفيذ هذا الإجراء',
+      errorFetchingData: 'خطأ في جلب البيانات',
     },
   },
 } as const;

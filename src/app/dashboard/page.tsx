@@ -26,26 +26,36 @@ export default function DashboardPage() {
     // Fetch dashboard stats
     const fetchStats = async () => {
       try {
-        // Fetch users count
-        const usersResponse = await fetch('/api/users', {
+        // Fetch stats from API
+        const statsResponse = await fetch('/api/dashboard/stats', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         
-        let totalUsers = 0;
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
-          totalUsers = usersData.data?.length || 0;
-        }
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setStats(statsData.data);
+        } else {
+          // Fallback: Fetch users count only
+          const usersResponse = await fetch('/api/users', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          
+          let totalUsers = 0;
+          if (usersResponse.ok) {
+            const usersData = await usersResponse.json();
+            totalUsers = usersData.data?.length || 0;
+          }
 
-        // Mock data for now (will be replaced with real API calls)
-        setStats({
-          totalUsers,
-          activeUsers: Math.floor(totalUsers * 0.8),
-          totalTasks: 0,
-          completedTasks: 0,
-          pendingTasks: 0,
-          totalRoles: 3, // super_admin, manager, employee
-        });
+          // Mock data for now
+          setStats({
+            totalUsers,
+            activeUsers: Math.floor(totalUsers * 0.8),
+            totalTasks: 0,
+            completedTasks: 0,
+            pendingTasks: 0,
+            totalRoles: 3,
+          });
+        }
       } catch (error) {
         console.error('Failed to fetch stats:', error);
       } finally {

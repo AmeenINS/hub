@@ -13,6 +13,8 @@ export interface User {
   lastName: string;
   phoneNumber?: string;
   avatar?: string;
+  // Optional manager relationship for hierarchical users
+  managerId?: string;
   isActive: boolean;
   emailVerified: boolean;
   twoFactorEnabled: boolean;
@@ -115,6 +117,29 @@ export interface TaskAttachment {
   fileSize: number;
   mimeType: string;
   uploadedAt: string;
+}
+
+export enum TaskActivityType {
+  CREATED = 'CREATED',
+  STATUS_CHANGED = 'STATUS_CHANGED',
+  PRIORITY_CHANGED = 'PRIORITY_CHANGED',
+  ASSIGNED = 'ASSIGNED',
+  UNASSIGNED = 'UNASSIGNED',
+  UPDATED = 'UPDATED',
+  COMMENT_ADDED = 'COMMENT_ADDED',
+  ATTACHMENT_ADDED = 'ATTACHMENT_ADDED',
+  DUE_DATE_CHANGED = 'DUE_DATE_CHANGED',
+}
+
+export interface TaskActivity {
+  id: string;
+  taskId: string;
+  userId: string;
+  type: TaskActivityType;
+  oldValue?: string;
+  newValue?: string;
+  comment?: string;
+  createdAt: string;
 }
 
 // ==================== Security & Audit ====================

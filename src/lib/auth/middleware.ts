@@ -52,6 +52,11 @@ export async function checkPermission(
   try {
     const permissions = await rolePermissionService.getUserPermissions(userId);
     
+    console.log('=== Permission Check ===');
+    console.log('User ID:', userId);
+    console.log('Required:', `${requiredModule}:${requiredAction}`);
+    console.log('User Permissions:', permissions.map(p => `${p.module}:${p.action}`));
+    
     // Check if user has the required permission
     const hasPermission = permissions.some(
       (perm) =>
@@ -63,6 +68,10 @@ export async function checkPermission(
     const isAdmin = permissions.some(
       (perm) => perm.module === 'system' && perm.action === 'admin'
     );
+    
+    console.log('Has Permission:', hasPermission);
+    console.log('Is Admin:', isAdmin);
+    console.log('======================');
 
     return hasPermission || isAdmin;
   } catch (error) {

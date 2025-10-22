@@ -4,6 +4,8 @@ import {
   TaskAssignment,
   TaskComment,
   TaskAttachment,
+  TaskActivity,
+  TaskActivityType,
   TaskStatus,
   TaskPriority,
 } from '@/types/database';
@@ -177,6 +179,31 @@ export class TaskAssignmentService {
   }
 
   /**
+   * Get assignment by ID
+   */
+  async getAssignmentById(assignmentId: string): Promise<TaskAssignment | null> {
+    return lmdb.getById<TaskAssignment>(this.dbName, assignmentId);
+  }
+
+  /**
+   * Get assignment by task and user
+   */
+  async getAssignmentByTaskAndUser(taskId: string, userId: string): Promise<TaskAssignment | null> {
+    const assignments = await lmdb.query<TaskAssignment>(
+      this.dbName,
+      (assignment) => assignment.taskId === taskId && assignment.userId === userId
+    );
+    return assignments.length > 0 ? assignments[0] : null;
+  }
+
+  /**
+   * Delete assignment
+   */
+  async deleteAssignment(assignmentId: string): Promise<boolean> {
+    return lmdb.delete(this.dbName, assignmentId);
+  }
+
+  /**
    * Remove assignment
    */
   async removeAssignment(assignmentId: string): Promise<boolean> {
@@ -289,5 +316,84 @@ export class TaskAttachmentService {
    */
   async deleteAttachment(id: string): Promise<boolean> {
     return lmdb.delete(this.dbName, id);
+  }
+}
+
+/**
+ * TaskActivity Service
+ * Handles task activity logging and history
+ */
+export class TaskActivityService {
+  private readonly dbName = 'taskActivities';
+
+  /**
+   * Log task activity
+   */
+  async logActivity(
+    taskId: string,
+    userId: string,
+    type: TaskActivityType,
+    data?: {
+      oldValue?: string;
+      newValue?: string;
+      comment?: string;
+    }
+  ): Promise<TaskActivity> {
+    const id = nanoid();
+    
+    const activity: TaskActivity = {
+      id,
+      taskId,
+      userId,
+      type,
+      oldValue: data?.oldValue,
+      newValue: data?.newValue,
+      comment: data?.comment,
+      createdAt: new Date().toISOString(),
+    };
+
+    await lmdb.create(this.dbName, id, activity);
+    return activity;
+  }
+
+  /**
+   * Get activities by task ID
+   */
+  async getActivitiesByTask(taskId: string): Promise<TaskActivity[]> {
+    const activities = await lmdb.query<TaskActivity>(
+      this.dbName,
+      (activity) => activity.taskId === taskId
+    );
+    
+    // Sort by creation date (newest first)
+    return activities.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  /**
+   * Get recent activities (across all tasks)
+   */
+  async getRecentActivities(limit: number = 10): Promise<TaskActivity[]> {
+    const activities = await lmdb.getAll<TaskActivity>(this.dbName);
+    
+    // Sort by creation date (newest first) and limit
+    return activities
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+  }
+
+  /**
+   * Get activities by user
+   */
+  async getActivitiesByUser(userId: string): Promise<TaskActivity[]> {
+    const activities = await lmdb.query<TaskActivity>(
+      this.dbName,
+      (activity) => activity.userId === userId
+    );
+    
+    return activities.sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 }
