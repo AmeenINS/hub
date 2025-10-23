@@ -118,9 +118,12 @@ export const translations = {
       sidebarNavigation: 'You can access different sections of the system from the sidebar menu.',
       orgChart: 'Organizational Chart',
       orgChartDesc: 'View your organization structure by position',
-      orgChartPageDesc: 'View your organization structure and employee hierarchy',
+      directReport: 'direct report',
+      directReports: 'direct reports',
+      topLevel: 'Top Level',
       positions: 'Positions',
       departments: 'Departments',
+      orgChartPageDesc: 'View your organization structure and employee hierarchy',
     },
     
     // Tasks
@@ -552,9 +555,12 @@ export const translations = {
       sidebarNavigation: 'يمكنك الوصول إلى أقسام النظام المختلفة من القائمة الجانبية.',
       orgChart: 'الرسم البياني التنظيمي',
       orgChartDesc: 'عرض هيكل المنظمة حسب المنصب',
-      orgChartPageDesc: 'عرض هيكل المنظمة والهرمية الوظيفية',
+      directReport: 'تقرير مباشر',
+      directReports: 'تقارير مباشرة',
+      topLevel: 'المستوى الأعلى',
       positions: 'المناصب',
       departments: 'الأقسام',
+      orgChartPageDesc: 'عرض هيكل المنظمة والهرمية الوظيفية',
     },
     
     // Tasks

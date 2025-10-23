@@ -13,18 +13,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { OrgChart } from '@/components/dashboard/org-chart';
+import OrgChart from '@/components/dashboard/org-chart';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
 
 interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   role?: string;
   position?: string;
   department?: string;
+  managerId?: string;
   createdAt?: string;
   isActive?: boolean;
 }
