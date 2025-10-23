@@ -237,25 +237,6 @@ export default function LoginPage() {
             
             {/* Demo credentials */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="p-3 bg-muted rounded-lg border"
-            >
-              <p className="text-xs text-center text-muted-foreground font-medium mb-1">
-                🔐 Demo Credentials
-              </p>
-              <div className="text-xs text-center space-y-0.5">
-                <p className="text-muted-foreground">
-                  <span className="font-mono">admin@ameen.com</span>
-                </p>
-                <p className="text-muted-foreground">
-                  <span className="font-mono">Admin@123456</span>
-                </p>
-              </div>
-            </motion.div>
-            
-            <motion.div 
               className="text-sm text-center text-muted-foreground"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

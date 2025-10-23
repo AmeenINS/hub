@@ -302,3 +302,79 @@ html * {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Custom Scrollbar Styling */
+/* Modern slim scrollbar that auto-hides */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(156 163 175 / 0.3) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgb(75 85 99 / 0.3) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(156 163 175 / 0.3);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgb(75 85 99 / 0.3);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128 / 0.6);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(107 114 128 / 0.6);
+}
+
+/* OverlayScrollbars custom theme (for specific components) */
+.os-theme-dark > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle {
+  background-color: rgb(156 163 175);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.dark .os-theme-dark > .os-scrollbar > .os-scrollbar-track > .os-scrollbar-handle {
+  background-color: rgb(75 85 99);
+}
+
+.os-theme-dark > .os-scrollbar:hover > .os-scrollbar-track > .os-scrollbar-handle {
+  background-color: rgb(107 114 128);
+}
+
+.dark .os-theme-dark > .os-scrollbar:hover > .os-scrollbar-track > .os-scrollbar-handle {
+  background-color: rgb(107 114 128);
+}
+
+.os-theme-dark > .os-scrollbar > .os-scrollbar-track {
+  background-color: transparent;
+}
+
+.os-theme-dark.os-scrollbar-horizontal {
+  bottom: 0;
+  height: 10px;
+}
+
+.os-theme-dark.os-scrollbar-vertical {
+  right: 0;
+  width: 10px;
+}
+
+[dir="rtl"] .os-theme-dark.os-scrollbar-vertical {
+  right: auto;
+  left: 0;
+}

@@ -3,10 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
+import { MobileNav } from '@/components/dashboard/mobile-nav';
 import { Spinner } from '@/components/ui/spinner';
 import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
+import { Separator } from '@/components/ui/separator';
+import 'overlayscrollbars/overlayscrollbars.css';
 
 export default function DashboardLayout({
   children,
@@ -40,14 +43,29 @@ export default function DashboardLayout({
   return (
     <RTLSidebarWrapper>
       <SidebarProvider>
-        <div className="flex min-h-screen w-full">
-          <AppSidebar />
+        <AppSidebar />
+        <SidebarInset>
+          {/* Header with hamburger menu */}
+          <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center gap-2 px-4 w-full">
+              {/* Mobile hamburger menu */}
+              <SidebarTrigger className="md:hidden -ml-1 rtl:-ml-0 rtl:-mr-1" />
+              {/* Desktop sidebar toggle */}
+              <SidebarTrigger className="hidden md:flex -ml-1 rtl:-ml-0 rtl:-mr-1" />
+              <Separator orientation="vertical" className="mr-2 rtl:mr-0 rtl:ml-2 h-4" />
+            </div>
+          </header>
+          
+          {/* Main content with bottom padding for mobile nav */}
           <main className="flex-1 overflow-auto">
-            <div className="container mx-auto p-4 md:p-6 lg:p-8">
+            <div className="container mx-auto p-4 md:p-6 lg:p-8 pb-20 md:pb-6">
               {children}
             </div>
           </main>
-        </div>
+        </SidebarInset>
+        
+        {/* Mobile bottom navigation */}
+        <MobileNav />
       </SidebarProvider>
     </RTLSidebarWrapper>
   );

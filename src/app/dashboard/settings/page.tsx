@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
+import { OverlayScrollbar } from '@/components/ui/overlay-scrollbar';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 
@@ -371,28 +372,30 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4" dir={dir}>
-        <TabsList>
-          <TabsTrigger value="profile" className="gap-2">
-            <User className="h-4 w-4" />
-            {t('settings.profile')}
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
-            <Bell className="h-4 w-4" />
-            {t('settings.notifications')}
-          </TabsTrigger>
-          <TabsTrigger value="security" className="gap-2">
-            <Shield className="h-4 w-4" />
-            {t('settings.security')}
-          </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2">
-            <Globe className="h-4 w-4" />
-            {t('settings.appearance')}
-          </TabsTrigger>
-          <TabsTrigger value="positions" className="gap-2">
-            <Briefcase className="h-4 w-4" />
-            {t('settings.positions')}
-          </TabsTrigger>
-        </TabsList>
+        <OverlayScrollbar className="border-b">
+          <TabsList className="w-full md:w-auto inline-flex h-12">
+            <TabsTrigger value="profile" className="gap-2 whitespace-nowrap px-4">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.profile')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2 whitespace-nowrap px-4">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.notifications')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-2 whitespace-nowrap px-4">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.security')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="gap-2 whitespace-nowrap px-4">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.appearance')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="positions" className="gap-2 whitespace-nowrap px-4">
+              <Briefcase className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.positions')}</span>
+            </TabsTrigger>
+          </TabsList>
+        </OverlayScrollbar>
 
         {/* Profile Tab */}
         <TabsContent value="profile">

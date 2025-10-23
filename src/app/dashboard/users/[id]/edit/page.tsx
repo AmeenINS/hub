@@ -86,6 +86,8 @@ export default function EditUserPage() {
   const [roles, setRoles] = React.useState<Role[]>([]);
   const [positions, setPositions] = React.useState<Position[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
+  const [userData, setUserData] = React.useState<User | null>(null);
+  const [userRoles, setUserRoles] = React.useState<{ id: string; roleId: string }[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -102,23 +104,10 @@ export default function EditUserPage() {
     },
   });
 
-  // Fetch user data, roles, positions, and users
+  // Fetch initial data (roles, positions, users) - only once
   React.useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
-        setLoadingData(true);
-
-        // Fetch user data
-        const userResponse = await fetch(`/api/users/${userId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch user');
-        }
-
-        const userData = await userResponse.json();
-
         // Fetch roles
         const rolesResponse = await fetch('/api/roles', {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -147,33 +136,46 @@ export default function EditUserPage() {
             setUsers(usersResult.data.filter((u: User) => u.id !== userId));
           }
         }
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
+    };
+
+    if (token) {
+      fetchInitialData();
+    }
+  }, [token, userId]);
+
+  // Fetch user data and populate form
+  React.useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setLoadingData(true);
+
+        // Fetch user data
+        const userResponse = await fetch(`/api/users/${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user');
+        }
+
+        const userResult = await userResponse.json();
+        const fetchedUserData = userResult.success ? userResult.data : userResult;
+        
+        setUserData(fetchedUserData);
 
         // Get user's current role
         const userRolesResponse = await fetch(`/api/users/${userId}/roles`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
-        let currentRoleId = '';
         if (userRolesResponse.ok) {
-          const userRoles = await userRolesResponse.json();
-          if (userRoles.length > 0) {
-            currentRoleId = userRoles[0].roleId;
-          }
+          const fetchedUserRoles = await userRolesResponse.json();
+          setUserRoles(fetchedUserRoles);
         }
-
-        // Populate form with user data
-        form.reset({
-          email: userData.email || '',
-          firstName: userData.firstName || '',
-          lastName: userData.lastName || '',
-          phoneNumber: userData.phoneNumber || '',
-          roleId: currentRoleId,
-          position: userData.position || 'none',
-          department: userData.department || '',
-          managerId: userData.managerId || 'none',
-          isActive: userData.isActive !== false,
-        });
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching user data:', error);
         toast.error(t('users.fetchError'));
         router.push('/dashboard/users');
       } finally {
@@ -181,10 +183,53 @@ export default function EditUserPage() {
       }
     };
 
-    if (userId) {
-      fetchData();
+    if (userId && token) {
+      fetchUserData();
     }
-  }, [userId, token, router, t, form]);
+  }, [userId, token, router, t]);
+
+  // Populate form when data is ready
+  React.useEffect(() => {
+    if (!userData || positions.length === 0) return;
+
+    let currentRoleId = '';
+    if (userRoles.length > 0) {
+      currentRoleId = userRoles[0].roleId;
+    }
+
+    // Convert position name to ID if needed
+    let positionValue = 'none';
+    if (userData.position) {
+      // Check if position is already an ID
+      const positionExists = positions.find(p => p.id === userData.position);
+      if (positionExists) {
+        positionValue = userData.position;
+      } else {
+        // Try to find by name
+        const positionByName = positions.find(p => p.name === userData.position);
+        if (positionByName) {
+          positionValue = positionByName.id;
+        }
+      }
+    }
+
+    // Populate form with user data
+    const formData = {
+      email: userData.email || '',
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      phoneNumber: userData.phoneNumber || '',
+      roleId: currentRoleId,
+      position: positionValue,
+      department: userData.department || '',
+      managerId: userData.managerId || 'none',
+      isActive: userData.isActive !== false,
+    };
+    
+    console.log('Form data to populate:', formData);
+    
+    form.reset(formData);
+  }, [userData, userRoles, positions, form]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -192,7 +237,7 @@ export default function EditUserPage() {
 
       // Update user basic info
       const userResponse = await fetch(`/api/users/${userId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -210,7 +255,9 @@ export default function EditUserPage() {
       });
 
       if (!userResponse.ok) {
-        throw new Error('Failed to update user');
+        const errorData = await userResponse.json();
+        console.error('Failed to update user:', errorData);
+        throw new Error(errorData.error || 'Failed to update user');
       }
 
       // Update user role
@@ -366,7 +413,7 @@ export default function EditUserPage() {
                         <SelectContent>
                           <SelectItem value="none">{t('users.noPosition')}</SelectItem>
                           {positions.map((position) => (
-                            <SelectItem key={position.id} value={position.name}>
+                            <SelectItem key={position.id} value={position.id}>
                               {position.name}
                             </SelectItem>
                           ))}

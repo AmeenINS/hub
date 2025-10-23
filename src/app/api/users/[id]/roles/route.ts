@@ -44,3 +44,62 @@ export async function GET(
     );
   }
 }
+
+/**
+ * PUT /api/users/[id]/roles
+ * Update user role (replace existing role)
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Verify JWT token
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const payload = JWTService.verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    const { id: userId } = await params;
+    const body = await request.json();
+    const { roleId } = body;
+
+    if (!roleId) {
+      return NextResponse.json(
+        { success: false, error: 'Role ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Remove existing roles
+    const existingRoles = await userRoleService.getUserRolesByUser(userId);
+    for (const role of existingRoles) {
+      await userRoleService.removeRoleFromUser(userId, role.roleId);
+    }
+
+    // Assign new role
+    await userRoleService.assignRoleToUser(userId, roleId, payload.userId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'User role updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

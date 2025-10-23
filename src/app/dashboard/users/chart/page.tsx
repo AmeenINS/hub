@@ -6,13 +6,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import OrgChart from '@/components/dashboard/org-chart';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
@@ -29,6 +23,12 @@ interface User {
   managerId?: string;
   createdAt?: string;
   isActive?: boolean;
+}
+
+interface Position {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 export default function OrgChartPage() {
@@ -48,6 +48,7 @@ export default function OrgChartPage() {
     if (!mounted || authLoading) return;
 
     try {
+      // Fetch users
       const response = await fetch('/api/users', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -59,7 +60,38 @@ export default function OrgChartPage() {
       }
 
       const data = await response.json();
-      setUsers(data.data || []);
+      const fetchedUsers = data.data || [];
+
+      // Fetch positions
+      const positionsResponse = await fetch('/api/positions', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (positionsResponse.ok) {
+        const positionsData = await positionsResponse.json();
+        // API returns array directly, not { data: [] }
+        const fetchedPositions = Array.isArray(positionsData) ? positionsData : (positionsData.data || []);
+
+        // Map position IDs to names
+        const positionMap = new Map(
+          fetchedPositions.map((p: Position) => [p.id, p.name])
+        );
+
+        // Replace position IDs with names in users
+        const usersWithPositionNames = fetchedUsers.map((user: User) => {
+          const positionName = user.position ? (positionMap.get(user.position) || user.position) : undefined;
+          return {
+            ...user,
+            position: positionName,
+          };
+        });
+
+        setUsers(usersWithPositionNames);
+      } else {
+        setUsers(fetchedUsers);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error(t('common.error') || 'Failed to fetch users');
