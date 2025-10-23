@@ -62,6 +62,19 @@ export function UsersDataTable({ data, onEdit, onDelete, onToggleStatus }: DataT
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
+  // Map column IDs to translation keys
+  const getColumnLabel = (columnId: string) => {
+    const columnLabels: Record<string, string> = {
+      email: t('auth.email'),
+      firstName: t('users.firstName'),
+      lastName: t('users.lastName'),
+      isActive: t('users.status'),
+      emailVerified: t('users.emailVerified'),
+      createdAt: t('users.createdAt'),
+    };
+    return columnLabels[columnId] || columnId;
+  };
+
   const columns: ColumnDef<User>[] = [
     {
       id: 'select',
@@ -229,7 +242,7 @@ export function UsersDataTable({ data, onEdit, onDelete, onToggleStatus }: DataT
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) => column.toggleVisibility(!!value)}
                   >
-                    {column.id}
+                    {getColumnLabel(column.id)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
