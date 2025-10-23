@@ -1,34 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { open } from 'lmdb';
-import { Position } from '@/types/database';
-import path from 'path';
+import { PositionService } from '@/lib/db/user-service';
 
-const dbPath = path.join(process.cwd(), 'data', 'lmdb');
-const db = open({ path: dbPath });
+const positionService = new PositionService();
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const { id } = params;
     const body = await request.json();
-    const { name, description, level } = body;
+    const { name, description, level, isActive } = body;
 
-    const existing = await db.get(`position:${id}`);
+    const existing = await positionService.getPositionById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Position not found' }, { status: 404 });
     }
 
-    const updated: Position = {
-      ...existing,
+    const updated = await positionService.updatePosition(id, {
       name: name || existing.name,
       description: description !== undefined ? description : existing.description,
       level: level !== undefined ? parseInt(level) : existing.level,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await db.put(`position:${id}`, updated);
+      isActive: isActive !== undefined ? isActive : existing.isActive,
+    });
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -42,17 +37,18 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const { id } = params;
 
-    const existing = await db.get(`position:${id}`);
+    const existing = await positionService.getPositionById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Position not found' }, { status: 404 });
     }
 
-    await db.remove(`position:${id}`);
+    await positionService.deletePosition(id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

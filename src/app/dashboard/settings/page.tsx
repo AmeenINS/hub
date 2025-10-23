@@ -9,8 +9,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Settings as SettingsIcon, User, Bell, Shield, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, User, Bell, Shield, Globe, Briefcase, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
 import { useRouter } from 'next/navigation';
@@ -24,6 +28,14 @@ interface UserSettings {
   emailNotifications: boolean;
   pushNotifications: boolean;
   taskNotifications: boolean;
+}
+
+interface Position {
+  id: string;
+  name: string;
+  description?: string;
+  level: number;
+  isActive: boolean;
 }
 
 export default function SettingsPage() {
@@ -45,6 +57,18 @@ export default function SettingsPage() {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
+  });
+
+  // Position Management States
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
+  const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
+  const [editingPosition, setEditingPosition] = useState<Position | null>(null);
+  const [positionForm, setPositionForm] = useState({
+    name: '',
+    description: '',
+    level: 1,
+    isActive: true,
   });
 
   const fetchSettings = useCallback(async () => {
@@ -91,6 +115,13 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  useEffect(() => {
+    if (token) {
+      fetchPositions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const handleUpdateProfile = async () => {
     if (!token) return;
@@ -195,6 +226,129 @@ export default function SettingsPage() {
     }
   };
 
+  // Position Management Functions
+  const fetchPositions = async () => {
+    try {
+      setLoadingPositions(true);
+      const response = await fetch('/api/positions', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPositions(data.sort((a: Position, b: Position) => a.level - b.level));
+      }
+    } catch (error) {
+      console.error('Failed to fetch positions:', error);
+      toast.error(t('messages.fetchError'));
+    } finally {
+      setLoadingPositions(false);
+    }
+  };
+
+  const handleOpenPositionDialog = (position?: Position) => {
+    if (position) {
+      setEditingPosition(position);
+      setPositionForm({
+        name: position.name,
+        description: position.description || '',
+        level: position.level,
+        isActive: position.isActive,
+      });
+    } else {
+      setEditingPosition(null);
+      setPositionForm({
+        name: '',
+        description: '',
+        level: 1,
+        isActive: true,
+      });
+    }
+    setIsPositionDialogOpen(true);
+  };
+
+  const handleClosePositionDialog = () => {
+    setIsPositionDialogOpen(false);
+    setEditingPosition(null);
+    setPositionForm({
+      name: '',
+      description: '',
+      level: 1,
+      isActive: true,
+    });
+  };
+
+  const handleSavePosition = async () => {
+    if (!positionForm.name.trim()) {
+      toast.error(t('settings.positionNameRequired'));
+      return;
+    }
+
+    if (!token) return;
+
+    try {
+      setSaving(true);
+      
+      const url = editingPosition 
+        ? `/api/positions/${editingPosition.id}`
+        : '/api/positions';
+      
+      const method = editingPosition ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(positionForm),
+      });
+
+      if (response.ok) {
+        toast.success(editingPosition ? t('settings.positionUpdated') : t('settings.positionCreated'));
+        handleClosePositionDialog();
+        fetchPositions();
+      } else {
+        toast.error(t('messages.updateError'));
+      }
+    } catch (error) {
+      console.error('Failed to save position:', error);
+      toast.error(t('messages.updateError'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeletePosition = async (id: string) => {
+    if (!token) return;
+    
+    if (!confirm(t('settings.deletePositionConfirm'))) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const response = await fetch(`/api/positions/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success(t('settings.positionDeleted'));
+        fetchPositions();
+      } else {
+        toast.error(t('messages.deleteError'));
+      }
+    } catch (error) {
+      console.error('Failed to delete position:', error);
+      toast.error(t('messages.deleteError'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -233,6 +387,10 @@ export default function SettingsPage() {
           <TabsTrigger value="appearance" className="gap-2">
             <Globe className="h-4 w-4" />
             {t('settings.appearance')}
+          </TabsTrigger>
+          <TabsTrigger value="positions" className="gap-2">
+            <Briefcase className="h-4 w-4" />
+            {t('settings.positions')}
           </TabsTrigger>
         </TabsList>
 
@@ -434,7 +592,151 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Positions Tab */}
+        <TabsContent value="positions">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>{t('settings.positions')}</CardTitle>
+                  <CardDescription>{t('settings.positionsManagement')}</CardDescription>
+                </div>
+                <Button onClick={() => handleOpenPositionDialog()}>
+                  <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                  {t('settings.addPosition')}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingPositions ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                  </div>
+                </div>
+              ) : positions.length === 0 ? (
+                <div className="text-center py-8">
+                  <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">{t('settings.noPositions')}</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('settings.positionName')}</TableHead>
+                      <TableHead>{t('settings.positionDescription')}</TableHead>
+                      <TableHead>{t('settings.positionLevel')}</TableHead>
+                      <TableHead>{t('common.status')}</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {positions.map((position) => (
+                      <TableRow key={position.id}>
+                        <TableCell className="font-medium">{position.name}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {position.description || '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {t('settings.level')} {position.level}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={position.isActive ? 'default' : 'secondary'}>
+                            {position.isActive ? t('common.active') : t('common.inactive')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenPositionDialog(position)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeletePosition(position.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Position Dialog */}
+      <Dialog open={isPositionDialogOpen} onOpenChange={setIsPositionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingPosition ? t('settings.editPosition') : t('settings.addPosition')}
+            </DialogTitle>
+            <DialogDescription>
+              {editingPosition ? t('settings.editPositionDescription') : t('settings.addPositionDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="position-name">{t('settings.positionName')}</Label>
+              <Input
+                id="position-name"
+                value={positionForm.name}
+                onChange={(e) => setPositionForm({ ...positionForm, name: e.target.value })}
+                placeholder={t('settings.positionNamePlaceholder')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position-description">{t('settings.positionDescription')}</Label>
+              <Textarea
+                id="position-description"
+                value={positionForm.description}
+                onChange={(e) => setPositionForm({ ...positionForm, description: e.target.value })}
+                placeholder={t('settings.positionDescriptionPlaceholder')}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position-level">{t('settings.positionLevel')}</Label>
+              <Input
+                id="position-level"
+                type="number"
+                min="1"
+                value={positionForm.level}
+                onChange={(e) => setPositionForm({ ...positionForm, level: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="position-active">{t('common.active')}</Label>
+              <Switch
+                id="position-active"
+                checked={positionForm.isActive}
+                onCheckedChange={(checked) => setPositionForm({ ...positionForm, isActive: checked })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClosePositionDialog}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleSavePosition} disabled={saving}>
+              {saving ? t('common.saving') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

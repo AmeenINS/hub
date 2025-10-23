@@ -408,6 +408,7 @@ export const translations = {
       // Positions management
       positions: 'Positions',
       positionsDescription: 'Manage organizational positions for the org chart',
+      positionsManagement: 'Manage organizational positions and hierarchy',
       addPosition: 'Add Position',
       editPosition: 'Edit Position',
       positionName: 'Position Name',
@@ -421,6 +422,13 @@ export const translations = {
       positionUpdated: 'Position updated successfully',
       positionDeleted: 'Position deleted successfully',
       confirmDeletePosition: 'Are you sure you want to delete this position?',
+      positionNameRequired: 'Position name is required',
+      positionNamePlaceholder: 'e.g. Senior Developer',
+      positionDescriptionPlaceholder: 'Brief description of the position',
+      addPositionDescription: 'Create a new organizational position',
+      editPositionDescription: 'Update position details',
+      deletePositionConfirm: 'Are you sure you want to delete this position?',
+      level: 'Level',
     },
     
     // Support
@@ -887,6 +895,7 @@ export const translations = {
       // Positions management
       positions: 'المناصب',
       positionsDescription: 'إدارة المناصب التنظيمية للمخطط التنظيمي',
+      positionsManagement: 'إدارة المناصب التنظيمية والتسلسل الهرمي',
       addPosition: 'إضافة منصب',
       editPosition: 'تعديل منصب',
       positionName: 'اسم المنصب',
@@ -900,6 +909,13 @@ export const translations = {
       positionUpdated: 'تم تحديث المنصب بنجاح',
       positionDeleted: 'تم حذف المنصب بنجاح',
       confirmDeletePosition: 'هل أنت متأكد من حذف هذا المنصب؟',
+      positionNameRequired: 'اسم المنصب مطلوب',
+      positionNamePlaceholder: 'مثال: مطور أول',
+      positionDescriptionPlaceholder: 'وصف موجز للمنصب',
+      addPositionDescription: 'إنشاء منصب تنظيمي جديد',
+      editPositionDescription: 'تحديث تفاصيل المنصب',
+      deletePositionConfirm: 'هل أنت متأكد من حذف هذا المنصب؟',
+      level: 'المستوى',
     },
     
     // Support

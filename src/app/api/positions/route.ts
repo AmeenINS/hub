@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { open } from 'lmdb';
-import { Position } from '@/types/database';
-import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
+import { PositionService } from '@/lib/db/user-service';
 
-const dbPath = path.join(process.cwd(), 'data', 'lmdb');
-const db = open({ path: dbPath });
+const positionService = new PositionService();
 
 export async function GET() {
   try {
-    const positions: Position[] = [];
-    const range = db.getRange({ start: 'position:' });
-
-    for (const { key, value } of range) {
-      if (typeof key === 'string' && key.startsWith('position:')) {
-        positions.push(value as Position);
-      }
-    }
-
-    return NextResponse.json(positions);
+    const positions = await positionService.getAllPositions();
+    // Sort by level
+    const sorted = positions.sort((a, b) => a.level - b.level);
+    return NextResponse.json(sorted);
   } catch (error) {
     console.error('Error fetching positions:', error);
     return NextResponse.json(
@@ -31,26 +21,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, description, level } = body;
+    const { name, description, level, isActive } = body;
 
-    if (!name || !level) {
+    if (!name || level === undefined) {
       return NextResponse.json(
         { error: 'Name and level are required' },
         { status: 400 }
       );
     }
 
-    const position: Position = {
-      id: uuidv4(),
+    const position = await positionService.createPosition({
       name,
       description: description || '',
       level: parseInt(level),
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    await db.put(`position:${position.id}`, position);
+      isActive: isActive !== undefined ? isActive : true,
+    });
 
     return NextResponse.json(position, { status: 201 });
   } catch (error) {

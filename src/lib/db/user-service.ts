@@ -1,5 +1,5 @@
 import { lmdb } from './lmdb';
-import { User, Role, Permission, UserRole, RolePermission } from '@/types/database';
+import { User, Role, Permission, UserRole, RolePermission, Position } from '@/types/database';
 import { nanoid } from 'nanoid';
 import * as argon2 from 'argon2';
 
@@ -398,5 +398,85 @@ export class RolePermissionService {
     console.log('==========================');
 
     return permissions;
+  }
+}
+
+/**
+ * Position Service
+ * Handles all position-related database operations
+ */
+export class PositionService {
+  private readonly dbName = 'positions';
+
+  /**
+   * Get all positions
+   */
+  async getAllPositions(): Promise<Position[]> {
+    return lmdb.getAll<Position>(this.dbName);
+  }
+
+  /**
+   * Get position by ID
+   */
+  async getPositionById(id: string): Promise<Position | null> {
+    return lmdb.getById<Position>(this.dbName, id);
+  }
+
+  /**
+   * Create a new position
+   */
+  async createPosition(data: Omit<Position, 'id' | 'createdAt' | 'updatedAt'>): Promise<Position> {
+    const id = nanoid();
+    const position: Position = {
+      ...data,
+      id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await lmdb.create(this.dbName, id, position);
+    return position;
+  }
+
+  /**
+   * Update position
+   */
+  async updatePosition(id: string, data: Partial<Position>): Promise<Position | null> {
+    const existing = await this.getPositionById(id);
+    if (!existing) return null;
+
+    const updated: Position = {
+      ...existing,
+      ...data,
+      id: existing.id,
+      createdAt: existing.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await lmdb.update(this.dbName, id, updated);
+    return updated;
+  }
+
+  /**
+   * Delete position
+   */
+  async deletePosition(id: string): Promise<boolean> {
+    return lmdb.delete(this.dbName, id);
+  }
+
+  /**
+   * Get positions by level
+   */
+  async getPositionsByLevel(level: number): Promise<Position[]> {
+    const positions = await this.getAllPositions();
+    return positions.filter(p => p.level === level);
+  }
+
+  /**
+   * Get active positions
+   */
+  async getActivePositions(): Promise<Position[]> {
+    const positions = await this.getAllPositions();
+    return positions.filter(p => p.isActive);
   }
 }

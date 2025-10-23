@@ -26,7 +26,7 @@ class LMDBManager {
     if (this.db) return;
 
     const dbPath = process.env.LMDB_PATH || './data/lmdb';
-    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '15');
+    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '35');
     const mapSize = parseInt(process.env.LMDB_MAP_SIZE || '10485760');
 
     try {
@@ -55,29 +55,30 @@ class LMDBManager {
     if (!this.db) throw new Error('Database not initialized');
 
     // User Management
-    this.databases.set('users', this.db.openDB({ name: 'users' }));
-    this.databases.set('roles', this.db.openDB({ name: 'roles' }));
-    this.databases.set('permissions', this.db.openDB({ name: 'permissions' }));
-    this.databases.set('userRoles', this.db.openDB({ name: 'userRoles' }));
-    this.databases.set('rolePermissions', this.db.openDB({ name: 'rolePermissions' }));
+    this.databases.set('users', this.db.openDB({ name: 'users', encoding: 'json' }));
+    this.databases.set('roles', this.db.openDB({ name: 'roles', encoding: 'json' }));
+    this.databases.set('permissions', this.db.openDB({ name: 'permissions', encoding: 'json' }));
+    this.databases.set('userRoles', this.db.openDB({ name: 'userRoles', encoding: 'json' }));
+    this.databases.set('rolePermissions', this.db.openDB({ name: 'rolePermissions', encoding: 'json' }));
+    this.databases.set('positions', this.db.openDB({ name: 'positions', encoding: 'json' }));
 
     // Task Management
-    this.databases.set('tasks', this.db.openDB({ name: 'tasks' }));
-    this.databases.set('taskAssignments', this.db.openDB({ name: 'taskAssignments' }));
-    this.databases.set('taskComments', this.db.openDB({ name: 'taskComments' }));
-    this.databases.set('taskAttachments', this.db.openDB({ name: 'taskAttachments' }));
-    this.databases.set('taskActivities', this.db.openDB({ name: 'taskActivities' }));
+    this.databases.set('tasks', this.db.openDB({ name: 'tasks', encoding: 'json' }));
+    this.databases.set('taskAssignments', this.db.openDB({ name: 'taskAssignments', encoding: 'json' }));
+    this.databases.set('taskComments', this.db.openDB({ name: 'taskComments', encoding: 'json' }));
+    this.databases.set('taskAttachments', this.db.openDB({ name: 'taskAttachments', encoding: 'json' }));
+    this.databases.set('taskActivities', this.db.openDB({ name: 'taskActivities', encoding: 'json' }));
 
     // Audit & Security
-    this.databases.set('auditLogs', this.db.openDB({ name: 'auditLogs' }));
-    this.databases.set('sessions', this.db.openDB({ name: 'sessions' }));
-    this.databases.set('twoFactorAuth', this.db.openDB({ name: 'twoFactorAuth' }));
+    this.databases.set('auditLogs', this.db.openDB({ name: 'auditLogs', encoding: 'json' }));
+    this.databases.set('sessions', this.db.openDB({ name: 'sessions', encoding: 'json' }));
+    this.databases.set('twoFactorAuth', this.db.openDB({ name: 'twoFactorAuth', encoding: 'json' }));
 
     // Notifications
-    this.databases.set('notifications', this.db.openDB({ name: 'notifications' }));
+    this.databases.set('notifications', this.db.openDB({ name: 'notifications', encoding: 'json' }));
 
     // Support
-    this.databases.set('support_messages', this.db.openDB({ name: 'support_messages' }));
+    this.databases.set('support_messages', this.db.openDB({ name: 'support_messages', encoding: 'json' }));
   }
 
   /**
