@@ -27,15 +27,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { useAuthStore } from '@/store/auth-store';
-
-const taskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  status: z.enum(['todo', 'in-progress', 'completed']),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']),
-  assigneeId: z.string().optional(),
-  dueDate: z.string().optional(),
-});
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 interface User {
   id: string;
@@ -50,6 +42,15 @@ export default function EditTaskPage() {
   const router = useRouter();
   const params = useParams();
   const taskId = params.id as string;
+
+  const taskSchema = z.object({
+    title: z.string().min(1, t('validation.titleRequired')),
+    description: z.string().min(1, t('validation.descriptionRequired')),
+    status: z.enum(['todo', 'in-progress', 'completed']),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']),
+    assigneeId: z.string().optional(),
+    dueDate: z.string().optional(),
+  });
   
   const [loading, setLoading] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
@@ -286,14 +287,16 @@ export default function EditTaskPage() {
             size="sm"
             onClick={() => router.back()}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <RTLChevron>
+              <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+            </RTLChevron>
             {t('common.back')}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-3xl font-bold tracking-tight ltr:text-left rtl:text-right">
               {t('tasks.edit')}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 ltr:text-left rtl:text-right">
               {t('tasks.editDescription')}
             </p>
           </div>
@@ -303,7 +306,7 @@ export default function EditTaskPage() {
           onClick={handleDelete}
           disabled={deleting}
         >
-          <Trash2 className="h-4 w-4 mr-2" />
+          <Trash2 className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
           {deleting ? t('common.loading') : t('common.delete')}
         </Button>
       </div>
@@ -319,11 +322,11 @@ export default function EditTaskPage() {
         <CardContent>
           <div className="flex gap-4 items-center">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('tasks.status.label')}:</span>
+              <span className="text-sm font-medium ltr:text-left rtl:text-right">{t('tasks.taskStatus')}:</span>
               {getStatusBadge(formData.status)}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('tasks.priority.label')}:</span>
+              <span className="text-sm font-medium ltr:text-left rtl:text-right">{t('tasks.taskPriority')}:</span>
               {getPriorityBadge(formData.priority)}
             </div>
           </div>
@@ -342,7 +345,7 @@ export default function EditTaskPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">{t('tasks.title')}</Label>
+              <Label htmlFor="title" className="ltr:text-left rtl:text-right">{t('tasks.taskTitle')}</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -351,13 +354,13 @@ export default function EditTaskPage() {
                 className={errors.title ? 'border-red-500' : ''}
               />
               {errors.title && (
-                <p className="text-sm text-red-500">{errors.title}</p>
+                <p className="text-sm text-red-500 ltr:text-left rtl:text-right">{errors.title}</p>
               )}
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">{t('tasks.description')}</Label>
+              <Label htmlFor="description" className="ltr:text-left rtl:text-right">{t('tasks.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -367,14 +370,14 @@ export default function EditTaskPage() {
                 rows={4}
               />
               {errors.description && (
-                <p className="text-sm text-red-500">{errors.description}</p>
+                <p className="text-sm text-red-500 ltr:text-left rtl:text-right">{errors.description}</p>
               )}
             </div>
 
             {/* Status and Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="status">{t('tasks.status.label')}</Label>
+                <Label htmlFor="status" className="ltr:text-left rtl:text-right">{t('tasks.taskStatus')}</Label>
                 <Select 
                   value={formData.status} 
                   onValueChange={(value: 'todo' | 'in-progress' | 'completed') => handleInputChange('status', value)}
@@ -385,13 +388,13 @@ export default function EditTaskPage() {
                   <SelectContent>
                     <SelectItem value="todo">{t('tasks.status.todo')}</SelectItem>
                     <SelectItem value="in-progress">{t('tasks.status.inProgress')}</SelectItem>
-                    <SelectItem value="completed">{t('tasks.status.completed')}</SelectItem>
+                    <SelectItem value="completed">{t('tasks.status.done')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="priority">{t('tasks.priority.label')}</Label>
+                <Label htmlFor="priority" className="ltr:text-left rtl:text-right">{t('tasks.taskPriority')}</Label>
                 <Select 
                   value={formData.priority} 
                   onValueChange={(value: 'low' | 'medium' | 'high' | 'urgent') => handleInputChange('priority', value)}
@@ -412,8 +415,8 @@ export default function EditTaskPage() {
             {/* Assignee and Due Date */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="assigneeId">
-                  <User className="h-4 w-4 inline mr-2" />
+                <Label htmlFor="assigneeId" className="ltr:text-left rtl:text-right">
+                  <User className="h-4 w-4 inline ltr:mr-2 rtl:ml-2" />
                   {t('tasks.assignee')}
                 </Label>
                 <Select 
@@ -435,8 +438,8 @@ export default function EditTaskPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">
-                  <Calendar className="h-4 w-4 inline mr-2" />
+                <Label htmlFor="dueDate" className="ltr:text-left rtl:text-right">
+                  <Calendar className="h-4 w-4 inline ltr:mr-2 rtl:ml-2" />
                   {t('tasks.dueDate')}
                 </Label>
                 <Input
@@ -451,8 +454,8 @@ export default function EditTaskPage() {
             {/* Submit */}
             <div className="flex gap-4 pt-4">
               <Button type="submit" disabled={loading}>
-                <Save className="h-4 w-4 mr-2" />
-                {loading ? t('common.saving') : t('common.save')}
+                <Save className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                {loading ? t('common.loading') : t('common.save')}
               </Button>
               <Button 
                 type="button" 

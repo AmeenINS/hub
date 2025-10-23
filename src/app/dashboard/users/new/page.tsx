@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -165,7 +166,9 @@ export default function NewUserPage() {
           size="icon"
           onClick={() => router.push('/dashboard/users')}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <RTLChevron>
+            <ArrowLeft className="h-4 w-4" />
+          </RTLChevron>
         </Button>
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
@@ -330,7 +333,7 @@ export default function NewUserPage() {
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
+                      <Switch dir="ltr"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />

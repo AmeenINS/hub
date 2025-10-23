@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { I18nProvider } from "@/lib/i18n/i18n-context";
 import { Toaster } from "@/components/ui/sonner";
+import { cookies } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,13 +21,20 @@ export const metadata: Metadata = {
   description: "Enterprise-grade User Management and Task Management System",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read locale from cookies on the server
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('locale')?.value || 'en';
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+  
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning lang={locale} dir={dir}>
+      <head>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

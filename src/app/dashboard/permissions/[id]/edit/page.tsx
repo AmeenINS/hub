@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { useAuthStore } from '@/store/auth-store';
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 const permissionSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -162,7 +163,9 @@ export default function EditPermissionPage() {
           size="sm"
           onClick={() => router.back()}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <RTLChevron>
+            <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+          </RTLChevron>
           {t('common.back')}
         </Button>
         <div>

@@ -12,9 +12,10 @@ const activityService = new TaskActivityService();
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
@@ -26,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const taskId = params.id;
+    const taskId = id;
     const assignments = await assignmentService.getAssignmentsByTask(taskId);
 
     return NextResponse.json({ success: true, data: assignments });
@@ -45,9 +46,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
@@ -60,7 +62,7 @@ export async function POST(
     }
 
     const assignedBy = payload.userId;
-    const taskId = params.id;
+    const taskId = id;
     const { userId } = await request.json();
 
     if (!userId) {

@@ -178,11 +178,6 @@
 [dir="rtl"] .space-x-3 > * + * { margin-left: 0 !important; margin-right: 0.75rem !important; }
 [dir="rtl"] .space-x-4 > * + * { margin-left: 0 !important; margin-right: 1rem !important; }
 
-/* RTL Flex positioning */
-[dir="rtl"] .flex-row {
-  flex-direction: row-reverse;
-}
-
 [dir="rtl"] .items-center.space-x-2 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 0 !important;
   margin-right: 0.5rem !important;

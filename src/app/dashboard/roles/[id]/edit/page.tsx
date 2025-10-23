@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 interface Role {
   id: string;
@@ -213,7 +214,9 @@ export default function EditRolePage() {
         <div className="flex items-center gap-4">
           <Link href="/dashboard/roles">
             <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
+              <RTLChevron>
+                <ArrowLeft className="h-4 w-4" />
+              </RTLChevron>
               {t('common.back')}
             </Button>
           </Link>

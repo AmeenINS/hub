@@ -26,7 +26,7 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, dir } = useI18n();
   const router = useRouter();
   const { token, isAuthenticated } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -245,26 +245,26 @@ export default function NotificationsPage() {
               </Badge>
             )}
           </h1>
-          <p className="text-muted-foreground mt-2">{t('notifications.description')}</p>
+          <p className="text-muted-foreground mt-2 ltr:text-left rtl:text-right">{t('notifications.description')}</p>
         </div>
 
         <div className="flex gap-2">
           {unreadCount > 0 && (
             <Button onClick={markAllAsRead} variant="outline" size="sm">
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <CheckCheck className="ltr:mr-2 rtl:ml-2 h-4 w-4" />
               {t('notifications.markAllAsRead')}
             </Button>
           )}
           {notifications.length > 0 && (
             <Button onClick={deleteAllNotifications} variant="outline" size="sm">
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="ltr:mr-2 rtl:ml-2 h-4 w-4" />
               {t('notifications.deleteAll')}
             </Button>
           )}
         </div>
       </div>
 
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'unread' | 'read')}>
+      <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'unread' | 'read')} dir={dir}>
         <TabsList>
           <TabsTrigger value="all">
             {t('notifications.all')} ({notifications.length})
@@ -282,7 +282,7 @@ export default function NotificationsPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Bell className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">{t('notifications.noNotifications')}</p>
+                <p className="text-muted-foreground ltr:text-left rtl:text-right">{t('notifications.noNotifications')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -348,7 +348,7 @@ export default function NotificationsPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground">{notification.message}</p>
+                  <p className="text-sm text-muted-foreground ltr:text-left rtl:text-right">{notification.message}</p>
                 </CardContent>
               </Card>
             ))

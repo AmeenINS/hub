@@ -27,7 +27,7 @@ interface UserSettings {
 }
 
 export default function SettingsPage() {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const router = useRouter();
   const { token, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
@@ -216,7 +216,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground mt-2">{t('settings.description')}</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
+      <Tabs defaultValue="profile" className="space-y-4" dir={dir}>
         <TabsList>
           <TabsTrigger value="profile" className="gap-2">
             <User className="h-4 w-4" />
@@ -266,7 +266,7 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">{t('users.email')}</Label>
                 <Input id="email" value={settings.email} disabled />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
                   {t('settings.emailCannotChange')}
                 </p>
               </div>
@@ -296,7 +296,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ltr:text-left rtl:text-right">
                   <Label>{t('settings.emailNotifications')}</Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.receiveEmailNotifications')}
@@ -313,7 +313,7 @@ export default function SettingsPage() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ltr:text-left rtl:text-right">
                   <Label>{t('settings.pushNotifications')}</Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.receivePushNotifications')}
@@ -330,7 +330,7 @@ export default function SettingsPage() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ltr:text-left rtl:text-right">
                   <Label>{t('settings.taskNotifications')}</Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.notifyTaskAssigned')}
@@ -411,7 +411,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ltr:text-left rtl:text-right">
                   <Label>{t('common.theme')}</Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.selectTheme')}
@@ -423,7 +423,7 @@ export default function SettingsPage() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 ltr:text-left rtl:text-right">
                   <Label>{t('common.language')}</Label>
                   <p className="text-sm text-muted-foreground">
                     {t('settings.selectLanguage')}

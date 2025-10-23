@@ -37,16 +37,7 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { TaskPriority } from '@/types/database';
-
-const formSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  dueDate: z.string().optional(),
-  assignees: z.array(z.string()).optional(),
-});
-
-type FormData = z.infer<typeof formSchema>;
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 interface User {
   id: string;
@@ -59,6 +50,17 @@ export default function NewTaskPage() {
   const router = useRouter();
   const { t } = useI18n();
   const { token } = useAuthStore();
+
+  const formSchema = z.object({
+    title: z.string().min(3, t('validation.titleMinLength')),
+    description: z.string().optional(),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+    dueDate: z.string().optional(),
+    assignees: z.array(z.string()).optional(),
+  });
+
+  type FormData = z.infer<typeof formSchema>;
+
   const [loading, setLoading] = React.useState(false);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(true);
@@ -125,7 +127,7 @@ export default function NewTaskPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create task');
+        throw new Error(result.error || t('messages.createError'));
       }
 
       toast.success(t('messages.createSuccess'));
@@ -154,14 +156,16 @@ export default function NewTaskPage() {
           size="icon"
           onClick={() => router.push('/dashboard/tasks')}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <RTLChevron>
+            <ArrowLeft className="h-4 w-4" />
+          </RTLChevron>
         </Button>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">
+          <h2 className="text-3xl font-bold tracking-tight ltr:text-left rtl:text-right">
             {t('tasks.createTask')}
           </h2>
-          <p className="text-muted-foreground">
-            Create a new task and assign to team members
+          <p className="text-muted-foreground ltr:text-left rtl:text-right">
+            {t('tasks.createDescription')}
           </p>
         </div>
       </div>
@@ -170,7 +174,7 @@ export default function NewTaskPage() {
         <CardHeader>
           <CardTitle>{t('tasks.createTask')}</CardTitle>
           <CardDescription>
-            Fill in the details to create a new task
+            {t('tasks.fillDetails')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -181,9 +185,9 @@ export default function NewTaskPage() {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('tasks.taskTitle')}</FormLabel>
+                    <FormLabel className="ltr:text-left rtl:text-right">{t('tasks.taskTitle')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Task title..." {...field} />
+                      <Input placeholder={t('tasks.titleLabel')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -195,10 +199,10 @@ export default function NewTaskPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('tasks.description')}</FormLabel>
+                    <FormLabel className="ltr:text-left rtl:text-right">{t('tasks.description')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Task description..."
+                        placeholder={t('tasks.descriptionLabel')}
                         rows={4}
                         {...field}
                       />
@@ -214,28 +218,28 @@ export default function NewTaskPage() {
                   name="priority"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('tasks.taskPriority')}</FormLabel>
+                      <FormLabel className="ltr:text-left rtl:text-right">{t('tasks.taskPriority')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select priority" />
+                            <SelectValue placeholder={t('tasks.selectPriority')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value={TaskPriority.LOW}>
-                            🟢 Low
+                            🟢 {t('tasks.priorityLow')}
                           </SelectItem>
                           <SelectItem value={TaskPriority.MEDIUM}>
-                            🟡 Medium
+                            🟡 {t('tasks.priorityMedium')}
                           </SelectItem>
                           <SelectItem value={TaskPriority.HIGH}>
-                            🟠 High
+                            🟠 {t('tasks.priorityHigh')}
                           </SelectItem>
                           <SelectItem value={TaskPriority.URGENT}>
-                            🔴 Urgent
+                            🔴 {t('tasks.priorityUrgent')}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -249,7 +253,7 @@ export default function NewTaskPage() {
                   name="dueDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('tasks.dueDate')}</FormLabel>
+                      <FormLabel className="ltr:text-left rtl:text-right">{t('tasks.dueDate')}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -261,40 +265,40 @@ export default function NewTaskPage() {
 
               <div className="space-y-4">
                 <div>
-                  <FormLabel>Assign to Team Members</FormLabel>
-                  <FormDescription>
-                    Select team members to assign this task (optional)
+                  <FormLabel className="ltr:text-left rtl:text-right">{t('tasks.assignToMembers')}</FormLabel>
+                  <FormDescription className="ltr:text-left rtl:text-right">
+                    {t('tasks.assignDescription')}
                   </FormDescription>
                 </div>
 
                 {loadingUsers ? (
-                  <div className="text-sm text-muted-foreground">
-                    Loading team members...
+                  <div className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
+                    {t('tasks.loadingMembers')}
                   </div>
                 ) : users.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">
-                    No team members available
+                  <div className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
+                    {t('tasks.noMembers')}
                   </div>
                 ) : (
                   <div className="space-y-2 border rounded-lg p-4 max-h-64 overflow-y-auto">
                     {users.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center space-x-2 p-2 hover:bg-accent rounded-md cursor-pointer"
+                        className="flex items-center gap-2 p-2 hover:bg-accent rounded-md cursor-pointer"
                         onClick={() => toggleAssignee(user.id)}
                       >
                         <input
                           type="checkbox"
                           checked={selectedAssignees.includes(user.id)}
                           onChange={() => toggleAssignee(user.id)}
-                          className="h-4 w-4 rounded border-gray-300"
-                          aria-label={`Assign task to ${user.firstName} ${user.lastName}`}
+                          className="h-4 w-4 rounded border-gray-300 ltr:mr-2 rtl:ml-2"
+                          aria-label={`${user.firstName} ${user.lastName}`}
                         />
                         <label className="flex-1 cursor-pointer">
-                          <div className="font-medium">
+                          <div className="font-medium ltr:text-left rtl:text-right">
                             {user.firstName} {user.lastName}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
                             {user.email}
                           </div>
                         </label>
@@ -304,8 +308,8 @@ export default function NewTaskPage() {
                 )}
 
                 {selectedAssignees.length > 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    Selected: {selectedAssignees.length} team member(s)
+                  <div className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
+                    {t('tasks.selected')}: {selectedAssignees.length} {t('tasks.teamMembers')}
                   </div>
                 )}
               </div>
@@ -322,12 +326,12 @@ export default function NewTaskPage() {
                 <Button type="submit" disabled={loading}>
                   {loading ? (
                     <>
-                      <span className="animate-spin mr-2">⏳</span>
+                      <span className="animate-spin ltr:mr-2 rtl:ml-2">⏳</span>
                       {t('common.loading')}
                     </>
                   ) : (
                     <>
-                      <Save className="mr-2 h-4 w-4" />
+                      <Save className="ltr:mr-2 rtl:ml-2 h-4 w-4" />
                       {t('common.create')}
                     </>
                   )}

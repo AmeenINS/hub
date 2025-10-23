@@ -15,8 +15,18 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
+// Get initial locale from HTML lang attribute (set by server)
+function getInitialLocale(): Locale {
+  if (typeof window === 'undefined') return 'en';
+  const htmlLang = document.documentElement.lang as Locale;
+  if (htmlLang === 'en' || htmlLang === 'ar') {
+    return htmlLang;
+  }
+  return 'en';
+}
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en');
+  const [locale, setLocaleState] = useState<Locale>(() => getInitialLocale());
   const [isChanging, setIsChanging] = useState(false);
   const initialized = useRef(false);
   
@@ -24,11 +34,14 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   usePreventPointerEventsDisable();
 
   useEffect(() => {
-    // Initialize locale from cookie after mount to avoid hydration mismatch
+    // Sync with any external changes to locale (from other tabs, etc.)
     if (!initialized.current) {
       initialized.current = true;
-      const savedLocale = Cookies.get('locale') as Locale;
-      if (savedLocale === 'en' || savedLocale === 'ar') {
+      const currentLocale = getInitialLocale();
+      const savedLocale = (Cookies.get('locale') || localStorage.getItem('locale')) as Locale;
+      
+      // If cookie/localStorage differs from server-rendered value, sync them
+      if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar') && savedLocale !== currentLocale) {
         startTransition(() => {
           setLocaleState(savedLocale);
         });
@@ -59,6 +72,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setIsChanging(true);
     setLocaleState(newLocale);
     Cookies.set('locale', newLocale, { expires: 365 });
+    localStorage.setItem('locale', newLocale);
   };
 
   const t = (key: string): string => {

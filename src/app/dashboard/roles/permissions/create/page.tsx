@@ -11,6 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 export default function CreatePermissionPage() {
   const { t } = useI18n();
@@ -49,7 +50,9 @@ export default function CreatePermissionPage() {
       <div className="flex items-center gap-4">
         <Link href="/dashboard/roles/permissions">
           <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <RTLChevron>
+              <ArrowLeft className="h-4 w-4" />
+            </RTLChevron>
             {t('common.back')}
           </Button>
         </Link>

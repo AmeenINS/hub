@@ -9,6 +9,7 @@ import { Task, TaskStatus } from '@/types/database';
 import KanbanBoard from '@/components/tasks/kanban-board';
 import TaskDetailDialog from '@/components/tasks/task-detail-dialog';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/i18n/i18n-context';
 
 const getAuthToken = () => {
   return document.cookie
@@ -20,6 +21,7 @@ const getAuthToken = () => {
 export default function MyTasksPage() {
   const { isAuthenticated } = useAuthStore();
   const router = useRouter();
+  const { t } = useI18n();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -112,17 +114,17 @@ export default function MyTasksPage() {
       if (!response.ok) {
         // Revert on error
         await fetchTasks();
-        toast.error('Failed to update task status');
-        throw new Error('Failed to update task');
+        toast.error(t('tasks.failedUpdate'));
+        throw new Error(t('tasks.failedUpdate'));
       } else {
         // Success feedback
-        const statusLabels = {
-          TODO: 'To Do',
-          IN_PROGRESS: 'In Progress',
-          DONE: 'Done',
-          CANCELLED: 'Cancelled',
+        const statusLabels: Record<TaskStatus, string> = {
+          TODO: t('tasks.status.todo'),
+          IN_PROGRESS: t('tasks.status.inProgress'),
+          DONE: t('tasks.status.done'),
+          CANCELLED: t('tasks.status.cancelled'),
         };
-        toast.success(`Task moved to ${statusLabels[newStatus]}`);
+        toast.success(`${t('tasks.movedTo')} ${statusLabels[newStatus]}`);
       }
     } catch (error) {
       console.error('Failed to update task:', error);
@@ -141,8 +143,8 @@ export default function MyTasksPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <p className="text-lg font-medium text-foreground">Loading your tasks...</p>
-            <p className="text-sm text-muted-foreground">Please wait a moment</p>
+            <p className="text-lg font-medium text-foreground ltr:text-center rtl:text-center">{t('tasks.loadingTasks')}</p>
+            <p className="text-sm text-muted-foreground ltr:text-center rtl:text-center">{t('tasks.pleasewait')}</p>
           </div>
         </div>
       </div>

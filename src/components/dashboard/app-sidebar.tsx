@@ -126,6 +126,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: t('users.createUser'),
           url: '/dashboard/users/new',
         },
+        {
+          title: t('dashboard.orgChart') || 'Org Chart',
+          url: '/dashboard/users/chart',
+        },
       ],
     },
     {

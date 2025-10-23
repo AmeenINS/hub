@@ -10,6 +10,7 @@ export const translations = {
       welcome: 'Welcome',
       loading: 'Loading...',
       save: 'Save',
+      saving: 'Saving...',
       cancel: 'Cancel',
       delete: 'Delete',
       edit: 'Edit',
@@ -43,6 +44,11 @@ export const translations = {
       of: 'of',
       rowsSelected: 'row(s) selected',
       noResults: 'No results.',
+      active: 'Active',
+      inactive: 'Inactive',
+      noData: 'No data found',
+      refresh: 'Refresh',
+      error: 'Error',
     },
     
     // Auth
@@ -110,6 +116,11 @@ export const translations = {
       manageRoles: 'Manage roles and permissions',
       welcomeToSystem: 'Welcome to Management System',
       sidebarNavigation: 'You can access different sections of the system from the sidebar menu.',
+      orgChart: 'Organizational Chart',
+      orgChartDesc: 'View your organization structure by position',
+      orgChartPageDesc: 'View your organization structure and employee hierarchy',
+      positions: 'Positions',
+      departments: 'Departments',
     },
     
     // Tasks
@@ -141,6 +152,7 @@ export const translations = {
         inProgress: 'In Progress',
         done: 'Done',
         cancelled: 'Cancelled',
+        label: 'Status',
       },
       priority: {
         low: 'Low',
@@ -161,6 +173,30 @@ export const translations = {
       selectAssignee: 'Select assignee',
       unassigned: 'Unassigned',
       currentStatus: 'Current Status',
+      // New task page
+      createDescription: 'Create a new task and assign to team members',
+      fillDetails: 'Fill in the details to create a new task',
+      titleLabel: 'Task title...',
+      descriptionLabel: 'Task description...',
+      selectPriority: 'Select priority',
+      assignToMembers: 'Assign to Team Members',
+      assignDescription: 'Select team members to assign this task (optional)',
+      loadingMembers: 'Loading team members...',
+      noMembers: 'No team members available',
+      selected: 'Selected',
+      teamMembers: 'team member(s)',
+      priorityLow: 'Low',
+      priorityMedium: 'Medium',
+      priorityHigh: 'High',
+      priorityUrgent: 'Urgent',
+      // Edit task page
+      titleRequired: 'Title is required',
+      descriptionRequired: 'Description is required',
+      // My tasks page
+      loadingTasks: 'Loading your tasks...',
+      pleasewait: 'Please wait a moment',
+      movedTo: 'Task moved to',
+      failedUpdate: 'Failed to update task status',
     },
     
     // Permissions
@@ -222,6 +258,8 @@ export const translations = {
       phone: 'Phone',
       role: 'Role',
       roles: 'Roles',
+      position: 'Position',
+      department: 'Department',
       status: 'Status',
       active: 'Active',
       inactive: 'Inactive',
@@ -383,6 +421,13 @@ export const translations = {
       errorFetchingData: 'Error fetching data',
     },
 
+    // Validation
+    validation: {
+      titleMinLength: 'Title must be at least 3 characters',
+      titleRequired: 'Title is required',
+      descriptionRequired: 'Description is required',
+    },
+
     // Access Denied
     accessDenied: {
       title: 'Access Denied',
@@ -399,6 +444,7 @@ export const translations = {
       welcome: 'مرحباً',
       loading: 'جاري التحميل...',
       save: 'حفظ',
+      saving: 'جاري الحفظ...',
       cancel: 'إلغاء',
       delete: 'حذف',
       edit: 'تعديل',
@@ -432,6 +478,11 @@ export const translations = {
       of: 'من',
       rowsSelected: 'صف محدد',
       noResults: 'لا توجد نتائج.',
+      active: 'نشط',
+      inactive: 'غير نشط',
+      noData: 'لا توجد بيانات',
+      refresh: 'تحديث',
+      error: 'خطأ',
     },
     
     // Auth
@@ -499,6 +550,11 @@ export const translations = {
       manageRoles: 'إدارة الأدوار والصلاحيات',
       welcomeToSystem: 'مرحباً بك في نظام الإدارة',
       sidebarNavigation: 'يمكنك الوصول إلى أقسام النظام المختلفة من القائمة الجانبية.',
+      orgChart: 'الرسم البياني التنظيمي',
+      orgChartDesc: 'عرض هيكل المنظمة حسب المنصب',
+      orgChartPageDesc: 'عرض هيكل المنظمة والهرمية الوظيفية',
+      positions: 'المناصب',
+      departments: 'الأقسام',
     },
     
     // Tasks
@@ -528,6 +584,7 @@ export const translations = {
         inProgress: 'قيد التنفيذ',
         done: 'مكتمل',
         cancelled: 'ملغى',
+        label: 'الحالة',
       },
       priority: {
         low: 'منخفض',
@@ -548,6 +605,32 @@ export const translations = {
       selectAssignee: 'اختر المكلف',
       unassigned: 'غير مكلف',
       currentStatus: 'الحالة الحالية',
+      // New task page
+      taskTitle: 'العنوان',
+      description: 'الوصف',
+      createDescription: 'إنشاء مهمة جديدة وتعيينها لأعضاء الفريق',
+      fillDetails: 'املأ التفاصيل لإنشاء مهمة جديدة',
+      titleLabel: 'عنوان المهمة...',
+      descriptionLabel: 'وصف المهمة...',
+      selectPriority: 'اختر الأولوية',
+      assignToMembers: 'التعيين لأعضاء الفريق',
+      assignDescription: 'حدد أعضاء الفريق لتعيين هذه المهمة (اختياري)',
+      loadingMembers: 'جاري تحميل أعضاء الفريق...',
+      noMembers: 'لا يوجد أعضاء فريق متاحون',
+      selected: 'محدد',
+      teamMembers: 'عضو فريق',
+      priorityLow: 'منخفض',
+      priorityMedium: 'متوسط',
+      priorityHigh: 'عالي',
+      priorityUrgent: 'عاجل',
+      // Edit task page
+      titleRequired: 'العنوان مطلوب',
+      descriptionRequired: 'الوصف مطلوب',
+      // My tasks page
+      loadingTasks: 'جاري تحميل مهامك...',
+      pleasewait: 'يرجى الانتظار لحظة',
+      movedTo: 'تم نقل المهمة إلى',
+      failedUpdate: 'فشل تحديث حالة المهمة',
     },
     
     // Permissions
@@ -609,6 +692,8 @@ export const translations = {
       phone: 'الهاتف',
       role: 'الدور',
       roles: 'الأدوار',
+      position: 'المنصب',
+      department: 'القسم',
       status: 'الحالة',
       active: 'نشط',
       inactive: 'غير نشط',
@@ -768,6 +853,13 @@ export const translations = {
       createError: 'فشل الإنشاء',
       noPermission: 'ليس لديك إذن لتنفيذ هذا الإجراء',
       errorFetchingData: 'خطأ في جلب البيانات',
+    },
+
+    // Validation
+    validation: {
+      titleMinLength: 'يجب أن يكون العنوان 3 أحرف على الأقل',
+      titleRequired: 'العنوان مطلوب',
+      descriptionRequired: 'الوصف مطلوب',
     },
 
     // Access Denied

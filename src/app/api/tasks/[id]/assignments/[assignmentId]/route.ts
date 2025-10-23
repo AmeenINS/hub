@@ -12,9 +12,10 @@ const activityService = new TaskActivityService();
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; assignmentId: string } }
+  { params }: { params: Promise<{ id: string; assignmentId: string }> }
 ) {
   try {
+    const { id, assignmentId } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!token) {
@@ -27,8 +28,7 @@ export async function DELETE(
     }
 
     const userId = payload.userId;
-    const taskId = params.id;
-    const assignmentId = params.assignmentId;
+    const taskId = id;
 
     // Get assignment details before deleting
     const assignment = await assignmentService.getAssignmentById(assignmentId);

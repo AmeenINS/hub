@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ShieldX, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
+import { RTLChevron } from '@/components/ui/rtl-icon';
 
 export default function AccessDeniedPage() {
   const { t } = useI18n();
@@ -70,7 +71,9 @@ export default function AccessDeniedPage() {
                 variant="outline"
                 className="flex-1"
               >
-                <ArrowLeft className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                <RTLChevron>
+                  <ArrowLeft className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
+                </RTLChevron>
                 {t('accessDenied.goBack')}
               </Button>
               <Button
