@@ -167,9 +167,9 @@ export default function EditUserPage() {
           lastName: userData.lastName || '',
           phoneNumber: userData.phoneNumber || '',
           roleId: currentRoleId,
-          position: userData.position || '',
+          position: userData.position || 'none',
           department: userData.department || '',
-          managerId: userData.managerId || undefined,
+          managerId: userData.managerId || 'none',
           isActive: userData.isActive !== false,
         });
       } catch (error) {
@@ -202,9 +202,9 @@ export default function EditUserPage() {
           firstName: data.firstName,
           lastName: data.lastName,
           phoneNumber: data.phoneNumber,
-          position: data.position,
+          position: data.position && data.position !== 'none' ? data.position : undefined,
           department: data.department,
-          managerId: data.managerId || null,
+          managerId: data.managerId && data.managerId !== 'none' ? data.managerId : undefined,
           isActive: data.isActive,
         }),
       });
@@ -410,7 +410,7 @@ export default function EditUserPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">{t('users.noManager')}</SelectItem>
+                          <SelectItem value="none">{t('users.noManager')}</SelectItem>
                           {users.map((user) => (
                             <SelectItem key={user.id} value={user.id}>
                               {user.firstName} {user.lastName}
