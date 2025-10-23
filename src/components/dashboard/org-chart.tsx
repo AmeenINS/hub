@@ -280,7 +280,7 @@ const OrgChart: React.FC<OrgChartProps> = ({ users }) => {
       </CardHeader>
       <CardContent className="overflow-x-auto p-6">
         {viewMode === 'chart' ? (
-          <div className={`flex flex-col ${locale === 'ar' ? 'items-end' : 'items-center'}`}>
+          <div className={`flex flex-col ${locale === 'ar' ? 'items-end' : 'items-start'}`}>
             {tree.map((rootNode, index) => (
               <OrgNode 
                 key={rootNode.user.id} 

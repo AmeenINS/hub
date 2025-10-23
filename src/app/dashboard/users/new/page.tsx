@@ -43,7 +43,10 @@ const formSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  phoneNumber: z.string().optional(),
   roleId: z.string().min(1, 'Please select a role'),
+  position: z.string().optional(),
+  department: z.string().optional(),
   managerId: z.string().optional(),
   isActive: z.boolean(),
 });
@@ -54,6 +57,11 @@ interface Role {
   id: string;
   name: string;
   description: string;
+}
+
+interface Position {
+  id: string;
+  name: string;
 }
 
 interface User {
@@ -70,6 +78,8 @@ export default function NewUserPage() {
   const [loading, setLoading] = React.useState(false);
   const [roles, setRoles] = React.useState<Role[]>([]);
   const [loadingRoles, setLoadingRoles] = React.useState(true);
+  const [positions, setPositions] = React.useState<Position[]>([]);
+  const [loadingPositions, setLoadingPositions] = React.useState(true);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(true);
 
@@ -80,13 +90,16 @@ export default function NewUserPage() {
       password: '',
       firstName: '',
       lastName: '',
+      phoneNumber: '',
       roleId: '',
+      position: '',
+      department: '',
       managerId: undefined,
       isActive: true,
     },
   });
 
-  // Fetch roles and users on mount
+  // Fetch roles, positions and users on mount
   React.useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -104,6 +117,20 @@ export default function NewUserPage() {
         console.error('Error fetching roles:', error);
       } finally {
         setLoadingRoles(false);
+      }
+    };
+
+    const fetchPositions = async () => {
+      try {
+        const response = await fetch('/api/positions');
+        if (response.ok) {
+          const data = await response.json();
+          setPositions(data);
+        }
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+      } finally {
+        setLoadingPositions(false);
       }
     };
 
@@ -128,6 +155,7 @@ export default function NewUserPage() {
 
     if (token) {
       fetchRoles();
+      fetchPositions();
       fetchUsers();
     }
   }, [token]);
@@ -254,6 +282,69 @@ export default function NewUserPage() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('users.phoneNumber')}</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="+1234567890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="position"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('users.position')}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={loadingPositions}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={loadingPositions ? 'Loading...' : t('users.selectPosition')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">{t('users.noPosition')}</SelectItem>
+                          {positions.map((position) => (
+                            <SelectItem key={position.id} value={position.name}>
+                              {position.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        {t('users.positionDescription')}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="department"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('users.department')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t('users.departmentPlaceholder')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

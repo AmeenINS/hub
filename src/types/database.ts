@@ -13,6 +13,9 @@ export interface User {
   lastName: string;
   phoneNumber?: string;
   avatar?: string;
+  // Position for organizational chart
+  position?: string;
+  department?: string;
   // Optional manager relationship for hierarchical users
   managerId?: string;
   isActive: boolean;
@@ -55,6 +58,18 @@ export interface RolePermission {
   roleId: string;
   permissionId: string;
   createdAt: string;
+}
+
+// ==================== Position Management ====================
+
+export interface Position {
+  id: string;
+  name: string;
+  description?: string;
+  level: number; // Hierarchy level (1 = CEO, 2 = Manager, etc.)
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ==================== Task Management ====================

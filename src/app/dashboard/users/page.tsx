@@ -81,7 +81,7 @@ export default function UsersPage() {
   }, [mounted, authLoading, fetchUsers]);
 
   const handleEdit = (user: User) => {
-    router.push(`/dashboard/users/${user.id}`);
+    router.push(`/dashboard/users/${user.id}/edit`);
   };
 
   const handleDelete = (user: User) => {
