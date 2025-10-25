@@ -103,22 +103,74 @@ export default function LoginPage() {
               <ThemeToggle />
             </motion.div>
             <motion.div 
-              className="flex items-center justify-center mb-4"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
+              className="flex items-center justify-center mb-6"
+              initial={{ scale: 0, opacity: 0, y: -30 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
               transition={{
                 type: "spring",
                 stiffness: 200,
-                damping: 15,
+                damping: 20,
                 delay: 0.2
               }}
             >
-              <motion.div 
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
+              <motion.div
+                className="relative"
+                whileHover={{ 
+                  scale: 1.05,
+                  y: -5
+                }}
                 whileTap={{ scale: 0.95 }}
+                animate={{
+                  y: [0, -3, 0]
+                }}
+                transition={{
+                  y: {
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
               >
-                AH
+                {/* Subtle glow effect behind logo */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20 blur-xl rounded-2xl"
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.5, 0.8, 0.5]
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+                
+                <motion.img
+                  src="/ameen.avif"
+                  alt="Ameen Logo"
+                  className="relative w-24 h-24 object-contain drop-shadow-2xl"
+                  initial={{ opacity: 0, scale: 0.5, rotateY: -180 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    rotateY: 0
+                  }}
+                  transition={{ 
+                    delay: 0.5, 
+                    duration: 1.5,
+                    type: "spring",
+                    stiffness: 120,
+                    damping: 15
+                  }}
+                  whileHover={{ 
+                    scale: 1.1,
+                    filter: "brightness(1.1) contrast(1.1) drop-shadow(0 10px 20px rgba(59, 130, 246, 0.3))",
+                    rotateY: 5
+                  }}
+                  style={{
+                    filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15))"
+                  }}
+                />
               </motion.div>
             </motion.div>
             <motion.div
@@ -217,7 +269,7 @@ export default function LoginPage() {
               >
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-lg shadow-blue-500/30 transition-all" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 transition-all" 
                   disabled={isLoading}
                 >
                   {isLoading ? (
