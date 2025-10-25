@@ -282,3 +282,230 @@ export interface ApiResponse<T = unknown> {
   error?: string;
   message?: string;
 }
+
+// ==================== CRM System ====================
+
+export enum LeadStatus {
+  NEW = 'NEW',
+  QUALIFIED = 'QUALIFIED',
+  PROPOSAL = 'PROPOSAL',
+  NEGOTIATION = 'NEGOTIATION',
+  CLOSED_WON = 'CLOSED_WON',
+  CLOSED_LOST = 'CLOSED_LOST',
+}
+
+export enum LeadSource {
+  WEBSITE = 'WEBSITE',
+  PHONE = 'PHONE',
+  EMAIL = 'EMAIL',
+  REFERRAL = 'REFERRAL',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  ADVERTISEMENT = 'ADVERTISEMENT',
+  EVENT = 'EVENT',
+  OTHER = 'OTHER',
+}
+
+export enum ContactType {
+  LEAD = 'LEAD',
+  CUSTOMER = 'CUSTOMER',
+  PARTNER = 'PARTNER',
+  SUPPLIER = 'SUPPLIER',
+}
+
+export enum DealStage {
+  PROSPECTING = 'PROSPECTING',
+  QUALIFICATION = 'QUALIFICATION',
+  PROPOSAL = 'PROPOSAL',
+  NEGOTIATION = 'NEGOTIATION',
+  CLOSED_WON = 'CLOSED_WON',
+  CLOSED_LOST = 'CLOSED_LOST',
+}
+
+export enum ActivityType {
+  CALL = 'CALL',
+  EMAIL = 'EMAIL',
+  MEETING = 'MEETING',
+  TASK = 'TASK',
+  NOTE = 'NOTE',
+}
+
+export enum ActivityStatus {
+  PLANNED = 'PLANNED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export interface Contact {
+  id: string;
+  type: ContactType;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  jobTitle?: string;
+  department?: string;
+  companyId?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  website?: string;
+  socialMedia?: Record<string, string>;
+  notes?: string;
+  tags?: string[];
+  assignedTo?: string; // User ID
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Company {
+  id: string;
+  name: string;
+  industry?: string;
+  size?: string; // e.g., '1-10', '11-50', '51-200', etc.
+  revenue?: number;
+  website?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  description?: string;
+  tags?: string[];
+  assignedTo?: string; // User ID
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Lead {
+  id: string;
+  contactId: string;
+  companyId?: string;
+  title: string;
+  description?: string;
+  status: LeadStatus;
+  source: LeadSource;
+  value?: number;
+  probability?: number; // 0-100
+  expectedCloseDate?: string;
+  actualCloseDate?: string;
+  assignedTo?: string; // User ID
+  tags?: string[];
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Deal {
+  id: string;
+  leadId?: string;
+  contactId: string;
+  companyId?: string;
+  name: string;
+  description?: string;
+  stage: DealStage;
+  value: number;
+  probability: number; // 0-100
+  expectedCloseDate?: string;
+  actualCloseDate?: string;
+  assignedTo?: string; // User ID
+  tags?: string[];
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Activity {
+  id: string;
+  type: ActivityType;
+  status: ActivityStatus;
+  subject: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  duration?: number; // in minutes
+  location?: string;
+  attendees?: string[]; // User IDs
+  contactId?: string;
+  companyId?: string;
+  leadId?: string;
+  dealId?: string;
+  assignedTo?: string; // User ID
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Pipeline {
+  id: string;
+  name: string;
+  description?: string;
+  stages: PipelineStage[];
+  isDefault: boolean;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PipelineStage {
+  id: string;
+  pipelineId: string;
+  name: string;
+  description?: string;
+  probability: number; // 0-100
+  order: number;
+  color?: string;
+  isActive: boolean;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  description?: string;
+  type: string; // Email, Social, Ad, etc.
+  status: string; // Draft, Active, Paused, Completed
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  targetAudience?: string;
+  goals?: string;
+  metrics?: Record<string, number>;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  content: string;
+  variables?: string[]; // Available variables like {{firstName}}
+  category?: string;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Report {
+  id: string;
+  name: string;
+  type: string; // Sales, Activity, Performance, etc.
+  description?: string;
+  config: Record<string, unknown>;
+  isPublic: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}

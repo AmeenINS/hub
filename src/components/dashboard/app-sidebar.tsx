@@ -14,6 +14,14 @@ import {
   BarChart3,
   Bell,
   LogOut,
+  UserCheck,
+  Building2,
+  Target,
+  Handshake,
+  Calendar,
+  TrendingUp,
+  Mail,
+  FileText,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -70,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
 
       try {
-        const modules = ['users', 'tasks', 'roles', 'reports', 'notifications', 'support'];
+        const modules = ['users', 'tasks', 'roles', 'reports', 'notifications', 'support', 'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns'];
         const response = await fetch(`/api/users/me/permissions?modules=${modules.join(',')}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -99,6 +107,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Check if user has access to a module
   const hasModuleAccess = (moduleName: string) => {
     if (loading) return true; // Show all while loading
+    
+    // For CRM, check if user has access to any CRM module
+    if (moduleName.startsWith('crm_')) {
+      return ['crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns']
+        .some(module => permissions[module] && permissions[module].length > 0);
+    }
+    
     return permissions[moduleName] && permissions[moduleName].length > 0;
   };
 
@@ -167,6 +182,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: t('roles.permissions'),
           url: '/dashboard/roles/permissions',
+        },
+      ],
+    },
+    {
+      title: 'CRM',
+      url: '/dashboard/crm',
+      icon: TrendingUp,
+      isActive: pathname?.startsWith('/dashboard/crm'),
+      module: 'crm_contacts', // Check for any CRM permission
+      items: [
+        {
+          title: 'Contacts',
+          url: '/dashboard/crm/contacts',
+        },
+        {
+          title: 'Companies',
+          url: '/dashboard/crm/companies',
+        },
+        {
+          title: 'Leads',
+          url: '/dashboard/crm/leads',
+        },
+        {
+          title: 'Deals',
+          url: '/dashboard/crm/deals',
+        },
+        {
+          title: 'Activities',
+          url: '/dashboard/crm/activities',
+        },
+        {
+          title: 'Campaigns',
+          url: '/dashboard/crm/campaigns',
+        },
+        {
+          title: 'Reports',
+          url: '/dashboard/crm/reports',
         },
       ],
     },
