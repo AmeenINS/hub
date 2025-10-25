@@ -151,16 +151,17 @@ export default function PermissionsPage() {
               ))}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('permissions.name')}</TableHead>
-                  <TableHead>{t('permissions.description')}</TableHead>
-                  <TableHead>{t('permissions.category')}</TableHead>
-                  <TableHead>{t('common.createdAt')}</TableHead>
-                  <TableHead className="w-[100px]">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">{t('permissions.name')}</TableHead>
+                    <TableHead className="whitespace-nowrap">{t('permissions.description')}</TableHead>
+                    <TableHead className="whitespace-nowrap">{t('permissions.category')}</TableHead>
+                    <TableHead className="whitespace-nowrap">{t('common.createdAt')}</TableHead>
+                    <TableHead className="w-[100px] whitespace-nowrap">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
               <TableBody>
                 {permissions.length === 0 ? (
                   <TableRow>
@@ -211,6 +212,7 @@ export default function PermissionsPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

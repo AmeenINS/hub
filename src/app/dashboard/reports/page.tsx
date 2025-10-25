@@ -187,8 +187,8 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4 items-end">
-            <div className="flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-end">
+            <div className="flex-1 w-full sm:min-w-[200px]">
               <label className="text-sm font-medium mb-2 block">{t('reports.from')}</label>
               <Popover>
                 <PopoverTrigger asChild>
@@ -214,7 +214,7 @@ export default function ReportsPage() {
               </Popover>
             </div>
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 w-full sm:min-w-[200px]">
               <label className="text-sm font-medium mb-2 block">{t('reports.to')}</label>
               <Popover>
                 <PopoverTrigger asChild>

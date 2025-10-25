@@ -185,7 +185,7 @@ export default function LoginPage() {
               />
             </motion.div>
             <motion.div 
-              className="flex items-center space-x-2 rtl:space-x-reverse pt-2 pb-1"
+              className="flex items-center space-x-2 rtl:space-x-reverse pt-2 pb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
@@ -204,7 +204,7 @@ export default function LoginPage() {
               </label>
             </motion.div>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 pt-6">
             <motion.div
               className="w-full"
               initial={{ opacity: 0, y: 20 }}

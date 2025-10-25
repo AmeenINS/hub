@@ -122,17 +122,18 @@ export default function RolesPage() {
               <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('roles.roleName')}</TableHead>
-                    <TableHead>{t('roles.roleDescription')}</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>{t('users.createdAt')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
+            <div className="rounded-md border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">{t('roles.roleName')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('roles.roleDescription')}</TableHead>
+                      <TableHead className="whitespace-nowrap">Type</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('users.createdAt')}</TableHead>
+                      <TableHead className="text-right whitespace-nowrap">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {roles.length === 0 ? (
                     <TableRow>
@@ -174,6 +175,7 @@ export default function RolesPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </div>
           )}
         </CardContent>
