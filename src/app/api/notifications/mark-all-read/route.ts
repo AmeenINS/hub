@@ -3,7 +3,7 @@ import { NotificationService } from '@/lib/db/notification-service';
 import { JWTService } from '@/lib/auth/jwt';
 import { SSEBroadcast } from '@/lib/sse-broadcast';
 
-export async function PUT(request: NextRequest) {
+async function handleMarkAllAsRead(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -26,4 +26,12 @@ export async function PUT(request: NextRequest) {
     console.error('Error marking all notifications as read:', error);
     return NextResponse.json({ error: 'Failed to update notifications' }, { status: 500 });
   }
+}
+
+export async function PUT(request: NextRequest) {
+  return handleMarkAllAsRead(request);
+}
+
+export async function PATCH(request: NextRequest) {
+  return handleMarkAllAsRead(request);
 }

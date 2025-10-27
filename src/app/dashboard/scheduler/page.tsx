@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2, Timer, Users, ClipboardList, Phone, RotateCcw, FileText } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -246,19 +246,19 @@ export default function SchedulerPage() {
   const getTypeIcon = (type: SchedulerType) => {
     switch (type) {
       case SchedulerType.REMINDER:
-        return '⏰';
+        return <Timer className="h-4 w-4" />;
       case SchedulerType.MEETING:
-        return '👥';
+        return <Users className="h-4 w-4" />;
       case SchedulerType.TASK_DEADLINE:
-        return '📋';
+        return <ClipboardList className="h-4 w-4" />;
       case SchedulerType.FOLLOW_UP:
-        return '📞';
+        return <Phone className="h-4 w-4" />;
       case SchedulerType.RECURRING:
-        return '🔄';
+        return <RotateCcw className="h-4 w-4" />;
       case SchedulerType.CUSTOM:
-        return '📝';
+        return <FileText className="h-4 w-4" />;
       default:
-        return '📅';
+        return <Calendar className="h-4 w-4" />;
     }
   };
 
@@ -286,6 +286,7 @@ export default function SchedulerPage() {
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
+            className="h-9"
           >
             List
           </Button>
@@ -293,12 +294,17 @@ export default function SchedulerPage() {
             variant={viewMode === 'calendar' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('calendar')}
+            className="h-9"
           >
             <Calendar className="h-4 w-4 mr-2" />
             Calendar
           </Button>
           
-          <Button onClick={() => router.push('/dashboard/scheduler/new')}>
+          <Button 
+            onClick={() => router.push('/dashboard/scheduler/new')}
+            size="sm"
+            className="h-9"
+          >
             <Plus className="h-4 w-4 mr-2" />
             New Event
           </Button>
@@ -432,7 +438,9 @@ export default function SchedulerPage() {
               {upcomingEvents.map((event) => (
                 <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">{getTypeIcon(event.type)}</span>
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
+                      {getTypeIcon(event.type)}
+                    </div>
                     <div>
                       <p className="font-medium">{event.title}</p>
                       <p className="text-sm text-muted-foreground">

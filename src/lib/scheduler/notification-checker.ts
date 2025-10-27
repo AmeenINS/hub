@@ -106,7 +106,7 @@ class NotificationChecker {
         scheduledEventId: event.id,
         userId: event.assignedTo || event.createdBy,
         method,
-        title: `📅 ${event.title}`,
+        title: `Scheduler Event: ${event.title}`,
         message: this.generateNotificationMessage(event),
         scheduledFor: now,
         isSent: false,

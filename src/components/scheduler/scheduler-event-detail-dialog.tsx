@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Clock, Bell, Users, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Bell, Users, Edit2, Trash2, Timer, ClipboardList, Phone, RotateCcw, FileText, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -151,19 +151,19 @@ export function SchedulerEventDetailDialog({
   const getTypeIcon = (type: SchedulerType) => {
     switch (type) {
       case SchedulerType.REMINDER:
-        return '⏰';
+        return <Timer className="h-4 w-4" />;
       case SchedulerType.MEETING:
-        return '👥';
+        return <Users className="h-4 w-4" />;
       case SchedulerType.TASK_DEADLINE:
-        return '🎯';
+        return <Target className="h-4 w-4" />;
       case SchedulerType.FOLLOW_UP:
-        return '�';
+        return <Phone className="h-4 w-4" />;
       case SchedulerType.CUSTOM:
-        return '📅';
+        return <Calendar className="h-4 w-4" />;
       case SchedulerType.RECURRING:
-        return '🔄';
+        return <RotateCcw className="h-4 w-4" />;
       default:
-        return '📝';
+        return <FileText className="h-4 w-4" />;
     }
   };
 
@@ -197,7 +197,9 @@ export function SchedulerEventDetailDialog({
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{getTypeIcon(event.type)}</span>
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
+                  {getTypeIcon(event.type)}
+                </div>
                 <div>
                   <DialogTitle className="text-xl">{event.title}</DialogTitle>
                   <DialogDescription>

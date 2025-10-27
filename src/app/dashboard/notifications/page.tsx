@@ -295,7 +295,7 @@ export default function NotificationsPage() {
             filteredNotifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`cursor-pointer transition-colors hover:bg-accent ${
+                className={`cursor-pointer transition-colors hover:bg-accent gap-0 ${
                   !notification.isRead ? 'bg-muted/50' : ''
                 }`}
               >

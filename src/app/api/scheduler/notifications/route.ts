@@ -110,7 +110,7 @@ async function createScheduledNotification(
       scheduledEventId: event.id,
       userId: event.assignedTo || event.createdBy,
       method,
-      title: `📅 ${event.title}`,
+      title: `Scheduler Event: ${event.title}`,
       message: generateNotificationMessage(event),
       scheduledFor: now,
       isSent: false,

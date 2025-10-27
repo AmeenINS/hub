@@ -12,6 +12,9 @@ import { JWTService } from '@/lib/auth/jwt';
 import { UserService } from '@/lib/db/user-service';
 import { v4 as uuidv4 } from 'uuid';
 
+// Initialize Scheduler Service globally
+import '@/scheduler-init';
+
 // Helper function to verify token and get user
 async function verifyToken(token: string): Promise<User | null> {
   const payload = JWTService.verifyToken(token);
