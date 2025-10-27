@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Clock, Bell, Users, Edit2, Trash2, Timer, ClipboardList, Phone, RotateCcw, FileText, Target } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Calendar, Clock, Bell, Users, Timer, ClipboardList, Phone, RotateCcw, FileText, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -11,19 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { useAuthStore } from '@/store/auth-store';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { 
   ScheduledEvent, 
   SchedulerType, 
@@ -36,21 +23,14 @@ interface SchedulerEventDetailDialogProps {
   event: ScheduledEvent | null;
   open: boolean;
   onClose: () => void;
-  onEventUpdated: (event: ScheduledEvent) => void;
-  onEventDeleted: (eventId: string) => void;
 }
 
 export function SchedulerEventDetailDialog({
   event,
   open,
   onClose,
-  onEventUpdated,
-  onEventDeleted,
 }: SchedulerEventDetailDialogProps) {
-  const { user, token } = useAuthStore();
-  const router = useRouter();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { token } = useAuthStore();
   const [assignedUser, setAssignedUser] = useState<User | null>(null);
 
   // Fetch assigned user info if event is assigned to someone
@@ -84,54 +64,6 @@ export function SchedulerEventDetailDialog({
   }, [event, token, open]);
 
   if (!event) return null;
-
-  const canEdit = user && (
-    event.createdBy === user.id || 
-    (event.assignedTo === user.id && event.canBeEditedByAssigned)
-  );
-
-  const canDelete = user && event.createdBy === user.id;
-
-  const handleEdit = () => {
-    if (!canEdit) {
-      toast.error('You do not have permission to edit this event');
-      return;
-    }
-    router.push(`/dashboard/scheduler/${event.id}/edit`);
-    onClose();
-  };
-
-  const handleDelete = async () => {
-    if (!canDelete) {
-      toast.error('You can only delete events you created');
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/scheduler/${event.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        toast.success('Event deleted successfully');
-        onEventDeleted(event.id);
-        setShowDeleteDialog(false);
-        onClose();
-      } else {
-        const result = await response.json();
-        toast.error(result.error || 'Failed to delete event');
-      }
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      toast.error('Failed to delete event');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   const getStatusColor = (status: SchedulerStatus) => {
     switch (status) {
@@ -195,39 +127,15 @@ export function SchedulerEventDetailDialog({
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
-                  {getTypeIcon(event.type)}
-                </div>
-                <div>
-                  <DialogTitle className="text-xl">{event.title}</DialogTitle>
-                  <DialogDescription>
-                    Event Details and Information
-                  </DialogDescription>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary">
+                {getTypeIcon(event.type)}
               </div>
-              <div className="flex items-center gap-2">
-                {canEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEdit}
-                  >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                )}
-                {canDelete && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                )}
+              <div>
+                <DialogTitle className="text-xl">{event.title}</DialogTitle>
+                <DialogDescription>
+                  Event Details and Information
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -351,28 +259,6 @@ export function SchedulerEventDetailDialog({
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Event</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

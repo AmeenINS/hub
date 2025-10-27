@@ -58,14 +58,14 @@ class SchedulerService {
       this.notificationTask = cron.schedule('* * * * *', async () => {
         await this.processNotifications();
       }, {
-        timezone: 'Asia/Baghdad' // تنظیم timezone مناسب
+        timezone: 'Asia/Muscat' // تنظیم timezone مناسب
       });
 
       // Cron job for event cleanup - runs every hour
       this.eventCleanupTask = cron.schedule('0 * * * *', async () => {
         await this.cleanupCompletedEvents();
       }, {
-        timezone: 'Asia/Baghdad'
+        timezone: 'Asia/Muscat'
       });
 
       this.isRunning = true;

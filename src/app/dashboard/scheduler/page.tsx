@@ -196,14 +196,6 @@ export default function SchedulerPage() {
     setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
   };
 
-  const handleEventDeleted = (eventId: string) => {
-    setEvents(prev => prev.filter(e => e.id !== eventId));
-    // Clear URL parameter
-    const url = new URL(window.location.href);
-    url.searchParams.delete('event');
-    window.history.pushState({}, '', url.toString());
-  };
-
   const handleCloseEventDetail = () => {
     setShowEventDetail(false);
     setSelectedEvent(null);
@@ -542,8 +534,6 @@ export default function SchedulerPage() {
         event={selectedEvent}
         open={showEventDetail}
         onClose={handleCloseEventDetail}
-        onEventUpdated={handleEventUpdated}
-        onEventDeleted={handleEventDeleted}
       />
     </div>
   );
