@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NotificationService } from '@/lib/db/notification-service';
 import { JWTService } from '@/lib/auth/jwt';
+import { SSEBroadcast } from '@/lib/sse-broadcast';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -16,6 +17,9 @@ export async function PUT(request: NextRequest) {
 
     const notificationService = new NotificationService();
     await notificationService.markAllAsRead(payload.userId);
+
+    // Broadcast update to SSE connections
+    await SSEBroadcast.broadcastToUser(payload.userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

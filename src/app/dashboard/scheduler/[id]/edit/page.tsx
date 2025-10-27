@@ -511,7 +511,7 @@ export default function EditSchedulerPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={user?.id || ''}>
-                    {user?.name || user?.username} (You)
+                    {user?.firstName} {user?.lastName} (You)
                   </SelectItem>
                   {subordinates.map((sub) => (
                     <SelectItem key={sub.id} value={sub.id}>

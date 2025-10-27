@@ -11,6 +11,7 @@ import {
 } from '@/types/database';
 import { JWTService } from '@/lib/auth/jwt';
 import { UserService } from '@/lib/db/user-service';
+import { SSEBroadcast } from '@/lib/sse-broadcast';
 import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to verify token and get user
@@ -152,6 +153,9 @@ async function sendNotification(
 
       // Save in-app notification using LMDB
       await lmdb.create<Notification>('notifications', inAppNotificationId, inAppNotification);
+
+      // Broadcast to SSE connections for real-time updates
+      await SSEBroadcast.broadcastToUser(notification.userId);
     }
 
     // Handle other notification methods (placeholder for future implementation)

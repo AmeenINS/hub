@@ -14,14 +14,7 @@ import {
   BarChart3,
   Bell,
   LogOut,
-  UserCheck,
-  Building2,
-  Target,
-  Handshake,
-  Calendar,
   TrendingUp,
-  Mail,
-  FileText,
   Clock,
 } from 'lucide-react';
 
@@ -62,6 +55,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
+import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t, dir } = useI18n();
@@ -70,27 +64,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
   const [loading, setLoading] = React.useState(true);
-  const [unreadCount, setUnreadCount] = React.useState(0);
+  
+  // Use real-time notifications hook
+  const { unreadCount } = useRealTimeNotifications();
 
-  // Fetch unread notifications count
-  const fetchUnreadNotifications = React.useCallback(async () => {
-    if (!token) return;
 
-    try {
-      const response = await fetch('/api/notifications/unread-count', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUnreadCount(data.count);
-      }
-    } catch (error) {
-      console.error('Failed to fetch unread count:', error);
-    }
-  }, [token]);
 
   // Fetch user permissions
   React.useEffect(() => {
@@ -120,19 +98,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     };
 
     fetchPermissions();
-    fetchUnreadNotifications();
-  }, [token, fetchUnreadNotifications]);
+  }, [token]);
 
-  // Poll for notification updates every 30 seconds
-  React.useEffect(() => {
-    if (!token) return;
 
-    const interval = setInterval(() => {
-      fetchUnreadNotifications();
-    }, 30000); // 30 seconds
-
-    return () => clearInterval(interval);
-  }, [token, fetchUnreadNotifications]);
 
   const handleLogout = () => {
     logout();

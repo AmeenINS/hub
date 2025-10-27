@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { Button } from '@/components/ui/button';
@@ -15,22 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { toast } from 'sonner';
 
 import { ScheduledEvent, SchedulerType, SchedulerStatus } from '@/types/database';
 // import CreateSchedulerDialog from '@/components/scheduler/create-scheduler-dialog';
 // import SchedulerEventCard from '@/components/scheduler/scheduler-event-card';  
 import SchedulerCalendarView from '@/components/scheduler/scheduler-calendar-view';
+import { SchedulerEventDetailDialog } from '@/components/scheduler/scheduler-event-detail-dialog';
 
 export default function SchedulerPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { token, user } = useAuthStore();
   const [events, setEvents] = useState<ScheduledEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +36,19 @@ export default function SchedulerPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<ScheduledEvent | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [showEventDetail, setShowEventDetail] = useState(false);
+
+  // Handle URL event parameter to show specific event
+  useEffect(() => {
+    const eventId = searchParams.get('event');
+    if (eventId && events.length > 0) {
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        setSelectedEvent(event);
+        setShowEventDetail(true);
+      }
+    }
+  }, [searchParams, events]);
 
   useEffect(() => {
     // Define functions inline to avoid dependency issues
@@ -173,7 +182,36 @@ export default function SchedulerPage() {
     router.push(`/dashboard/scheduler/${event.id}/edit`);
   };
 
-  // Event handlers will be implemented when components are available
+  // Event handlers
+  const handleEventClick = (event: ScheduledEvent) => {
+    setSelectedEvent(event);
+    setShowEventDetail(true);
+    // Update URL without navigation
+    const url = new URL(window.location.href);
+    url.searchParams.set('event', event.id);
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const handleEventUpdated = (updatedEvent: ScheduledEvent) => {
+    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+  };
+
+  const handleEventDeleted = (eventId: string) => {
+    setEvents(prev => prev.filter(e => e.id !== eventId));
+    // Clear URL parameter
+    const url = new URL(window.location.href);
+    url.searchParams.delete('event');
+    window.history.pushState({}, '', url.toString());
+  };
+
+  const handleCloseEventDetail = () => {
+    setShowEventDetail(false);
+    setSelectedEvent(null);
+    // Clear URL parameter
+    const url = new URL(window.location.href);
+    url.searchParams.delete('event');
+    window.history.pushState({}, '', url.toString());
+  };
 
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -431,7 +469,7 @@ export default function SchedulerPage() {
             </Card>
           ) : (
             filteredEvents.map((event) => (
-              <Card key={event.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedEvent(event)}>
+              <Card key={event.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleEventClick(event)}>
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1 min-w-0">
@@ -486,90 +524,19 @@ export default function SchedulerPage() {
       ) : (
         <SchedulerCalendarView
           events={filteredEvents}
-          onEventClick={(event) => {
-            setSelectedEvent(event);
-          }}
-          onEventUpdate={(event) => {
-            // Handle event update
-            setEvents(prev => prev.map(e => e.id === event.id ? event : e));
-          }}
+          onEventClick={handleEventClick}
+          onEventUpdate={handleEventUpdated}
         />
       )}
 
-      {/* Event Detail Modal */}
-      <Dialog open={selectedEvent !== null} onOpenChange={(open) => !open && setSelectedEvent(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{selectedEvent?.title}</DialogTitle>
-            <DialogDescription>
-              {new Date(`${selectedEvent?.scheduledDate}T${selectedEvent?.scheduledTime}`).toLocaleString()}
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedEvent && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Description</label>
-                <p className="text-sm text-muted-foreground mt-1">{selectedEvent.description || 'No description'}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Status</label>
-                  <Badge className={`${getStatusColor(selectedEvent.status)} mt-1`}>
-                    {selectedEvent.status}
-                  </Badge>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Type</label>
-                  <p className="text-sm text-muted-foreground mt-1">{selectedEvent.type}</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">Notification</label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedEvent.notifyBefore} minutes before
-                </p>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                {(selectedEvent.createdBy === user?.id || selectedEvent.assignedTo === user?.id) && (
-                  <>
-                    {(selectedEvent.createdBy === user?.id || (selectedEvent.assignedTo === user?.id && selectedEvent.canBeEditedByAssigned)) && (
-                      <Button
-                        onClick={() => {
-                          setSelectedEvent(null);
-                          handleEditEvent(selectedEvent);
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Edit2 className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    )}
-                    
-                    {selectedEvent.createdBy === user?.id && (
-                      <Button
-                        onClick={() => handleDeleteEvent(selectedEvent.id)}
-                        variant="destructive"
-                        size="sm"
-                        disabled={deletingEventId === selectedEvent.id}
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Event Detail Dialog */}
+      <SchedulerEventDetailDialog
+        event={selectedEvent}
+        open={showEventDetail}
+        onClose={handleCloseEventDetail}
+        onEventUpdated={handleEventUpdated}
+        onEventDeleted={handleEventDeleted}
+      />
     </div>
   );
 }

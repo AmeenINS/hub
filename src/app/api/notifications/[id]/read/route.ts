@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { NotificationService } from '@/lib/db/notification-service';
 import { JWTService } from '@/lib/auth/jwt';
+import { SSEBroadcast } from '@/lib/sse-broadcast';
 
 export async function PUT(
   request: NextRequest,
@@ -20,6 +21,9 @@ export async function PUT(
     const { id } = await params;
     const notificationService = new NotificationService();
     await notificationService.markAsRead(id);
+
+    // Broadcast update to SSE connections
+    await SSEBroadcast.broadcastToUser(payload.userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -46,6 +50,9 @@ export async function DELETE(
     const { id } = await params;
     const notificationService = new NotificationService();
     await notificationService.deleteNotification(id);
+
+    // Broadcast update to SSE connections
+    await SSEBroadcast.broadcastToUser(payload.userId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
