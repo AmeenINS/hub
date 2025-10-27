@@ -75,6 +75,7 @@ export default function EditSchedulerPage() {
   const [isFetching, setIsFetching] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [showCalendar, setShowCalendar] = useState(false);
+  const [subordinates, setSubordinates] = useState<Array<{ id: string; name: string }>>([]);
   const eventId = params.id as string;
 
   const [formData, setFormData] = useState<EditEventFormData>({
@@ -91,6 +92,34 @@ export default function EditSchedulerPage() {
     isPrivate: false,
     canBeEditedByAssigned: true,
   });
+
+  // Fetch subordinates
+  useEffect(() => {
+    const fetchSubordinates = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/users/me/subordinates', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setSubordinates(result.data || []);
+          } else {
+            setSubordinates([]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch subordinates:', error);
+      }
+    };
+
+    fetchSubordinates();
+  }, [token]);
 
   // Fetch event data
   useEffect(() => {
@@ -463,6 +492,35 @@ export default function EditSchedulerPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Assign To</CardTitle>
+            <CardDescription>
+              Assign this event to yourself or a subordinate
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="assignedTo">Person *</Label>
+              <Select value={formData.assignedTo} onValueChange={(value) => handleInputChange('assignedTo', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select person" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={user?.id || ''}>
+                    {user?.name || user?.username} (You)
+                  </SelectItem>
+                  {subordinates.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,6 +72,7 @@ export default function NewSchedulerPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [showCalendar, setShowCalendar] = useState(false);
+  const [subordinates, setSubordinates] = useState<Array<{ id: string; name: string }>>([]);
 
   const [formData, setFormData] = useState<CreateEventFormData>({
     title: '',
@@ -87,6 +88,34 @@ export default function NewSchedulerPage() {
     isPrivate: false,
     canBeEditedByAssigned: true,
   });
+
+  // Fetch subordinates
+  React.useEffect(() => {
+    const fetchSubordinates = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/users/me/subordinates', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setSubordinates(result.data || []);
+          } else {
+            setSubordinates([]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch subordinates:', error);
+      }
+    };
+
+    fetchSubordinates();
+  }, [token]);
 
   const handleInputChange = (field: keyof CreateEventFormData, value: string | number | boolean | string[]) => {
     setFormData(prev => ({
@@ -380,6 +409,35 @@ export default function NewSchedulerPage() {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Assign To</CardTitle>
+            <CardDescription>
+              Assign this event to yourself or a subordinate
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="assignedTo">Person *</Label>
+              <Select value={formData.assignedTo} onValueChange={(value) => handleInputChange('assignedTo', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select person" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={user?.id || ''}>
+                    {user?.name || user?.username} (You)
+                  </SelectItem>
+                  {subordinates.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardContent>
         </Card>
 

@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
       
       // Check if notification time has passed and event hasn't been notified
       if (now >= notifyDateTime && !event.lastNotifiedAt) {
+        // Update event's lastNotifiedAt first to prevent duplicate processing
+        await lmdb.update<ScheduledEvent>('scheduledEvents', event.id, {
+          lastNotifiedAt: now.toISOString()
+        });
+
         // Create and send notifications for each method
         for (const method of event.notificationMethods) {
           const notification = await createScheduledNotification(event, method);
@@ -58,11 +63,6 @@ export async function POST(request: NextRequest) {
             processedNotifications.push(notification);
           }
         }
-
-        // Update event's lastNotifiedAt
-        await lmdb.update<ScheduledEvent>('scheduledEvents', event.id, {
-          lastNotifiedAt: now.toISOString()
-        });
       }
 
       // Check if event is complete (past due date)

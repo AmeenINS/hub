@@ -45,11 +45,10 @@ export async function GET(request: NextRequest) {
     // Get all scheduled events using LMDB
     let events = await lmdb.getAll<ScheduledEvent>('scheduledEvents');
     
-    // Filter by user permissions
+    // Filter to show only events created by user or assigned to user
     events = events.filter(event => 
       event.createdBy === user.id || 
-      event.assignedTo === user.id ||
-      !event.isPrivate
+      event.assignedTo === user.id
     );
 
     // Apply filters
@@ -113,6 +112,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    const userService = new UserService();
+
     const body = await request.json();
     const {
       title,
@@ -143,10 +144,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user can assign to others (admin permission check)
-    if (assignedTo && assignedTo !== user.id) {
-      // Add permission check here - for now allow all users to assign
-      // TODO: Implement proper permission checking
+    // Ensure assigned user exists and is within requester's hierarchy
+    let assignedUserId = user.id;
+    if (assignedTo) {
+      const targetUser = await userService.getUserById(assignedTo);
+      if (!targetUser) {
+        return NextResponse.json(
+          { error: 'Assigned user not found' },
+          { status: 400 }
+        );
+      }
+
+      if (assignedTo !== user.id) {
+        const isSubordinate = await userService.isSubordinate(user.id, assignedTo);
+        if (!isSubordinate) {
+          return NextResponse.json(
+            { error: 'You can only assign events to yourself or your subordinates' },
+            { status: 403 }
+          );
+        }
+      }
+
+      assignedUserId = assignedTo;
     }
 
     const eventId = uuidv4();
@@ -171,7 +190,7 @@ export async function POST(request: NextRequest) {
       relatedContactId,
       relatedDealId,
       createdBy: user.id,
-      assignedTo: assignedTo || user.id,
+      assignedTo: assignedUserId,
       isPrivate,
       canBeEditedByAssigned,
       createdAt: now,

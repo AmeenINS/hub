@@ -36,8 +36,8 @@ export async function GET(
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
-    // Check permissions
-    if (event.isPrivate && event.createdBy !== user.id && event.assignedTo !== user.id) {
+    // Allow viewing only if user created the event or is assigned to it
+    if (event.createdBy !== user.id && event.assignedTo !== user.id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -70,6 +70,8 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
+    const userService = new UserService();
+
     const { id } = await params;
     const existingEvent = await lmdb.getById<ScheduledEvent>('scheduledEvents', id);
 
@@ -87,8 +89,44 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const updatedEvent = await lmdb.update<ScheduledEvent>('scheduledEvents', id, {
+
+    // Validate new assignee if provided
+    let updatedAssignedTo = existingEvent.assignedTo;
+    if (Object.prototype.hasOwnProperty.call(body, 'assignedTo')) {
+      const requestedAssignee = body.assignedTo;
+      if (typeof requestedAssignee === 'string' && requestedAssignee.length > 0) {
+        const targetUser = await userService.getUserById(requestedAssignee);
+        if (!targetUser) {
+          return NextResponse.json({ error: 'Assigned user not found' }, { status: 400 });
+        }
+
+        if (requestedAssignee !== user.id) {
+          const isSubordinate = await userService.isSubordinate(user.id, requestedAssignee);
+          if (!isSubordinate) {
+            return NextResponse.json(
+              { error: 'You can only assign events to yourself or your subordinates' },
+              { status: 403 }
+            );
+          }
+        }
+
+        updatedAssignedTo = requestedAssignee;
+      } else {
+        // Treat empty value as assigning to self
+        updatedAssignedTo = user.id;
+      }
+    }
+
+    const updatePayload: Partial<ScheduledEvent> = {
       ...body,
+    };
+
+    if (Object.prototype.hasOwnProperty.call(body, 'assignedTo')) {
+      updatePayload.assignedTo = updatedAssignedTo;
+    }
+
+    const updatedEvent = await lmdb.update<ScheduledEvent>('scheduledEvents', id, {
+      ...updatePayload,
       updatedAt: new Date().toISOString(),
     });
 
