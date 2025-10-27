@@ -136,21 +136,23 @@ async function sendNotification(
   try {
     const now = new Date().toISOString();
 
-    // Create in-app notification (always created)
-    const inAppNotificationId = uuidv4();
-    const inAppNotification: Notification = {
-      id: inAppNotificationId,
-      userId: notification.userId,
-      type: NotificationType.SCHEDULED_REMINDER,
-      title: notification.title,
-      message: notification.message,
-      link: `/dashboard/scheduler?event=${event.id}`,
-      isRead: false,
-      createdAt: now,
-    };
+    // Create in-app notification only if method is IN_APP
+    if (notification.method === NotificationMethod.IN_APP) {
+      const inAppNotificationId = uuidv4();
+      const inAppNotification: Notification = {
+        id: inAppNotificationId,
+        userId: notification.userId,
+        type: NotificationType.SCHEDULED_REMINDER,
+        title: notification.title,
+        message: notification.message,
+        link: `/dashboard/scheduler?event=${event.id}`,
+        isRead: false,
+        createdAt: now,
+      };
 
-    // Save in-app notification using LMDB
-    await lmdb.create<Notification>('notifications', inAppNotificationId, inAppNotification);
+      // Save in-app notification using LMDB
+      await lmdb.create<Notification>('notifications', inAppNotificationId, inAppNotification);
+    }
 
     // Handle other notification methods (placeholder for future implementation)
     switch (notification.method) {
@@ -162,6 +164,9 @@ async function sendNotification(
         break;
       case NotificationMethod.SMS:
         console.log(`📱 SMS notification would be sent: ${notification.title}`);
+        break;
+      case NotificationMethod.IN_APP:
+        console.log(`💬 In-app notification created: ${notification.title}`);
         break;
     }
 
