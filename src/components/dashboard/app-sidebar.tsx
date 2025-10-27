@@ -22,9 +22,11 @@ import {
   TrendingUp,
   Mail,
   FileText,
+  Clock,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   Collapsible,
   CollapsibleContent,
@@ -68,6 +70,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
   const [loading, setLoading] = React.useState(true);
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  // Fetch unread notifications count
+  const fetchUnreadNotifications = React.useCallback(async () => {
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/notifications/unread-count', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUnreadCount(data.count);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  }, [token]);
 
   // Fetch user permissions
   React.useEffect(() => {
@@ -78,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
 
       try {
-        const modules = ['users', 'tasks', 'roles', 'reports', 'notifications', 'support', 'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns'];
+        const modules = ['users', 'tasks', 'roles', 'reports', 'notifications', 'support', 'scheduler', 'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns'];
         const response = await fetch(`/api/users/me/permissions?modules=${modules.join(',')}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -97,7 +120,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     };
 
     fetchPermissions();
-  }, [token]);
+    fetchUnreadNotifications();
+  }, [token, fetchUnreadNotifications]);
+
+  // Poll for notification updates every 30 seconds
+  React.useEffect(() => {
+    if (!token) return;
+
+    const interval = setInterval(() => {
+      fetchUnreadNotifications();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [token, fetchUnreadNotifications]);
 
   const handleLogout = () => {
     logout();
@@ -165,6 +200,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: t('tasks.myTasks'),
           url: '/dashboard/tasks/my-tasks',
+        },
+      ],
+    },
+    {
+      title: 'Scheduler & Reminders',
+      url: '/dashboard/scheduler',
+      icon: Clock,
+      isActive: pathname?.startsWith('/dashboard/scheduler'),
+      module: 'scheduler',
+      items: [
+        {
+          title: 'All Events',
+          url: '/dashboard/scheduler',
+        },
+        {
+          title: 'New Event',
+          url: '/dashboard/scheduler/new',
+        },
+        {
+          title: 'Calendar',
+          url: '/dashboard/scheduler?view=calendar',
         },
       ],
     },
@@ -237,6 +293,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: '/dashboard/notifications',
       icon: Bell,
       module: 'notifications',
+      badge: unreadCount > 0 ? unreadCount.toString() : undefined,
     },
     {
       title: t('nav.settings'),
@@ -341,6 +398,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link href={item.url}>
                     <item.icon />
                     <span>{item.title}</span>
+                    {item.badge && parseInt(item.badge) > 0 && (
+                      <Badge variant="destructive" className="ml-auto text-xs">
+                        {item.badge}
+                      </Badge>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

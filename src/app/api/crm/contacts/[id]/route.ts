@@ -8,7 +8,7 @@ import { logError } from '@/lib/logger';
  * GET /api/crm/contacts/[id]
  * Get contact by ID
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -25,8 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
+    const { id } = await params;
     const contactService = new ContactService();
-    const contact = await contactService.getContactById(params.id);
+    const contact = await contactService.getContactById(id);
 
     if (!contact) {
       return NextResponse.json({ success: false, error: 'Contact not found' }, { status: 404 });
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  * PUT /api/crm/contacts/[id]
  * Update contact by ID
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -60,9 +61,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const contactService = new ContactService();
-    const updatedContact = await contactService.updateContact(params.id, body);
+    const updatedContact = await contactService.updateContact(id, body);
 
     return NextResponse.json({
       success: true,
@@ -82,7 +84,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
  * DELETE /api/crm/contacts/[id]
  * Delete contact by ID
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
@@ -99,8 +101,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
+    const { id } = await params;
     const contactService = new ContactService();
-    const deleted = await contactService.deleteContact(params.id);
+    const deleted = await contactService.deleteContact(id);
 
     if (!deleted) {
       return NextResponse.json({ success: false, error: 'Contact not found' }, { status: 404 });

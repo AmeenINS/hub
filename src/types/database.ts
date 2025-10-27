@@ -215,6 +215,9 @@ export enum NotificationType {
   COMMENT_ADDED = 'COMMENT_ADDED',
   MENTION = 'MENTION',
   SYSTEM = 'SYSTEM',
+  SCHEDULED_REMINDER = 'SCHEDULED_REMINDER',
+  SCHEDULED_EVENT = 'SCHEDULED_EVENT',
+  RECURRING_EVENT = 'RECURRING_EVENT',
 }
 
 export interface Notification {
@@ -508,4 +511,106 @@ export interface Report {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ==================== Scheduler System ====================
+
+export enum SchedulerType {
+  REMINDER = 'REMINDER',
+  TASK_DEADLINE = 'TASK_DEADLINE',
+  MEETING = 'MEETING',
+  FOLLOW_UP = 'FOLLOW_UP',
+  CUSTOM = 'CUSTOM',
+  RECURRING = 'RECURRING',
+}
+
+export enum SchedulerStatus {
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  SNOOZED = 'SNOOZED',
+}
+
+export enum RecurrenceType {
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
+export enum NotificationMethod {
+  IN_APP = 'IN_APP',
+  PUSH = 'PUSH',
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+}
+
+export interface ScheduledEvent {
+  id: string;
+  title: string;
+  description?: string;
+  type: SchedulerType;
+  status: SchedulerStatus;
+  
+  // Timing
+  scheduledDate: string;
+  scheduledTime: string;
+  timezone: string;
+  
+  // Notifications
+  notificationMethods: NotificationMethod[];
+  notifyBefore?: number; // minutes before the event
+  
+  // Recurrence
+  isRecurring: boolean;
+  recurrenceType?: RecurrenceType;
+  recurrenceInterval?: number; // e.g., every 2 weeks
+  recurrenceEnd?: string; // end date for recurrence
+  
+  // Related entities
+  relatedTaskId?: string;
+  relatedContactId?: string;
+  relatedDealId?: string;
+  
+  // Permissions
+  createdBy: string;
+  assignedTo?: string; // if different from createdBy
+  isPrivate: boolean;
+  canBeEditedByAssigned: boolean;
+  
+  // Tracking
+  lastNotifiedAt?: string;
+  completedAt?: string;
+  snoozeUntil?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScheduledNotification {
+  id: string;
+  scheduledEventId: string;
+  userId: string;
+  method: NotificationMethod;
+  title: string;
+  message: string;
+  
+  // Timing
+  scheduledFor: string;
+  sentAt?: string;
+  
+  // Status
+  isSent: boolean;
+  isDelivered: boolean;
+  deliveredAt?: string;
+  
+  // Retry logic
+  retryCount: number;
+  maxRetries: number;
+  lastRetryAt?: string;
+  
+  // Metadata
+  metadata?: Record<string, unknown>;
+  
+  createdAt: string;
 }

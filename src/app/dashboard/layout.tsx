@@ -9,6 +9,8 @@ import { MobileNav } from '@/components/dashboard/mobile-nav';
 import { Spinner } from '@/components/ui/spinner';
 import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
 import { Separator } from '@/components/ui/separator';
+import SchedulerNotificationService from '@/components/scheduler/notification-service';
+import { NotificationButton } from '@/components/dashboard/notification-button';
 import 'overlayscrollbars/overlayscrollbars.css';
 
 export default function DashboardLayout({
@@ -53,6 +55,12 @@ export default function DashboardLayout({
               {/* Desktop sidebar toggle */}
               <SidebarTrigger className="hidden md:flex -ml-1 rtl:-ml-0 rtl:-mr-1" />
               <Separator orientation="vertical" className="mr-2 rtl:mr-0 rtl:ml-2 h-4" />
+              
+              {/* Spacer to push notification button to the right */}
+              <div className="flex-1" />
+              
+              {/* Notification button */}
+              <NotificationButton />
             </div>
           </header>
           
@@ -62,6 +70,9 @@ export default function DashboardLayout({
               {children}
             </div>
           </main>
+          
+          {/* Background scheduler notification service */}
+          <SchedulerNotificationService />
         </SidebarInset>
         
         {/* Mobile bottom navigation */}

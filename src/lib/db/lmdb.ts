@@ -79,6 +79,10 @@ class LMDBManager {
 
     // Support
     this.databases.set('support_messages', this.db.openDB({ name: 'support_messages', encoding: 'json' }));
+
+    // Scheduler
+    this.databases.set('scheduledEvents', this.db.openDB({ name: 'scheduledEvents', encoding: 'json' }));
+    this.databases.set('scheduledNotifications', this.db.openDB({ name: 'scheduledNotifications', encoding: 'json' }));
   }
 
   /**
