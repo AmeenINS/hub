@@ -33,6 +33,7 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Check permissions
   const checkAccess = useCallback(async () => {
@@ -166,6 +167,7 @@ export default function NotificationsPage() {
     try {
       if (!token) return;
       
+      setDeletingId(notificationId);
       const response = await fetch(`/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
@@ -176,10 +178,14 @@ export default function NotificationsPage() {
       if (response.ok) {
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
         toast.success(t('messages.deleteSuccess'));
+      } else {
+        toast.error(t('messages.deleteError'));
       }
     } catch (error) {
       console.error('Failed to delete notification:', error);
       toast.error(t('messages.deleteError'));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -341,6 +347,8 @@ export default function NotificationsPage() {
                         }}
                         variant="ghost"
                         size="sm"
+                        disabled={deletingId === notification.id}
+                        className="cursor-pointer hover:text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

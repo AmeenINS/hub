@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Calendar, Clock, Bell, Search } from 'lucide-react';
+import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2, X } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 import { ScheduledEvent, SchedulerType, SchedulerStatus } from '@/types/database';
@@ -26,7 +33,7 @@ type ViewMode = 'list' | 'calendar';
 
 export default function SchedulerPage() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const [events, setEvents] = useState<ScheduledEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -34,6 +41,8 @@ export default function SchedulerPage() {
   const [filterType, setFilterType] = useState<SchedulerType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<ScheduledEvent | null>(null);
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
   useEffect(() => {
     // Define functions inline to avoid dependency issues
@@ -99,6 +108,73 @@ export default function SchedulerPage() {
     const interval = setInterval(processNotifications, 60000); // Check every minute
     return () => clearInterval(interval);
   }, [token]);
+
+  // Delete event handler
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    const eventToDelete = events.find(e => e.id === eventId);
+    if (!eventToDelete) {
+      toast.error('Event not found');
+      return;
+    }
+
+    // Check if user is the owner
+    if (eventToDelete.createdBy !== user.id) {
+      toast.error('You can only delete events you created');
+      return;
+    }
+
+    try {
+      setDeletingEventId(eventId);
+      const response = await fetch(`/api/scheduler/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setEvents(prev => prev.filter(e => e.id !== eventId));
+        setSelectedEvent(null);
+        toast.success('Event deleted successfully');
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to delete event');
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Error deleting event');
+    } finally {
+      setDeletingEventId(null);
+    }
+  };
+
+  // Edit event handler
+  const handleEditEvent = (event: ScheduledEvent) => {
+    if (!user) {
+      toast.error('User not authenticated');
+      return;
+    }
+
+    // Check if user is the owner or assigned user
+    if (event.createdBy !== user.id && event.assignedTo !== user.id) {
+      toast.error('You can only edit events you created or are assigned to');
+      return;
+    }
+
+    // Check if assigned user has edit permission
+    if (event.assignedTo === user.id && event.createdBy !== user.id && !event.canBeEditedByAssigned) {
+      toast.error('You do not have permission to edit this event');
+      return;
+    }
+
+    // Navigate to edit page
+    router.push(`/dashboard/scheduler/${event.id}/edit`);
+  };
 
   // Event handlers will be implemented when components are available
 
@@ -381,8 +457,7 @@ export default function SchedulerPage() {
         <SchedulerCalendarView
           events={filteredEvents}
           onEventClick={(event) => {
-            // Handle event click - could open a detail dialog
-            console.log('Event clicked:', event);
+            setSelectedEvent(event);
           }}
           onEventUpdate={(event) => {
             // Handle event update
@@ -390,6 +465,81 @@ export default function SchedulerPage() {
           }}
         />
       )}
+
+      {/* Event Detail Modal */}
+      <Dialog open={selectedEvent !== null} onOpenChange={(open) => !open && setSelectedEvent(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{selectedEvent?.title}</DialogTitle>
+            <DialogDescription>
+              {new Date(`${selectedEvent?.scheduledDate}T${selectedEvent?.scheduledTime}`).toLocaleString()}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <p className="text-sm text-muted-foreground mt-1">{selectedEvent.description || 'No description'}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Status</label>
+                  <Badge className={`${getStatusColor(selectedEvent.status)} mt-1`}>
+                    {selectedEvent.status}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Type</label>
+                  <p className="text-sm text-muted-foreground mt-1">{selectedEvent.type}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Notification</label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedEvent.notifyBefore} minutes before
+                </p>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                {(selectedEvent.createdBy === user?.id || selectedEvent.assignedTo === user?.id) && (
+                  <>
+                    {(selectedEvent.createdBy === user?.id || (selectedEvent.assignedTo === user?.id && selectedEvent.canBeEditedByAssigned)) && (
+                      <Button
+                        onClick={() => {
+                          setSelectedEvent(null);
+                          handleEditEvent(selectedEvent);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        <Edit2 className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    )}
+                    
+                    {selectedEvent.createdBy === user?.id && (
+                      <Button
+                        onClick={() => handleDeleteEvent(selectedEvent.id)}
+                        variant="destructive"
+                        size="sm"
+                        disabled={deletingEventId === selectedEvent.id}
+                        className="flex-1"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
