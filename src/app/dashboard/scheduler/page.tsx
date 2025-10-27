@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,8 +29,6 @@ import { ScheduledEvent, SchedulerType, SchedulerStatus } from '@/types/database
 // import SchedulerEventCard from '@/components/scheduler/scheduler-event-card';  
 import SchedulerCalendarView from '@/components/scheduler/scheduler-calendar-view';
 
-type ViewMode = 'list' | 'calendar';
-
 export default function SchedulerPage() {
   const router = useRouter();
   const { token, user } = useAuthStore();
@@ -40,7 +38,6 @@ export default function SchedulerPage() {
   const [filterStatus, setFilterStatus] = useState<SchedulerStatus | 'all'>('all');
   const [filterType, setFilterType] = useState<SchedulerType | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ScheduledEvent | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
@@ -426,7 +423,7 @@ export default function SchedulerPage() {
                 <p className="text-muted-foreground mb-4">
                   Create a new event or change your filters
                 </p>
-                <Button onClick={() => setCreateDialogOpen(true)}>
+                <Button onClick={() => router.push('/dashboard/scheduler/new')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Create your first event
                 </Button>
@@ -434,19 +431,52 @@ export default function SchedulerPage() {
             </Card>
           ) : (
             filteredEvents.map((event) => (
-              <Card key={event.id}>
+              <Card key={event.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedEvent(event)}>
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
                       <h3 className="font-medium">{event.title}</h3>
-                      <p className="text-sm text-muted-foreground">{event.description}</p>
+                      <p className="text-sm text-muted-foreground truncate">{event.description}</p>
                       <p className="text-sm">
                         {new Date(`${event.scheduledDate}T${event.scheduledTime}`).toLocaleString()}
                       </p>
                     </div>
-                    <Badge className={getStatusColor(event.status)}>
-                      {event.status}
-                    </Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge className={getStatusColor(event.status)}>
+                        {event.status}
+                      </Badge>
+                      {(event.createdBy === user?.id || event.assignedTo === user?.id) && (
+                        <div className="flex gap-1">
+                          {(event.createdBy === user?.id || (event.assignedTo === user?.id && event.canBeEditedByAssigned)) && (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditEvent(event);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {event.createdBy === user?.id && (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteEvent(event.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              disabled={deletingEventId === event.id}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
