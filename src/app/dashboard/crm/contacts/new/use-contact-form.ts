@@ -41,15 +41,14 @@ export function useContactForm() {
 
       // Map form data to database Contact type
       const contactData = {
-        type: data.status === 'Lead' ? 'LEAD' : 
-              data.status === 'Customer' ? 'CUSTOMER' : 
-              data.status === 'Prospect' ? 'PARTNER' : 'LEAD',
+        type: data.type, // Already in correct format (LEAD, CUSTOMER, PARTNER, SUPPLIER)
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         jobTitle: data.position,
         department: data.department,
+        preferredContactMethod: data.preferredContactMethod,
         address: data.address,
         city: data.city,
         state: data.state,

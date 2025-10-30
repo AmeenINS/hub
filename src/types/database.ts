@@ -350,6 +350,7 @@ export interface Contact {
   jobTitle?: string;
   department?: string;
   companyId?: string;
+  preferredContactMethod?: 'Email' | 'Phone' | 'SMS' | 'WhatsApp';
   address?: string;
   city?: string;
   state?: string;

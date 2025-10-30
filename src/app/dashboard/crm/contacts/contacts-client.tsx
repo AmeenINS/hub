@@ -222,6 +222,11 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                             <span>{companyMap[contact.companyId]}</span>
                           </div>
                         )}
+                        {contact.preferredContactMethod && (
+                          <Badge variant="outline" className="text-xs">
+                            {contact.preferredContactMethod}
+                          </Badge>
+                        )}
                       </div>
                       {contact.jobTitle && (
                         <div className="text-sm text-muted-foreground">

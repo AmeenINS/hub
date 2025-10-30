@@ -8,11 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { User, Building2, MapPin, Tag as TagIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { ContactFormData, statusOptions, sourceOptions } from "./contact-schema";
+import { ContactFormData, typeOptions, sourceOptions, preferredContactMethodOptions } from "./contact-schema";
 
 interface BasicInformationSectionProps {
   form: UseFormReturn<ContactFormData>;
@@ -29,7 +29,6 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           <User className="h-5 w-5" />
           <span>Basic Information</span>
         </CardTitle>
-        <CardDescription>Essential contact details</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
@@ -40,7 +39,7 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
               <FormItem>
                 <FormLabel>First Name *</FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <Input placeholder="أحمد" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -53,7 +52,7 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
               <FormItem>
                 <FormLabel>Last Name *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Smith" {...field} />
+                  <Input placeholder="العامري" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -66,9 +65,9 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address *</FormLabel>
+              <FormLabel>Email Address</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="john.smith@company.com" {...field} />
+                <Input type="email" placeholder="ahmed.alamri@company.om" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -80,9 +79,9 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Phone Number *</FormLabel>
               <FormControl>
-                <Input placeholder="+1 (555) 123-4567" {...field} />
+                <Input placeholder="+968 9123 4567" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -108,7 +107,6 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
           <Building2 className="h-5 w-5" />
           <span>Company Information</span>
         </CardTitle>
-        <CardDescription>Professional and company details</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <FormField
@@ -118,7 +116,7 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder="Acme Corporation" {...field} />
+                <Input placeholder="شركة عمان للاتصالات" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -133,7 +131,7 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
               <FormItem>
                 <FormLabel>Job Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="Sales Manager" {...field} />
+                  <Input placeholder="مدير المبيعات" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,7 +144,7 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
               <FormItem>
                 <FormLabel>Department</FormLabel>
                 <FormControl>
-                  <Input placeholder="Sales" {...field} />
+                  <Input placeholder="المبيعات" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -173,7 +171,6 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
           <MapPin className="h-5 w-5" />
           <span>Address Information</span>
         </CardTitle>
-        <CardDescription>Location and address details</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <FormField
@@ -183,7 +180,7 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
             <FormItem>
               <FormLabel>Street Address</FormLabel>
               <FormControl>
-                <Input placeholder="123 Main Street" {...field} />
+                <Input placeholder="شارع السلطان قابوس، مسقط" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -198,7 +195,7 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
               <FormItem>
                 <FormLabel>City</FormLabel>
                 <FormControl>
-                  <Input placeholder="San Francisco" {...field} />
+                  <Input placeholder="Muscat" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -211,7 +208,7 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
               <FormItem>
                 <FormLabel>State</FormLabel>
                 <FormControl>
-                  <Input placeholder="CA" {...field} />
+                  <Input placeholder="Muscat Governorate" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -224,7 +221,7 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
               <FormItem>
                 <FormLabel>ZIP Code</FormLabel>
                 <FormControl>
-                  <Input placeholder="94105" {...field} />
+                  <Input placeholder="100" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -237,7 +234,7 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
               <FormItem>
                 <FormLabel>Country</FormLabel>
                 <FormControl>
-                  <Input placeholder="United States" {...field} />
+                  <Input placeholder="Oman" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -268,22 +265,22 @@ export function StatusClassificationSection({ form }: StatusClassificationSectio
       <CardContent className="space-y-4">
         <FormField
           control={form.control}
-          name="status"
+          name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Status</FormLabel>
+              <FormLabel>Contact Type</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {statusOptions.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
+                  {typeOptions.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
                       <div className="flex items-center space-x-2">
-                        <Badge variant={status.color as "default" | "destructive" | "secondary" | "outline"} className="text-xs">
-                          {status.label}
+                        <Badge variant={type.color as "default" | "destructive" | "secondary" | "outline"} className="text-xs">
+                          {type.label}
                         </Badge>
                       </div>
                     </SelectItem>
@@ -319,6 +316,31 @@ export function StatusClassificationSection({ form }: StatusClassificationSectio
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="preferredContactMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Preferred Contact Method</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select method" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {preferredContactMethodOptions.map((method) => (
+                    <SelectItem key={method} value={method}>
+                      {method}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </CardContent>
     </Card>
   );
@@ -340,7 +362,6 @@ export function TagsSection({ tags, newTag, setNewTag, onAddTag, onRemoveTag }: 
     <Card>
       <CardHeader>
         <CardTitle>Tags</CardTitle>
-        <CardDescription>Add tags to categorize this contact</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex space-x-2">
@@ -383,7 +404,6 @@ export function NotesSection({ form }: NotesSectionProps) {
     <Card>
       <CardHeader>
         <CardTitle>Notes</CardTitle>
-        <CardDescription>Additional information about this contact</CardDescription>
       </CardHeader>
       <CardContent>
         <FormField

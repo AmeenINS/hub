@@ -11,13 +11,14 @@ import * as z from "zod";
 export const contactFormSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional(),
+  email: z.string().email("Please enter a valid email address").optional(),
+  phone: z.string().min(10, "Phone number is required"),
   company: z.string().optional(),
   position: z.string().optional(),
   department: z.string().optional(),
-  status: z.enum(["Lead", "Prospect", "Customer", "Active", "Inactive"]),
+  type: z.enum(["LEAD", "CUSTOMER", "PARTNER", "SUPPLIER"]),
   source: z.enum(["Website", "Referral", "Cold Email", "LinkedIn", "Trade Show", "Other"]),
+  preferredContactMethod: z.enum(["Email", "Phone", "SMS", "WhatsApp"]).optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
@@ -33,14 +34,23 @@ export const contactFormSchema = z.object({
 export type ContactFormData = z.infer<typeof contactFormSchema>;
 
 /**
- * Status options with their display properties
+ * Contact type options with their display properties
  */
-export const statusOptions = [
-  { value: "Lead", label: "Lead", color: "destructive" },
-  { value: "Prospect", label: "Prospect", color: "secondary" },
-  { value: "Customer", label: "Customer", color: "default" },
-  { value: "Active", label: "Active", color: "default" },
-  { value: "Inactive", label: "Inactive", color: "outline" }
+export const typeOptions = [
+  { value: "LEAD", label: "Lead", color: "destructive" },
+  { value: "CUSTOMER", label: "Customer", color: "default" },
+  { value: "PARTNER", label: "Partner", color: "secondary" },
+  { value: "SUPPLIER", label: "Supplier", color: "outline" }
+] as const;
+
+/**
+ * Preferred contact method options
+ */
+export const preferredContactMethodOptions = [
+  "Email",
+  "Phone",
+  "SMS",
+  "WhatsApp"
 ] as const;
 
 /**
@@ -66,8 +76,9 @@ export const defaultContactFormValues: Partial<ContactFormData> = {
   company: "",
   position: "",
   department: "",
-  status: "Lead",
+  type: "LEAD",
   source: "Website",
+  preferredContactMethod: "Phone",
   address: "",
   city: "",
   state: "",
