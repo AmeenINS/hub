@@ -83,6 +83,18 @@ class LMDBManager {
     // Scheduler
     this.databases.set('scheduledEvents', this.db.openDB({ name: 'scheduledEvents', encoding: 'json' }));
     this.databases.set('scheduledNotifications', this.db.openDB({ name: 'scheduledNotifications', encoding: 'json' }));
+
+    // CRM
+    this.databases.set('contacts', this.db.openDB({ name: 'contacts', encoding: 'json' }));
+    this.databases.set('companies', this.db.openDB({ name: 'companies', encoding: 'json' }));
+    this.databases.set('leads', this.db.openDB({ name: 'leads', encoding: 'json' }));
+    this.databases.set('deals', this.db.openDB({ name: 'deals', encoding: 'json' }));
+    this.databases.set('activities', this.db.openDB({ name: 'activities', encoding: 'json' }));
+    this.databases.set('pipelines', this.db.openDB({ name: 'pipelines', encoding: 'json' }));
+    this.databases.set('pipelineStages', this.db.openDB({ name: 'pipelineStages', encoding: 'json' }));
+    this.databases.set('campaigns', this.db.openDB({ name: 'campaigns', encoding: 'json' }));
+    this.databases.set('emailTemplates', this.db.openDB({ name: 'emailTemplates', encoding: 'json' }));
+    this.databases.set('reports', this.db.openDB({ name: 'reports', encoding: 'json' }));
   }
 
   /**
