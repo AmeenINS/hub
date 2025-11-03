@@ -6,11 +6,9 @@ import ReactFlow, {
   Edge,
   Controls,
   Background,
-  MiniMap,
   useNodesState,
   useEdgesState,
   MarkerType,
-  Panel,
   BackgroundVariant,
   Handle,
   Position,
@@ -277,7 +275,7 @@ const getLayoutedElements = (users: User[]) => {
 };
 
 const OrgChartReactFlow: React.FC<OrgChartProps> = ({ users }) => {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
     return getLayoutedElements(users);
@@ -308,12 +306,12 @@ const OrgChartReactFlow: React.FC<OrgChartProps> = ({ users }) => {
   }
 
   return (
-    <Card className="h-[800px]">
-      <CardHeader>
-        <CardTitle>{t('dashboard.organizationChart')}</CardTitle>
-        <CardDescription>{t('dashboard.orgChartPageDesc')}</CardDescription>
+    <Card className="h-[calc(100vh-280px)]">
+      <CardHeader className="py-4">
+        <CardTitle className="text-xl">{t('dashboard.organizationChart')}</CardTitle>
+        <CardDescription className="text-sm">{t('dashboard.orgChartPageDesc')}</CardDescription>
       </CardHeader>
-      <CardContent className="h-[calc(100%-100px)] p-0">
+      <CardContent className="h-[calc(100%-88px)] p-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -352,31 +350,6 @@ const OrgChartReactFlow: React.FC<OrgChartProps> = ({ users }) => {
             showInteractive={false}
             className="bg-card border border-border rounded-lg shadow-lg"
           />
-          <MiniMap 
-            nodeColor={(node) => {
-              const level = node.data?.level || 0;
-              const colors = ['#f59e0b', '#a855f7', '#3b82f6', '#22c55e', '#14b8a6', '#64748b'];
-              return colors[Math.min(level, colors.length - 1)];
-            }}
-            className="bg-card border border-border rounded-lg shadow-lg"
-            maskColor="hsl(var(--muted) / 0.6)"
-          />
-          <Panel position="top-left" className="bg-card/90 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p className="font-semibold text-foreground">
-                💡 {locale === 'ar' ? 'تلميحات' : 'Tips'}:
-              </p>
-              <p>
-                🖱️ {locale === 'ar' ? 'اسحب للتنقل' : 'Drag to pan'}
-              </p>
-              <p>
-                🔍 {locale === 'ar' ? 'تكبير/تصغير بالعجلة' : 'Scroll to zoom'}
-              </p>
-              <p>
-                📍 {locale === 'ar' ? 'استخدم الخريطة الصغيرة للتنقل' : 'Use minimap to navigate'}
-              </p>
-            </div>
-          </Panel>
         </ReactFlow>
       </CardContent>
     </Card>
