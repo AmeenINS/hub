@@ -11,7 +11,7 @@ export async function PUT(
     const params = await context.params;
     const { id } = params;
     const body = await request.json();
-    const { name, description, level, isActive } = body;
+    const { name, nameAr, description, level, isActive } = body;
 
     const existing = await positionService.getPositionById(id);
     if (!existing) {
@@ -20,6 +20,7 @@ export async function PUT(
 
     const updated = await positionService.updatePosition(id, {
       name: name || existing.name,
+      nameAr: nameAr || existing.nameAr,
       description: description !== undefined ? description : existing.description,
       level: level !== undefined ? parseInt(level) : existing.level,
       isActive: isActive !== undefined ? isActive : existing.isActive,

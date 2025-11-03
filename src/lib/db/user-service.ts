@@ -2,6 +2,12 @@ import { lmdb } from './lmdb';
 import { User, Role, Permission, UserRole, RolePermission, Position } from '@/types/database';
 import { nanoid } from 'nanoid';
 import * as argon2 from 'argon2';
+import { DEFAULT_POSITIONS, DefaultPositionSeed } from './default-positions';
+
+const ARGON2_PREFIX = '$argon2';
+
+const isArgon2Hash = (value?: string | null): value is string =>
+  typeof value === 'string' && value.startsWith(ARGON2_PREFIX);
 
 /**
  * User Service
@@ -10,14 +16,40 @@ import * as argon2 from 'argon2';
 export class UserService {
   private readonly dbName = 'users';
 
+  private normalizeUser(rawUser: User & Record<string, unknown>): User {
+    const user = { ...rawUser } as User & {
+      firstName?: string;
+      lastName?: string;
+      firstNameAr?: string;
+      lastNameAr?: string;
+      fullName?: string;
+    };
+
+    if (!user.fullNameEn) {
+      const legacyEn = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+      const fallback = typeof user.fullName === 'string' ? user.fullName : '';
+      user.fullNameEn = legacyEn || fallback || user.email;
+    }
+
+    if (!user.fullNameAr) {
+      const legacyAr = [user.firstNameAr, user.lastNameAr].filter(Boolean).join(' ').trim();
+      if (legacyAr) {
+        user.fullNameAr = legacyAr;
+      }
+    }
+
+    return user as User;
+  }
+
   /**
    * Create a new user
    */
   async createUser(data: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     const id = nanoid();
-    
-    // Hash password with Argon2
-    const hashedPassword = await argon2.hash(data.password);
+
+    const hashedPassword = isArgon2Hash(data.password)
+      ? data.password
+      : await argon2.hash(data.password);
 
     const user: User = {
       ...data,
@@ -35,7 +67,8 @@ export class UserService {
    * Get user by ID
    */
   async getUserById(id: string): Promise<User | null> {
-    return lmdb.getById<User>(this.dbName, id);
+    const user = await lmdb.getById<User>(this.dbName, id);
+    return user ? this.normalizeUser(user) : null;
   }
 
   /**
@@ -43,24 +76,29 @@ export class UserService {
    */
   async getUserByEmail(email: string): Promise<User | null> {
     const users = await lmdb.query<User>(this.dbName, (user) => user.email === email);
-    return users[0] || null;
+    return users[0] ? this.normalizeUser(users[0]) : null;
   }
 
   /**
    * Get all users
    */
   async getAllUsers(): Promise<User[]> {
-    return lmdb.getAll<User>(this.dbName);
+    const users = await lmdb.getAll<User>(this.dbName);
+    return users.map((user) => this.normalizeUser(user));
   }
 
   /**
    * Update user
    */
   async updateUser(id: string, data: Partial<User>): Promise<User | null> {
-    if (data.password) {
-      data.password = await argon2.hash(data.password);
+    const updatePayload: Partial<User> = { ...data };
+
+    if (updatePayload.password && !isArgon2Hash(updatePayload.password)) {
+      updatePayload.password = await argon2.hash(updatePayload.password);
     }
-    return lmdb.update<User>(this.dbName, id, data);
+
+    const updated = await lmdb.update<User>(this.dbName, id, updatePayload);
+    return updated ? this.normalizeUser(updated) : null;
   }
 
   /**
@@ -90,7 +128,9 @@ export class UserService {
     const userIds = userRoles.map((ur) => ur.userId);
 
     const users = await lmdb.getAll<User>(this.dbName);
-    return users.filter((user) => userIds.includes(user.id));
+    return users
+      .filter((user) => userIds.includes(user.id))
+      .map((user) => this.normalizeUser(user));
   }
 
   /**
@@ -98,7 +138,9 @@ export class UserService {
    */
   async getSubordinates(userId: string): Promise<User[]> {
     const users = await lmdb.getAll<User>(this.dbName);
-    return users.filter((u) => u.managerId === userId);
+    return users
+      .filter((u) => u.managerId === userId)
+      .map((user) => this.normalizeUser(user));
   }
 
   /**
@@ -106,11 +148,12 @@ export class UserService {
    */
   async getAllSubordinates(userId: string): Promise<User[]> {
     const users = await lmdb.getAll<User>(this.dbName);
+    const normalizedUsers = users.map((user) => this.normalizeUser(user));
     const result: User[] = [];
     const visited = new Set<string>();
 
     const collectSubordinates = (managerId: string) => {
-      const directs = users.filter((u) => u.managerId === managerId && !visited.has(u.id));
+      const directs = normalizedUsers.filter((u) => u.managerId === managerId && !visited.has(u.id));
       directs.forEach((u) => {
         visited.add(u.id);
         result.push(u);
@@ -128,8 +171,9 @@ export class UserService {
   async isSubordinate(userId: string, targetUserId: string): Promise<boolean> {
     // BFS/DFS over manager relationships
     const users = await lmdb.getAll<User>(this.dbName);
+    const normalizedUsers = users.map((user) => this.normalizeUser(user));
     const map = new Map<string, User>();
-    users.forEach((u) => map.set(u.id, u));
+    normalizedUsers.forEach((u) => map.set(u.id, u));
 
     let current = map.get(targetUserId);
     while (current && current.managerId) {
@@ -367,23 +411,16 @@ export class RolePermissionService {
     const userRoleService = new UserRoleService();
     const permissionService = new PermissionService();
 
-    console.log('=== getUserPermissions ===');
-    console.log('User ID:', userId);
-
     // Get user's roles
     const userRoles = await userRoleService.getUserRolesByUser(userId);
-    console.log('User Roles:', userRoles);
     const roleIds = userRoles.map((ur) => ur.roleId);
-    console.log('Role IDs:', roleIds);
 
     // Get permissions for each role
     const permissionIds = new Set<string>();
     for (const roleId of roleIds) {
       const rolePermissions = await this.getPermissionsByRole(roleId);
-      console.log(`Permissions for role ${roleId}:`, rolePermissions);
       rolePermissions.forEach((rp) => permissionIds.add(rp.permissionId));
     }
-    console.log('Permission IDs:', Array.from(permissionIds));
 
     // Fetch actual permission objects
     const permissions: Permission[] = [];
@@ -393,9 +430,6 @@ export class RolePermissionService {
         permissions.push(permission);
       }
     }
-    
-    console.log('Final Permissions:', permissions.map(p => `${p.module}:${p.action}`));
-    console.log('==========================');
 
     return permissions;
   }
@@ -412,7 +446,11 @@ export class PositionService {
    * Get all positions
    */
   async getAllPositions(): Promise<Position[]> {
-    return lmdb.getAll<Position>(this.dbName);
+    const positions = await lmdb.getAll<Position>(this.dbName);
+    if (await this.needsSeeding(positions)) {
+      return this.replaceAllPositions(DEFAULT_POSITIONS);
+    }
+    return positions;
   }
 
   /**
@@ -478,5 +516,81 @@ export class PositionService {
   async getActivePositions(): Promise<Position[]> {
     const positions = await this.getAllPositions();
     return positions.filter(p => p.isActive);
+  }
+
+  private async replaceAllPositions(positions: DefaultPositionSeed[]): Promise<Position[]> {
+    const existing = await lmdb.getAll<Position>(this.dbName);
+
+    if (existing.length > 0) {
+      await lmdb.batch(
+        existing.map((position) => ({
+          dbName: this.dbName,
+          operation: 'delete' as const,
+          id: position.id,
+        }))
+      );
+    }
+
+    const timestamp = new Date().toISOString();
+    const createdPositions: Position[] = positions.map((seed, index) => ({
+      id: nanoid(),
+      name: seed.name.trim(),
+      nameAr: seed.nameAr.trim(),
+      description: seed.description?.trim() ?? '',
+      level: seed.level ?? index + 1,
+      isActive: seed.isActive ?? true,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }));
+
+    await lmdb.batch(
+      createdPositions.map((position) => ({
+        dbName: this.dbName,
+        operation: 'put' as const,
+        id: position.id,
+        data: position,
+      }))
+    );
+
+    return createdPositions;
+  }
+
+  private async needsSeeding(existing: Position[]): Promise<boolean> {
+    if (!existing.length) {
+      return true;
+    }
+
+    const hasMissingArabic = existing.some((position) => !position.nameAr || !position.nameAr.trim());
+    if (hasMissingArabic) {
+      return true;
+    }
+
+    if (existing.length !== DEFAULT_POSITIONS.length) {
+      return true;
+    }
+
+    const expectedCounts = new Map<string, number>();
+    for (const seed of DEFAULT_POSITIONS) {
+      const key = this.composeKey(seed.name, seed.nameAr);
+      expectedCounts.set(key, (expectedCounts.get(key) ?? 0) + 1);
+    }
+
+    for (const position of existing) {
+      const key = this.composeKey(position.name, position.nameAr ?? '');
+      if (!expectedCounts.has(key)) {
+        return true;
+      }
+      expectedCounts.set(key, expectedCounts.get(key)! - 1);
+    }
+
+    return Array.from(expectedCounts.values()).some((count) => count !== 0);
+  }
+
+  private composeKey(nameEn: string, nameAr: string) {
+    return `${nameEn.trim().toLowerCase()}|${nameAr.trim().toLowerCase()}`;
+  }
+
+  async forceSeedDefaultPositions(): Promise<Position[]> {
+    return this.replaceAllPositions(DEFAULT_POSITIONS);
   }
 }

@@ -28,11 +28,12 @@ import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { useAuthStore } from '@/store/auth-store';
 import { RTLChevron } from '@/components/ui/rtl-icon';
+import { getCombinedUserName } from '@/lib/utils';
 
 interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   email: string;
 }
 
@@ -430,7 +431,7 @@ export default function EditTaskPage() {
                     <SelectItem value="unassigned">{t('tasks.unassigned')}</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
-                        {user.firstName} {user.lastName} ({user.email})
+                        {getCombinedUserName(user)} ({user.email})
                       </SelectItem>
                     ))}
                   </SelectContent>

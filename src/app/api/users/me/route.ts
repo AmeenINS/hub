@@ -45,12 +45,12 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { firstName, lastName, phoneNumber } = body;
+    const { fullNameEn, fullNameAr, phoneNumber } = body;
 
     const userService = new UserService();
     const user = await userService.updateUser(payload.userId, {
-      firstName,
-      lastName,
+      fullNameEn,
+      fullNameAr,
       phoneNumber,
     });
 

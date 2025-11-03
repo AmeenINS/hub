@@ -106,10 +106,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, firstName, lastName, roleId } = body;
-  const { managerId } = body;
+    const {
+      email,
+      password,
+      fullNameEn,
+      fullNameAr,
+      roleId,
+      managerId,
+      position,
+      department,
+      phoneNumber,
+      isActive,
+    } = body;
 
-    if (!email || !password || !firstName || !lastName) {
+    if (!email || !password || !fullNameEn) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -167,10 +177,13 @@ export async function POST(request: NextRequest) {
     const newUser = await userService.createUser({
       email,
       password,
-      firstName,
-      lastName,
+      fullNameEn,
+      fullNameAr,
+      phoneNumber,
+      position: position && position !== 'none' ? position : undefined,
+      department,
       managerId: managerId || undefined,
-      isActive: true,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
       emailVerified: false,
       twoFactorEnabled: false,
     });

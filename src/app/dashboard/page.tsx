@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, ListTodo, Shield } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import Link from 'next/link';
+import { getLocalizedUserName } from '@/lib/utils';
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user } = useAuthStore();
 
   const quickActions = [
@@ -39,7 +40,7 @@ export default function DashboardPage() {
       {/* Welcome Header */}
       <div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-          {t('dashboard.welcome')}, {user?.firstName || 'User'}!
+          {t('dashboard.welcome')}, {user ? getLocalizedUserName(user, locale) : 'User'}!
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
           {t('dashboard.overview')}

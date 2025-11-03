@@ -21,17 +21,18 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, description, level, isActive } = body;
+    const { name, nameAr, description, level, isActive } = body;
 
-    if (!name || level === undefined) {
+    if (!name || !nameAr || level === undefined) {
       return NextResponse.json(
-        { error: 'Name and level are required' },
+        { error: 'English and Arabic names with level are required' },
         { status: 400 }
       );
     }
 
     const position = await positionService.createPosition({
       name,
+      nameAr,
       description: description || '',
       level: parseInt(level),
       isActive: isActive !== undefined ? isActive : true,

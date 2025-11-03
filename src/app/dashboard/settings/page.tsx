@@ -22,8 +22,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 
 interface UserSettings {
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr: string;
   email: string;
   phoneNumber?: string;
   emailNotifications: boolean;
@@ -34,6 +34,7 @@ interface UserSettings {
 interface Position {
   id: string;
   name: string;
+  nameAr?: string;
   description?: string;
   level: number;
   isActive: boolean;
@@ -46,8 +47,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [settings, setSettings] = useState<UserSettings>({
-    firstName: '',
-    lastName: '',
+    fullNameEn: '',
+    fullNameAr: '',
     email: '',
     phoneNumber: '',
     emailNotifications: true,
@@ -65,12 +66,13 @@ export default function SettingsPage() {
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
-  const [positionForm, setPositionForm] = useState({
-    name: '',
-    description: '',
-    level: 1,
-    isActive: true,
-  });
+const [positionForm, setPositionForm] = useState({
+  name: '',
+  nameAr: '',
+  description: '',
+  level: 1,
+  isActive: true,
+});
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -97,8 +99,8 @@ export default function SettingsPage() {
       if (response.ok) {
         const data = await response.json();
         setSettings({
-          firstName: data.firstName || '',
-          lastName: data.lastName || '',
+          fullNameEn: data.fullNameEn || '',
+          fullNameAr: data.fullNameAr || '',
           email: data.email || '',
           phoneNumber: data.phoneNumber || '',
           emailNotifications: data.emailNotifications ?? true,
@@ -136,8 +138,8 @@ export default function SettingsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName: settings.firstName,
-          lastName: settings.lastName,
+          fullNameEn: settings.fullNameEn,
+          fullNameAr: settings.fullNameAr,
           phoneNumber: settings.phoneNumber,
         }),
       });
@@ -252,6 +254,7 @@ export default function SettingsPage() {
       setEditingPosition(position);
       setPositionForm({
         name: position.name,
+        nameAr: position.nameAr || '',
         description: position.description || '',
         level: position.level,
         isActive: position.isActive,
@@ -260,6 +263,7 @@ export default function SettingsPage() {
       setEditingPosition(null);
       setPositionForm({
         name: '',
+        nameAr: '',
         description: '',
         level: 1,
         isActive: true,
@@ -273,6 +277,7 @@ export default function SettingsPage() {
     setEditingPosition(null);
     setPositionForm({
       name: '',
+      nameAr: '',
       description: '',
       level: 1,
       isActive: true,
@@ -281,6 +286,10 @@ export default function SettingsPage() {
 
   const handleSavePosition = async () => {
     if (!positionForm.name.trim()) {
+      toast.error(t('settings.positionNameRequired'));
+      return;
+    }
+    if (!positionForm.nameAr.trim()) {
       toast.error(t('settings.positionNameRequired'));
       return;
     }
@@ -407,19 +416,22 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">{t('users.firstName')}</Label>
+                  <Label htmlFor="fullNameEn">{t('users.fullNameEn') || 'Full Name (English)'}</Label>
                   <Input
-                    id="firstName"
-                    value={settings.firstName}
-                    onChange={(e) => setSettings({ ...settings, firstName: e.target.value })}
+                    id="fullNameEn"
+                    value={settings.fullNameEn}
+                    onChange={(e) => setSettings({ ...settings, fullNameEn: e.target.value })}
+                    placeholder="John Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">{t('users.lastName')}</Label>
+                  <Label htmlFor="fullNameAr">{t('users.fullNameAr') || 'Full Name (Arabic)'}</Label>
                   <Input
-                    id="lastName"
-                    value={settings.lastName}
-                    onChange={(e) => setSettings({ ...settings, lastName: e.target.value })}
+                    id="fullNameAr"
+                    dir="rtl"
+                    value={settings.fullNameAr}
+                    onChange={(e) => setSettings({ ...settings, fullNameAr: e.target.value })}
+                    placeholder="محمد أحمد"
                   />
                 </div>
               </div>
@@ -638,7 +650,12 @@ export default function SettingsPage() {
                   <TableBody>
                     {positions.map((position) => (
                       <TableRow key={position.id}>
-                        <TableCell className="font-medium">{position.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <div>{position.name}</div>
+                          {position.nameAr && (
+                            <div className="text-xs text-muted-foreground">{position.nameAr}</div>
+                          )}
+                        </TableCell>
                         <TableCell className="text-muted-foreground">
                           {position.description || '-'}
                         </TableCell>
@@ -699,6 +716,16 @@ export default function SettingsPage() {
                 value={positionForm.name}
                 onChange={(e) => setPositionForm({ ...positionForm, name: e.target.value })}
                 placeholder={t('settings.positionNamePlaceholder')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position-name-ar">{t('settings.positionNameAr') || 'Position Name (Arabic)'}</Label>
+              <Input
+                id="position-name-ar"
+                dir="rtl"
+                value={positionForm.nameAr}
+                onChange={(e) => setPositionForm({ ...positionForm, nameAr: e.target.value })}
+                placeholder={t('settings.positionNameArPlaceholder') || 'مثال: المدير التنفيذي'}
               />
             </div>
             <div className="space-y-2">

@@ -24,14 +24,13 @@ export async function GET(request: NextRequest) {
     const userService = new UserService();
     const subordinates = await userService.getAllSubordinates(payload.userId);
 
-    const results = subordinates.map((user) => {
-      const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-      return {
-        id: user.id,
-        name: fullName || user.email,
-        email: user.email,
-      };
-    });
+    const results = subordinates.map((user) => ({
+      id: user.id,
+      name: [user.fullNameEn, user.fullNameAr].filter(Boolean).join(' / ') || user.email,
+      fullNameEn: user.fullNameEn,
+      fullNameAr: user.fullNameAr,
+      email: user.email,
+    }));
 
     return NextResponse.json({ success: true, data: results });
   } catch (error) {
@@ -42,4 +41,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

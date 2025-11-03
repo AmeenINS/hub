@@ -41,8 +41,8 @@ import { useI18n } from '@/lib/i18n/i18n-context';
 export type User = {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   isActive: boolean;
   emailVerified: boolean;
   createdAt: string;
@@ -66,8 +66,7 @@ export function UsersDataTable({ data, onEdit, onDelete, onToggleStatus }: DataT
   const getColumnLabel = (columnId: string) => {
     const columnLabels: Record<string, string> = {
       email: t('auth.email'),
-      firstName: t('users.firstName'),
-      lastName: t('users.lastName'),
+      fullNameEn: t('users.fullNameEn'),
       isActive: t('users.status'),
       emailVerified: t('users.emailVerified'),
       createdAt: t('users.createdAt'),
@@ -114,14 +113,19 @@ export function UsersDataTable({ data, onEdit, onDelete, onToggleStatus }: DataT
       cell: ({ row }) => <div className="lowercase">{row.getValue('email')}</div>,
     },
     {
-      accessorKey: 'firstName',
-      header: t('users.firstName'),
-      cell: ({ row }) => <div className="capitalize">{row.getValue('firstName')}</div>,
-    },
-    {
-      accessorKey: 'lastName',
-      header: t('users.lastName'),
-      cell: ({ row }) => <div className="capitalize">{row.getValue('lastName')}</div>,
+      accessorKey: 'fullNameEn',
+      header: t('users.fullName'),
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium">{user.fullNameEn || user.fullNameAr}</span>
+            {user.fullNameAr && (
+              <span className="text-xs text-muted-foreground">{user.fullNameAr}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'isActive',

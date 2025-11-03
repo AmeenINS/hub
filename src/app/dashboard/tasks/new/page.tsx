@@ -38,12 +38,13 @@ import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { TaskPriority } from '@/types/database';
 import { RTLChevron } from '@/components/ui/rtl-icon';
+import { getCombinedUserName } from '@/lib/utils';
 
 interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
 }
 
 export default function NewTaskPage() {
@@ -292,11 +293,11 @@ export default function NewTaskPage() {
                           checked={selectedAssignees.includes(user.id)}
                           onChange={() => toggleAssignee(user.id)}
                           className="h-4 w-4 rounded border-gray-300 ltr:mr-2 rtl:ml-2"
-                          aria-label={`${user.firstName} ${user.lastName}`}
+                          aria-label={getCombinedUserName(user)}
                         />
                         <label className="flex-1 cursor-pointer">
                           <div className="font-medium ltr:text-left rtl:text-right">
-                            {user.firstName} {user.lastName}
+                            {getCombinedUserName(user)}
                           </div>
                           <div className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
                             {user.email}

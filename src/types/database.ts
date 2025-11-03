@@ -9,8 +9,8 @@ export interface User {
   id: string;
   email: string;
   password: string; // Hashed with Argon2
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   phoneNumber?: string;
   avatar?: string;
   // Position for organizational chart
@@ -65,6 +65,7 @@ export interface RolePermission {
 export interface Position {
   id: string;
   name: string;
+  nameAr?: string;
   description?: string;
   level: number; // Hierarchy level (1 = CEO, 2 = Manager, etc.)
   isActive: boolean;

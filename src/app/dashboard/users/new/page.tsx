@@ -41,8 +41,8 @@ import { RTLChevron } from '@/components/ui/rtl-icon';
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  fullNameEn: z.string().min(2, 'Full name must be at least 2 characters'),
+  fullNameAr: z.string().optional(),
   phoneNumber: z.string().optional(),
   roleId: z.string().min(1, 'Please select a role'),
   position: z.string().optional(),
@@ -62,13 +62,14 @@ interface Role {
 interface Position {
   id: string;
   name: string;
+  nameAr?: string;
 }
 
 interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
 }
 
 export default function NewUserPage() {
@@ -88,8 +89,8 @@ export default function NewUserPage() {
     defaultValues: {
       email: '',
       password: '',
-      firstName: '',
-      lastName: '',
+      fullNameEn: '',
+      fullNameAr: '',
       phoneNumber: '',
       roleId: '',
       position: '',
@@ -221,13 +222,16 @@ export default function NewUserPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="fullNameEn"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('users.firstName')}</FormLabel>
+                      <FormLabel>{t('users.fullNameEn') || 'Full Name (English)'}</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="John Doe" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        {t('users.fullNameEnDescription') || 'Enter the full name in English'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -235,13 +239,16 @@ export default function NewUserPage() {
 
                 <FormField
                   control={form.control}
-                  name="lastName"
+                  name="fullNameAr"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('users.lastName')}</FormLabel>
+                      <FormLabel>{t('users.fullNameAr') || 'Full Name (Arabic)'}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input placeholder="محمد أحمد" dir="rtl" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        {t('users.fullNameArDescription') || 'Optional: enter the full name in Arabic'}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -317,8 +324,8 @@ export default function NewUserPage() {
                         <SelectContent>
                           <SelectItem value="none">{t('users.noPosition')}</SelectItem>
                           {positions.map((position) => (
-                            <SelectItem key={position.id} value={position.name}>
-                              {position.name}
+                            <SelectItem key={position.id} value={position.id}>
+                              {[position.name, position.nameAr].filter(Boolean).join(' / ')}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -397,7 +404,7 @@ export default function NewUserPage() {
                       <SelectContent>
                         {users.map((user) => (
                           <SelectItem key={user.id} value={user.id}>
-                            {user.firstName} {user.lastName} ({user.email})
+                            {[user.fullNameEn, user.fullNameAr].filter(Boolean).join(' / ') || user.email} ({user.email})
                           </SelectItem>
                         ))}
                       </SelectContent>

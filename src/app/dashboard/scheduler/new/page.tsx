@@ -13,7 +13,7 @@ import { CalendarIcon, ArrowLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, getLocalizedUserName } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { toast } from 'sonner';
 
@@ -428,7 +428,7 @@ export default function NewSchedulerPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={user?.id || ''}>
-                    {user?.firstName} {user?.lastName} (You)
+                    {user ? `${getLocalizedUserName(user)} (${ 'You' })` : 'You'}
                   </SelectItem>
                   {subordinates.map((sub) => (
                     <SelectItem key={sub.id} value={sub.id}>

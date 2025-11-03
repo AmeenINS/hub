@@ -82,6 +82,7 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar';
 import { useI18n } from '@/lib/i18n/i18n-context';
+import { getLocalizedUserName, getUserInitials } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -90,7 +91,7 @@ import { LanguageToggle } from '@/components/language-toggle';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { t, dir } = useI18n();
+  const { t, dir, locale } = useI18n();
   const { user, logout, token } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
@@ -726,16 +727,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user?.avatar} alt={user?.firstName} />
+                    <AvatarImage
+                      src={user?.avatar}
+                      alt={user ? getLocalizedUserName(user, locale) : undefined}
+                    />
                     <AvatarFallback className="rounded-lg">
-                      {user?.firstName?.[0]?.toUpperCase()}
-                      {user?.lastName?.[0]?.toUpperCase()}
+                      {user ? getUserInitials(user) : '?'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      {user?.firstName} {user?.lastName}
+                      {user ? getLocalizedUserName(user, locale) : 'User'}
                     </span>
+                    {user && (locale === 'ar' ? user.fullNameEn : user.fullNameAr) && (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {locale === 'ar' ? user?.fullNameEn : user?.fullNameAr}
+                      </span>
+                    )}
                     <span className="truncate text-xs">{user?.email}</span>
                   </div>
                   <ChevronsUpDown className={dir === 'rtl' ? 'mr-auto size-4' : 'ml-auto size-4'} />
@@ -750,16 +758,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.avatar} alt={user?.firstName} />
+                      <AvatarImage
+                        src={user?.avatar}
+                        alt={user ? getLocalizedUserName(user, locale) : undefined}
+                      />
                       <AvatarFallback className="rounded-lg">
-                        {user?.firstName?.[0]?.toUpperCase()}
-                        {user?.lastName?.[0]?.toUpperCase()}
+                        {user ? getUserInitials(user) : '?'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
-                        {user?.firstName} {user?.lastName}
+                        {user ? getLocalizedUserName(user, locale) : 'User'}
                       </span>
+                      {user && (locale === 'ar' ? user.fullNameEn : user.fullNameAr) && (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {locale === 'ar' ? user?.fullNameEn : user?.fullNameAr}
+                        </span>
+                      )}
                       <span className="truncate text-xs">{user?.email}</span>
                     </div>
                   </div>

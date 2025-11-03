@@ -1,5 +1,13 @@
 import { lmdb } from './lmdb';
-import { UserService, RoleService, PermissionService, RolePermissionService, UserRoleService } from './user-service';
+import {
+  UserService,
+  RoleService,
+  PermissionService,
+  RolePermissionService,
+  UserRoleService,
+  PositionService,
+} from './user-service';
+import { DEFAULT_USERS } from './default-users';
 
 
 /**
@@ -12,6 +20,7 @@ export class DatabaseInitializer {
   private permissionService: PermissionService;
   private rolePermissionService: RolePermissionService;
   private userRoleService: UserRoleService;
+  private positionService: PositionService;
 
   constructor() {
     this.userService = new UserService();
@@ -19,6 +28,7 @@ export class DatabaseInitializer {
     this.permissionService = new PermissionService();
     this.rolePermissionService = new RolePermissionService();
     this.userRoleService = new UserRoleService();
+    this.positionService = new PositionService();
   }
 
   /**
@@ -28,6 +38,10 @@ export class DatabaseInitializer {
     try {
       // Initialize LMDB
       await lmdb.initialize();
+
+      // Seed default positions (always refresh to ensure latest list)
+      await this.seedDefaultPositions();
+      await this.seedDefaultUsers();
 
       // Check if super admin already exists
       const existingAdmin = await this.userService.getUserByEmail('admin@ameen.com');
@@ -169,8 +183,8 @@ export class DatabaseInitializer {
     const superAdmin = await this.userService.createUser({
       email: 'admin@ameen.com',
       password: 'Admin@123456', // Change this in production!
-      firstName: 'Super',
-      lastName: 'Admin',
+      fullNameEn: 'Super Admin',
+      fullNameAr: 'المشرف العام',
       isActive: true,
       emailVerified: true,
       twoFactorEnabled: false,
@@ -190,6 +204,53 @@ export class DatabaseInitializer {
     console.log('   Email: admin@ameen.com');
     console.log('   Password: Admin@123456');
     console.log('   ⚠️  CHANGE PASSWORD IN PRODUCTION!');
+  }
+
+  private async seedDefaultPositions() {
+    await this.positionService.forceSeedDefaultPositions();
+    console.log('✅ Seeded default positions');
+  }
+
+  private normalizeWhitespace(value: string) {
+    return value.replace(/\s+/g, ' ').trim();
+  }
+
+  private async seedDefaultUsers() {
+    const defaultPassword = process.env.DEFAULT_USER_PASSWORD || 'Temp@123456';
+    const passwordFromEnv = Boolean(process.env.DEFAULT_USER_PASSWORD);
+
+    let createdCount = 0;
+    for (const seed of DEFAULT_USERS) {
+      const email = seed.email.trim().toLowerCase();
+      const existing = await this.userService.getUserByEmail(email);
+      if (existing) {
+        continue;
+      }
+
+      await this.userService.createUser({
+        email,
+        password: defaultPassword,
+        fullNameEn: this.normalizeWhitespace(seed.fullNameEn),
+        fullNameAr: this.normalizeWhitespace(seed.fullNameAr),
+        position: seed.position ? this.normalizeWhitespace(seed.position) : undefined,
+        department: undefined,
+        managerId: undefined,
+        phoneNumber: undefined,
+        avatar: undefined,
+        isActive: true,
+        emailVerified: false,
+        twoFactorEnabled: false,
+      });
+
+      createdCount += 1;
+    }
+
+    if (createdCount > 0) {
+      const passwordInfo = passwordFromEnv ? '' : ` (password: ${defaultPassword})`;
+      console.log(`✅ Seeded ${createdCount} default users${passwordInfo}`);
+    } else {
+      console.log('ℹ️ Default users already present');
+    }
   }
 }
 

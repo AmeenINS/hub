@@ -17,6 +17,7 @@ import { Calendar, MessageSquare, History, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { getCombinedUserName, getUserInitials } from '@/lib/utils';
 
 const getAuthToken = () => {
   return document.cookie
@@ -59,7 +60,7 @@ export default function TaskDetailDialog({
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<TaskComment[]>([]);
   const [activities, setActivities] = useState<TaskActivity[]>([]);
-  const [users, setUsers] = useState<Array<{ id: string; firstName: string; lastName: string; email: string }>>([]);
+  const [users, setUsers] = useState<Array<{ id: string; fullNameEn: string; fullNameAr?: string; email: string }>>([]);
   const [assignments, setAssignments] = useState<Array<{ id: string; userId: string; taskId: string }>>([]);
   const [loading, setLoading] = useState(false);
 
@@ -243,9 +244,13 @@ export default function TaskDetailDialog({
     return users.find((u) => u.id === userId);
   };
 
+  const formatUserName = (userId: string) => {
+    const user = getUserById(userId);
+    return user ? getCombinedUserName(user) : 'Unknown';
+  };
+
   const getActivityDescription = (activity: TaskActivity) => {
-    const user = getUserById(activity.userId);
-    const userName = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+    const userName = formatUserName(activity.userId);
 
     switch (activity.type) {
       case 'CREATED':
@@ -400,14 +405,12 @@ export default function TaskDetailDialog({
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback>
-                            {user
-                              ? `${user.firstName[0]}${user.lastName[0]}`
-                              : '?'}
+                          {user ? getUserInitials(user) : '?'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">
-                            {user ? `${user.firstName} ${user.lastName}` : 'Unknown User'}
+                            {user ? getCombinedUserName(user) : 'Unknown User'}
                           </p>
                           <p className="text-xs text-muted-foreground">{user?.email}</p>
                         </div>
@@ -436,7 +439,7 @@ export default function TaskDetailDialog({
                       )
                       .map((user) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.firstName} {user.lastName} ({user.email})
+                          {getCombinedUserName(user)} ({user.email})
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -485,11 +488,11 @@ export default function TaskDetailDialog({
                     <div className="flex items-center gap-2 mb-2">
                       <Avatar className="h-6 w-6">
                         <AvatarFallback className="text-xs">
-                          {user ? `${user.firstName[0]}${user.lastName[0]}` : '?'}
+                          {user ? getUserInitials(user) : '?'}
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium text-sm">
-                        {user ? `${user.firstName} ${user.lastName}` : 'Unknown'}
+                        {user ? getCombinedUserName(user) : 'Unknown'}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {format(new Date(comment.createdAt), 'MMM dd, HH:mm')}
@@ -516,7 +519,7 @@ export default function TaskDetailDialog({
                 <div key={activity.id} className="flex gap-3 p-3 border rounded-md">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="text-xs">
-                      {user ? `${user.firstName[0]}${user.lastName[0]}` : '?'}
+                      {user ? getUserInitials(user) : '?'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">

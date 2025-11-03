@@ -64,11 +64,10 @@ export function LanguageToggle() {
             locale === 'ar' && 'bg-accent'
           )}
         >
-          <span className={cn(dir === 'rtl' ? 'ml-2' : 'mr-2')}>🇸🇦</span>
+          <span className={cn(dir === 'rtl' ? 'ml-2' : 'mr-2')}>🇴🇲</span>
           <span>العربية</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
-

@@ -32,8 +32,8 @@ async function checkAndCreateAdmin() {
       id: adminId,
       email: 'admin@ameen.com',
       password: hashedPassword,
-      firstName: 'Super',
-      lastName: 'Admin',
+      fullNameEn: 'Super Admin',
+      fullNameAr: 'المشرف العام',
       roleId: 'super-admin',
       isActive: true,
       createdAt: new Date().toISOString(),
@@ -50,7 +50,8 @@ async function checkAndCreateAdmin() {
   } else {
     console.log('\n👤 Existing users:');
     userList.forEach((user) => {
-      console.log(`   - ${user.email} (${user.firstName} ${user.lastName})`);
+      const name = [user.fullNameEn, user.fullNameAr].filter(Boolean).join(' / ') || 'No name set';
+      console.log(`   - ${user.email} (${name})`);
     });
   }
 

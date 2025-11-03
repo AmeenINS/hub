@@ -5,8 +5,8 @@ import Cookies from 'js-cookie';
 interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   roles: string[];
   avatar?: string;
 }

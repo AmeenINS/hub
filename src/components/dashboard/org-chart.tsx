@@ -6,11 +6,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Mail, Building2, Users as UsersIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getCombinedUserName, getLocalizedUserName, getUserInitials } from '@/lib/utils';
 
 interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   email: string;
   role?: string;
   position?: string;
@@ -68,12 +69,6 @@ const buildTree = (users: User[]): TreeNode[] => {
   return roots.map(root => buildNode(root, 0));
 };
 
-const getInitials = (firstName: string, lastName: string): string => {
-  const first = firstName?.[0] || '';
-  const last = lastName?.[0] || '';
-  return (first + last).toUpperCase() || '??';
-};
-
 const getPositionColor = (position?: string): string => {
   if (!position) return 'bg-gray-500 text-white';
   const colorMap: Record<string, string> = {
@@ -88,7 +83,13 @@ const getPositionColor = (position?: string): string => {
     'Developer': 'bg-orange-400 text-white',
     'Employee': 'bg-slate-500 text-white',
   };
-  return colorMap[position] || 'bg-gray-500 text-white';
+  const parts = position.split('/').map((part) => part.trim());
+  for (const part of parts) {
+    if (colorMap[part]) {
+      return colorMap[part];
+    }
+  }
+  return 'bg-gray-500 text-white';
 };
 
 // Render a single node in the tree
@@ -144,13 +145,18 @@ const OrgNode: React.FC<{
               <div className="flex items-start gap-3 mb-3">
                 <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                   <AvatarFallback className={getPositionColor(user.position || user.role)}>
-                    {getInitials(user.firstName, user.lastName)}
+                    {getUserInitials(user)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-base truncate">
-                    {user.firstName} {user.lastName}
+                    {getLocalizedUserName(user, locale)}
                   </h3>
+                  {((locale === 'ar' && user.fullNameEn) || (locale !== 'ar' && user.fullNameAr)) && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {locale === 'ar' ? user.fullNameEn : user.fullNameAr}
+                    </p>
+                  )}
                   <Badge 
                     variant="secondary" 
                     className={`${getPositionColor(user.position || user.role)} mt-1`}
@@ -300,7 +306,7 @@ const OrgChart: React.FC<OrgChartProps> = ({ users }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userList.map(user => (
                     <div key={user.id} className="border rounded-lg p-3">
-                      <p className="font-semibold">{user.firstName} {user.lastName}</p>
+                      <p className="font-semibold">{getCombinedUserName(user)}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                     </div>
                   ))}

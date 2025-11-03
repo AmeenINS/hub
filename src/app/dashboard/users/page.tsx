@@ -26,6 +26,7 @@ import {
 import { UsersDataTable, User } from '@/components/dashboard/users-data-table';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
+import { getCombinedUserName } from '@/lib/utils';
 
 export default function UsersPage() {
   const router = useRouter();
@@ -198,7 +199,7 @@ export default function UsersPage() {
               {deleteDialog.user && (
                 <span className="font-semibold">
                   {' '}
-                  {deleteDialog.user.firstName} {deleteDialog.user.lastName}
+                  {getCombinedUserName(deleteDialog.user)}
                 </span>
               )}
               ?

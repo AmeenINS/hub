@@ -43,6 +43,7 @@ export default function PositionsPage() {
   const [editingPosition, setEditingPosition] = React.useState<Position | null>(null);
   const [formData, setFormData] = React.useState({
     name: '',
+    nameAr: '',
     description: '',
     level: 1,
   });
@@ -119,6 +120,7 @@ export default function PositionsPage() {
     setEditingPosition(position);
     setFormData({
       name: position.name,
+      nameAr: position.nameAr || '',
       description: position.description || '',
       level: position.level,
     });
@@ -129,6 +131,7 @@ export default function PositionsPage() {
     setEditingPosition(null);
     setFormData({
       name: '',
+      nameAr: '',
       description: '',
       level: 1,
     });
@@ -170,6 +173,18 @@ export default function PositionsPage() {
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nameAr">{t('settings.positionNameAr') || 'Position Name (Arabic)'}</Label>
+                  <Input
+                    id="nameAr"
+                    dir="rtl"
+                    value={formData.nameAr}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nameAr: e.target.value })
                     }
                     required
                   />
@@ -244,7 +259,14 @@ export default function PositionsPage() {
                   .sort((a, b) => a.level - b.level)
                   .map((position) => (
                     <TableRow key={position.id}>
-                      <TableCell className="font-medium">{position.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>{position.name}</div>
+                      {position.nameAr && (
+                        <div className="text-xs text-muted-foreground">
+                          {position.nameAr}
+                        </div>
+                      )}
+                    </TableCell>
                       <TableCell>
                         <Badge variant="outline">{position.level}</Badge>
                       </TableCell>

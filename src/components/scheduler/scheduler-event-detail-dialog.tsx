@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Bell, Users, Timer, ClipboardList, Phone, RotateCcw, FileText, Target } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { getCombinedUserName } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -204,7 +205,7 @@ export function SchedulerEventDetailDialog({
                   <span className="font-medium">Assigned To</span>
                 </div>
                 <p className="text-muted-foreground">
-                  {assignedUser.firstName} {assignedUser.lastName} ({assignedUser.email})
+                  {getCombinedUserName(assignedUser)} ({assignedUser.email})
                 </p>
                 {event.canBeEditedByAssigned && (
                   <p className="text-xs text-muted-foreground mt-1">

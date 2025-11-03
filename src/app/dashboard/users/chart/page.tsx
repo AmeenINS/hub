@@ -14,8 +14,8 @@ import { RTLChevron } from '@/components/ui/rtl-icon';
 
 interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
   email: string;
   role?: string;
   position?: string;
@@ -28,6 +28,7 @@ interface User {
 interface Position {
   id: string;
   name: string;
+  nameAr?: string;
   description?: string;
 }
 
@@ -76,12 +77,15 @@ export default function OrgChartPage() {
 
         // Map position IDs to names
         const positionMap = new Map(
-          fetchedPositions.map((p: Position) => [p.id, p.name])
+          fetchedPositions.map((p: Position) => [p.id, p])
         );
 
         // Replace position IDs with names in users
         const usersWithPositionNames = fetchedUsers.map((user: User) => {
-          const positionName = user.position ? (positionMap.get(user.position) || user.position) : undefined;
+          const positionEntry = user.position ? positionMap.get(user.position) : undefined;
+          const positionName = positionEntry
+            ? [positionEntry.name, positionEntry.nameAr].filter(Boolean).join(' / ')
+            : user.position;
           return {
             ...user,
             position: positionName,
