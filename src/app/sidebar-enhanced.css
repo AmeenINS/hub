@@ -1,0 +1,95 @@
+/* Enhanced Sidebar Styles for Better User Experience */
+
+/* Active menu item styling */
+[data-sidebar-menu-button][data-active="true"] {
+  background-color: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+  font-weight: 600;
+}
+
+/* Active submenu item styling */
+[data-sidebar-menu-sub-button][data-active="true"] {
+  background-color: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+  font-weight: 600;
+  border-right: 3px solid hsl(var(--primary));
+}
+
+[dir="rtl"] [data-sidebar-menu-sub-button][data-active="true"] {
+  border-right: none;
+  border-left: 3px solid hsl(var(--primary));
+}
+
+/* Hover effects */
+[data-sidebar-menu-button]:hover {
+  background-color: hsl(var(--sidebar-accent) / 0.7);
+  transition: all 0.2s ease-in-out;
+}
+
+[data-sidebar-menu-sub-button]:hover {
+  background-color: hsl(var(--sidebar-accent) / 0.7);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Parent menu with active child */
+[data-sidebar-menu-button].bg-sidebar-accent {
+  background-color: hsl(var(--sidebar-accent) / 0.5);
+  border-left: 3px solid hsl(var(--primary));
+}
+
+[dir="rtl"] [data-sidebar-menu-button].bg-sidebar-accent {
+  border-left: none;
+  border-right: 3px solid hsl(var(--primary));
+}
+
+/* Icon color enhancement for active items */
+[data-sidebar-menu-button][data-active="true"] svg,
+[data-sidebar-menu-sub-button][data-active="true"] svg {
+  opacity: 1;
+  filter: brightness(1.2);
+}
+
+/* Smooth transitions */
+[data-sidebar-menu-button],
+[data-sidebar-menu-sub-button] {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Badge positioning in RTL */
+[dir="rtl"] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* Collapsible menu enhancement */
+.group\/collapsible[data-state="open"] > [data-sidebar-menu-button] {
+  background-color: hsl(var(--sidebar-accent) / 0.3);
+}
+
+/* Active parent indicator */
+[data-sidebar-menu-button].bg-sidebar-accent span {
+  font-weight: 600;
+}
+
+/* Submenu indentation and styling */
+[data-sidebar-menu-sub] {
+  border-left: 1px solid hsl(var(--sidebar-border));
+  padding-left: 0.5rem;
+  margin-left: 1rem;
+}
+
+[dir="rtl"] [data-sidebar-menu-sub] {
+  border-left: none;
+  border-right: 1px solid hsl(var(--sidebar-border));
+  padding-left: 0;
+  padding-right: 0.5rem;
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+/* Focus states for accessibility */
+[data-sidebar-menu-button]:focus-visible,
+[data-sidebar-menu-sub-button]:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}

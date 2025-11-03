@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import '@/app/sidebar-enhanced.css';
 import {
   Bot,
   ChevronRight,
@@ -649,34 +650,47 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>{t('nav.mainMenu')}</SidebarGroupLabel>
           <SidebarMenu>
             {data.navMain.map((item) => {
+              const isParentActive = pathname?.startsWith(item.url) || item.isActive;
+              const hasActiveChild = item.items?.some(subItem => pathname === subItem.url);
+              
               if (item.items) {
                 return (
                   <Collapsible
                     key={item.title}
                     asChild
-                    defaultOpen={item.isActive}
+                    defaultOpen={isParentActive}
                     className="group/collapsible"
                   >
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={item.title}>
+                        <SidebarMenuButton 
+                          tooltip={item.title}
+                          isActive={hasActiveChild}
+                          className={hasActiveChild ? 'bg-sidebar-accent' : ''}
+                        >
                           {item.icon && <item.icon className={item.iconColor} />}
-                          <span>{item.title}</span>
+                          <span className={hasActiveChild ? 'font-bold' : ''}>{item.title}</span>
                           <ChevronRight className={`ml-auto transition-transform duration-200 ${dir === 'rtl' ? 'rotate-180 group-data-[state=open]/collapsible:rotate-90' : 'group-data-[state=open]/collapsible:rotate-90'}`} />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <Link href={subItem.url}>
-                                  {subItem.icon && <subItem.icon className={subItem.iconColor} />}
-                                  <span>{subItem.title}</span>
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
+                          {item.items?.map((subItem) => {
+                            const isSubItemActive = pathname === subItem.url;
+                            return (
+                              <SidebarMenuSubItem key={subItem.title}>
+                                <SidebarMenuSubButton 
+                                  asChild 
+                                  isActive={isSubItemActive}
+                                >
+                                  <Link href={subItem.url}>
+                                    {subItem.icon && <subItem.icon className={subItem.iconColor} />}
+                                    <span className={isSubItemActive ? 'font-bold' : ''}>{subItem.title}</span>
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </SidebarMenuItem>
@@ -688,7 +702,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
                     <Link href={item.url}>
                       {item.icon && <item.icon className={item.iconColor} />}
-                      <span>{item.title}</span>
+                      <span className={item.isActive ? 'font-bold' : ''}>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -699,21 +713,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>{t('common.more')}</SidebarGroupLabel>
           <SidebarMenu>
-            {data.navSecondary.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild size="sm">
-                  <Link href={item.url}>
-                    <item.icon className={item.iconColor} />
-                    <span>{item.title}</span>
-                    {item.badge && parseInt(item.badge) > 0 && (
-                      <Badge variant="destructive" className="ml-auto text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {data.navSecondary.map((item) => {
+              const isSecondaryActive = pathname?.startsWith(item.url);
+              return (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild size="sm" isActive={isSecondaryActive}>
+                    <Link href={item.url}>
+                      <item.icon className={item.iconColor} />
+                      <span className={isSecondaryActive ? 'font-bold' : ''}>{item.title}</span>
+                      {item.badge && parseInt(item.badge) > 0 && (
+                        <Badge variant="destructive" className="ml-auto text-xs">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
