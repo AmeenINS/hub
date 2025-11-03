@@ -70,7 +70,7 @@ interface AppModule {
 }
 
 export default function DashboardPage() {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const { token } = useAuthStore();
   const router = useRouter();
   const { unreadCount } = useRealTimeNotifications();
@@ -386,7 +386,10 @@ export default function DashboardPage() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] sm:w-auto max-w-none p-6">
+        <DialogContent 
+          className="w-[calc(100vw-2rem)] sm:w-auto max-w-none p-6"
+          closeButtonPosition={dir === 'rtl' ? 'left' : 'right'}
+        >
           <DialogHeader className="pb-4">
             <DialogTitle className="flex items-center gap-3">
               {selectedModule && (
