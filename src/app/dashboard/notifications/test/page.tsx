@@ -9,6 +9,26 @@ import { Badge } from '@/components/ui/badge';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
 import { Bell, RefreshCw, Send, Activity, Wifi, WifiOff } from 'lucide-react';
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+interface NotificationStats {
+  stats: {
+    totalNotifications: number;
+    userNotifications: number;
+    unreadCount: number;
+    sseConnections: number;
+    totalSseConnections: number;
+  };
+  recentNotifications: Notification[];
+}
+
 export default function NotificationTestPage() {
   const {
     unreadCount,
@@ -18,15 +38,15 @@ export default function NotificationTestPage() {
     markAllAsRead
   } = useRealTimeNotifications();
 
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [testForm, setTestForm] = useState({
-    title: 'تست اعلان',
-    message: 'این یک پیام تستی است',
+    title: 'Test Notification',
+    message: 'This is a test notification message',
     type: 'info'
   });
 
-  // بارگذاری آمار
+  // Load statistics
   const loadStats = async () => {
     try {
       const response = await fetch('/api/notifications/test');
@@ -39,7 +59,7 @@ export default function NotificationTestPage() {
     }
   };
 
-  // ارسال notification تستی
+  // Send test notification
   const sendTestNotification = async () => {
     setLoading(true);
     try {
@@ -52,28 +72,28 @@ export default function NotificationTestPage() {
       if (response.ok) {
         const result = await response.json();
         console.log('✅ Test notification sent:', result);
-        alert('✅ Notification ارسال شد!\nSSE Connections: ' + result.sseConnections);
+        alert('✅ Notification sent successfully!\nSSE Connections: ' + result.sseConnections);
         
-        // رفرش آمار
+        // Refresh statistics
         await loadStats();
       } else {
         const error = await response.json();
-        alert('❌ خطا: ' + error.error);
+        alert('❌ Error: ' + error.error);
       }
     } catch (error) {
       console.error('Error sending test notification:', error);
-      alert('❌ خطا در ارسال notification');
+      alert('❌ Error sending notification');
     } finally {
       setLoading(false);
     }
   };
 
-  // بارگذاری اولیه
+  // Initial load
   useEffect(() => {
     loadStats();
   }, []);
 
-  // رفرش خودکار آمار
+  // Auto-refresh statistics
   useEffect(() => {
     const interval = setInterval(loadStats, 5000);
     return () => clearInterval(interval);
@@ -85,9 +105,9 @@ export default function NotificationTestPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">تست سیستم Notifications</h1>
+            <h1 className="text-3xl font-bold">Notification System Test</h1>
             <p className="text-muted-foreground mt-2">
-              برای تست real-time notifications در حالت development
+              Test real-time notifications in development mode
             </p>
           </div>
           <Button onClick={loadStats} variant="outline" size="icon">
@@ -100,7 +120,7 @@ export default function NotificationTestPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              وضعیت اتصال
+              Connection Status
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -112,12 +132,12 @@ export default function NotificationTestPage() {
                   <WifiOff className="h-5 w-5 text-red-500" />
                 )}
                 <div>
-                  <div className="text-sm text-muted-foreground">وضعیت SSE</div>
+                  <div className="text-sm text-muted-foreground">SSE Status</div>
                   <div className="font-semibold">
                     {isConnected ? (
-                      <span className="text-green-600">متصل ✓</span>
+                      <span className="text-green-600">Connected ✓</span>
                     ) : (
-                      <span className="text-red-600">قطع ✗</span>
+                      <span className="text-red-600">Disconnected ✗</span>
                     )}
                   </div>
                 </div>
@@ -134,7 +154,7 @@ export default function NotificationTestPage() {
               <div className="flex items-center gap-3 p-4 border rounded-lg">
                 <Activity className="h-5 w-5 text-orange-500" />
                 <div>
-                  <div className="text-sm text-muted-foreground">روش دریافت</div>
+                  <div className="text-sm text-muted-foreground">Delivery Method</div>
                   <div className="font-semibold">
                     {usePolling ? (
                       <Badge variant="outline">Polling (30s)</Badge>
@@ -152,26 +172,26 @@ export default function NotificationTestPage() {
         {stats && (
           <Card>
             <CardHeader>
-              <CardTitle>آمار سیستم</CardTitle>
-              <CardDescription>آمار کلی notifications و اتصالات</CardDescription>
+              <CardTitle>System Statistics</CardTitle>
+              <CardDescription>Overall notifications and connections statistics</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{stats.stats.totalNotifications}</div>
-                  <div className="text-sm text-muted-foreground">کل Notifications</div>
+                  <div className="text-sm text-muted-foreground">Total Notifications</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{stats.stats.userNotifications}</div>
-                  <div className="text-sm text-muted-foreground">Notifications شما</div>
+                  <div className="text-sm text-muted-foreground">Your Notifications</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{stats.stats.sseConnections}</div>
-                  <div className="text-sm text-muted-foreground">اتصالات SSE شما</div>
+                  <div className="text-sm text-muted-foreground">Your SSE Connections</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold">{stats.stats.totalSseConnections}</div>
-                  <div className="text-sm text-muted-foreground">کل اتصالات SSE</div>
+                  <div className="text-sm text-muted-foreground">Total SSE Connections</div>
                 </div>
               </div>
             </CardContent>
@@ -181,37 +201,38 @@ export default function NotificationTestPage() {
         {/* Test Form */}
         <Card>
           <CardHeader>
-            <CardTitle>ارسال Notification تستی</CardTitle>
+            <CardTitle>Send Test Notification</CardTitle>
             <CardDescription>
-              یک notification تستی ایجاد کنید و broadcast آن را مشاهده کنید
+              Create a test notification and observe its broadcast
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="title">عنوان</Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   value={testForm.title}
                   onChange={(e) => setTestForm({ ...testForm, title: e.target.value })}
-                  placeholder="عنوان notification"
+                  placeholder="Notification title"
                 />
               </div>
 
               <div>
-                <Label htmlFor="message">پیام</Label>
+                <Label htmlFor="message">Message</Label>
                 <Input
                   id="message"
                   value={testForm.message}
                   onChange={(e) => setTestForm({ ...testForm, message: e.target.value })}
-                  placeholder="متن notification"
+                  placeholder="Notification message"
                 />
               </div>
 
               <div>
-                <Label htmlFor="type">نوع</Label>
+                <Label htmlFor="type">Type</Label>
                 <select
                   id="type"
+                  title="Notification type"
                   value={testForm.type}
                   onChange={(e) => setTestForm({ ...testForm, type: e.target.value })}
                   className="w-full p-2 border rounded-md"
@@ -232,12 +253,12 @@ export default function NotificationTestPage() {
                   {loading ? (
                     <>
                       <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      در حال ارسال...
+                      Sending...
                     </>
                   ) : (
                     <>
                       <Send className="mr-2 h-4 w-4" />
-                      ارسال Notification تستی
+                      Send Test Notification
                     </>
                   )}
                 </Button>
@@ -247,14 +268,14 @@ export default function NotificationTestPage() {
                   variant="outline"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  رفرش دستی
+                  Manual Refresh
                 </Button>
 
                 <Button
                   onClick={markAllAsRead}
                   variant="outline"
                 >
-                  خواندن همه
+                  Mark All Read
                 </Button>
               </div>
             </div>
@@ -265,11 +286,11 @@ export default function NotificationTestPage() {
         {stats?.recentNotifications && stats.recentNotifications.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>آخرین Notifications</CardTitle>
+              <CardTitle>Recent Notifications</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {stats.recentNotifications.map((notif: any) => (
+                {stats.recentNotifications.map((notif) => (
                   <div
                     key={notif.id}
                     className={`p-3 border rounded-lg flex items-start gap-3 ${
@@ -297,17 +318,17 @@ export default function NotificationTestPage() {
         {/* Instructions */}
         <Card>
           <CardHeader>
-            <CardTitle>راهنمای تست</CardTitle>
+            <CardTitle>Test Instructions</CardTitle>
           </CardHeader>
           <CardContent>
             <ol className="list-decimal list-inside space-y-2 text-sm">
-              <li>وضعیت اتصال را در بالا بررسی کنید (باید SSE متصل باشد)</li>
-              <li>یک notification تستی ارسال کنید</li>
-              <li>باید فوراً unread count بالا برود (در 1 ثانیه)</li>
-              <li>در console browser لاگ‌های SSE را مشاهده کنید</li>
-              <li>برای تست Polling، اتصال اینترنت را قطع کنید</li>
-              <li>بعد از 3 retry شکست، باید به Polling سوییچ کند</li>
-              <li>در حالت Polling هر 30 ثانیه یکبار update می‌شود</li>
+              <li>Check the connection status above (SSE should be connected)</li>
+              <li>Send a test notification</li>
+              <li>Unread count should increase immediately (within 1 second)</li>
+              <li>Check SSE logs in browser console</li>
+              <li>To test Polling, disconnect your internet</li>
+              <li>After 3 failed retries, it should switch to Polling</li>
+              <li>In Polling mode, updates happen every 30 seconds</li>
             </ol>
           </CardContent>
         </Card>

@@ -13,6 +13,7 @@ export interface User {
   fullNameAr?: string;
   phoneNumber?: string;
   avatar?: string;
+  avatarUrl?: string; // URL to uploaded avatar image (from file upload system)
   // Position for organizational chart
   position?: string;
   department?: string;

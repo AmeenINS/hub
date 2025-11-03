@@ -20,12 +20,14 @@ import { LanguageToggle } from '@/components/language-toggle';
 import { OverlayScrollbar } from '@/components/ui/overlay-scrollbar';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
+import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
 
 interface UserSettings {
   fullNameEn: string;
   fullNameAr: string;
   email: string;
   phoneNumber?: string;
+  avatarUrl?: string;
   emailNotifications: boolean;
   pushNotifications: boolean;
   taskNotifications: boolean;
@@ -46,11 +48,13 @@ export default function SettingsPage() {
   const { token, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [userId, setUserId] = useState<string>('');
   const [settings, setSettings] = useState<UserSettings>({
     fullNameEn: '',
     fullNameAr: '',
     email: '',
     phoneNumber: '',
+    avatarUrl: '',
     emailNotifications: true,
     pushNotifications: true,
     taskNotifications: true,
@@ -98,11 +102,13 @@ const [positionForm, setPositionForm] = useState({
 
       if (response.ok) {
         const data = await response.json();
+        setUserId(data.id);
         setSettings({
           fullNameEn: data.fullNameEn || '',
           fullNameAr: data.fullNameAr || '',
           email: data.email || '',
           phoneNumber: data.phoneNumber || '',
+          avatarUrl: data.avatarUrl || '',
           emailNotifications: data.emailNotifications ?? true,
           pushNotifications: data.pushNotifications ?? true,
           taskNotifications: data.taskNotifications ?? true,
@@ -408,12 +414,26 @@ const [positionForm, setPositionForm] = useState({
 
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('settings.profile')}</CardTitle>
-              <CardDescription>{t('settings.updateProfile')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <div className="space-y-6">
+            {/* Avatar Upload */}
+            {userId && (
+              <UserAvatarUpload
+                userId={userId}
+                currentAvatarUrl={settings.avatarUrl}
+                userFullName={settings.fullNameEn}
+                token={token || undefined}
+                onAvatarUpdated={(avatarUrl) => setSettings({ ...settings, avatarUrl })}
+                variant="card"
+              />
+            )}
+
+            {/* Profile Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('settings.profile')}</CardTitle>
+                <CardDescription>{t('settings.updateProfile')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="fullNameEn">{t('users.fullNameEn') || 'Full Name (English)'}</Label>
@@ -458,6 +478,7 @@ const [positionForm, setPositionForm] = useState({
               </Button>
             </CardContent>
           </Card>
+          </div>
         </TabsContent>
 
         {/* Notifications Tab */}

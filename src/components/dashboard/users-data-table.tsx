@@ -37,12 +37,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useI18n } from '@/lib/i18n/i18n-context';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export type User = {
   id: string;
   email: string;
   fullNameEn: string;
   fullNameAr?: string;
+  avatarUrl?: string;
   isActive: boolean;
   emailVerified: boolean;
   createdAt: string;
@@ -117,12 +119,27 @@ export function UsersDataTable({ data, onEdit, onDelete, onToggleStatus }: DataT
       header: t('users.fullName'),
       cell: ({ row }) => {
         const user = row.original;
+        const getInitials = () => {
+          const name = user.fullNameEn || user.fullNameAr || user.email;
+          const parts = name.trim().split(' ');
+          if (parts.length >= 2) {
+            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+          }
+          return name[0].toUpperCase();
+        };
+        
         return (
-          <div className="flex flex-col">
-            <span className="font-medium">{user.fullNameEn || user.fullNameAr}</span>
-            {user.fullNameAr && (
-              <span className="text-xs text-muted-foreground">{user.fullNameAr}</span>
-            )}
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.avatarUrl} alt={user.fullNameEn || user.email} />
+              <AvatarFallback className="text-xs">{getInitials()}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium">{user.fullNameEn || user.fullNameAr}</span>
+              {user.fullNameAr && user.fullNameEn && (
+                <span className="text-xs text-muted-foreground">{user.fullNameAr}</span>
+              )}
+            </div>
           </div>
         );
       },

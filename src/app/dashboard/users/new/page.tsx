@@ -37,6 +37,8 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
+import { ImageUpload } from '@/components/ui/image-upload';
+import type { UploadedFile } from '@/components/ui/file-upload';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -83,6 +85,9 @@ export default function NewUserPage() {
   const [loadingPositions, setLoadingPositions] = React.useState(true);
   const [users, setUsers] = React.useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(true);
+  const [avatarUrl, setAvatarUrl] = React.useState<string>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [uploadedFile, setUploadedFile] = React.useState<UploadedFile | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -164,13 +169,20 @@ export default function NewUserPage() {
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
+      
+      // Include avatarUrl if uploaded
+      const userData = {
+        ...data,
+        ...(avatarUrl && { avatarUrl }),
+      };
+      
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
@@ -219,6 +231,32 @@ export default function NewUserPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Avatar Upload Section */}
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-base">Profile Picture</CardTitle>
+                  <CardDescription>
+                    Upload a profile picture for the new user
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ImageUpload
+                    onUploadComplete={(file) => {
+                      setUploadedFile(file);
+                      setAvatarUrl(file.fileUrl);
+                      toast.success('Avatar uploaded successfully');
+                    }}
+                    onUploadError={(error) => {
+                      toast.error(error);
+                    }}
+                    variant="card"
+                    size="sm"
+                    maxSize={5 * 1024 * 1024} // 5MB
+                    currentImageUrl={avatarUrl}
+                  />
+                </CardContent>
+              </Card>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}

@@ -745,7 +745,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
-                      src={user?.avatar}
+                      src={user?.avatarUrl || user?.avatar}
                       alt={user ? getLocalizedUserName(user, locale) : undefined}
                     />
                     <AvatarFallback className="rounded-lg">
@@ -776,7 +776,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarImage
-                        src={user?.avatar}
+                        src={user?.avatarUrl || user?.avatar}
                         alt={user ? getLocalizedUserName(user, locale) : undefined}
                       />
                       <AvatarFallback className="rounded-lg">

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { 
   Tooltip,
@@ -20,6 +20,7 @@ interface User {
   fullNameEn: string;
   fullNameAr?: string;
   email: string;
+  avatarUrl?: string;
   role?: string;
   position?: string;
   department?: string;
@@ -122,6 +123,10 @@ const OrgNode: React.FC<{
                   {/* Avatar and Name Section */}
                   <div className="flex items-center gap-2 mb-2">
                     <Avatar className={`h-10 w-10 ring-2 ring-offset-1 ${getPositionColor(level)} ring-opacity-50 shrink-0`}>
+                      <AvatarImage 
+                        src={user.avatarUrl} 
+                        alt={userName}
+                      />
                       <AvatarFallback className={`${getPositionColor(level)} text-white text-xs font-bold`}>
                         {getUserInitials(user)}
                       </AvatarFallback>

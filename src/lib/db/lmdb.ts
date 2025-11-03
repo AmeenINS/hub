@@ -94,6 +94,9 @@ class LMDBManager {
     // Notifications
     this.databases.set('notifications', this.db.openDB({ name: 'notifications', encoding: 'json' }));
 
+    // File uploads
+    this.databases.set('files', this.db.openDB({ name: 'files', encoding: 'json' }));
+
     // Support
     this.databases.set('support_messages', this.db.openDB({ name: 'support_messages', encoding: 'json' }));
 

@@ -17,7 +17,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import '@/app/orgchart.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Building2, Users as UsersIcon } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/i18n-context';
@@ -28,6 +28,7 @@ interface User {
   fullNameEn: string;
   fullNameAr?: string;
   email: string;
+  avatarUrl?: string;
   role?: string;
   position?: string;
   positionId?: string;
@@ -79,6 +80,10 @@ const CustomNode = ({ data }: { data: CustomNodeData }) => {
           {/* Avatar and Name Section */}
           <div className="flex items-center gap-3 mb-3">
             <Avatar className={`h-12 w-12 ring-2 ring-offset-2 ${getPositionColor(data.level)} ring-opacity-50 shrink-0`}>
+              <AvatarImage 
+                src={data.user.avatarUrl} 
+                alt={userName}
+              />
               <AvatarFallback className={`${getPositionColor(data.level)} text-white text-sm font-bold`}>
                 {getUserInitials(data.user)}
               </AvatarFallback>

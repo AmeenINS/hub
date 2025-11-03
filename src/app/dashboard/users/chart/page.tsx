@@ -17,6 +17,7 @@ interface User {
   fullNameEn: string;
   fullNameAr?: string;
   email: string;
+  avatarUrl?: string;
   role?: string;
   position?: string;
   positionId?: string;

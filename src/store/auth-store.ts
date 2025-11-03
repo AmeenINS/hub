@@ -9,6 +9,7 @@ interface User {
   fullNameAr?: string;
   roles: string[];
   avatar?: string;
+  avatarUrl?: string;
 }
 
 interface AuthState {
@@ -31,12 +32,12 @@ export const useAuthStore = create<AuthState>()(
       setLoading: (loading) => set({ isLoading: loading }),
       login: (user, token) => {
         // Store token in cookie for middleware
-        Cookies.set('auth-token', token, { expires: 7, sameSite: 'strict' });
+        Cookies.set('token', token, { expires: 7, sameSite: 'strict' });
         set({ user, token, isAuthenticated: true });
       },
       logout: () => {
         // Remove token from cookie
-        Cookies.remove('auth-token');
+        Cookies.remove('token');
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),
@@ -48,7 +49,7 @@ export const useAuthStore = create<AuthState>()(
         
         // Sync cookie with store
         if (state?.token) {
-          Cookies.set('auth-token', state.token, { expires: 7, sameSite: 'strict' });
+          Cookies.set('token', state.token, { expires: 7, sameSite: 'strict' });
         }
       },
     }

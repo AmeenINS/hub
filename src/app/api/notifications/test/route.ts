@@ -3,9 +3,19 @@ import { JWTService } from '@/lib/auth/jwt';
 import { lmdb } from '@/lib/db/lmdb';
 import { SSEBroadcast } from '@/lib/sse-broadcast';
 
+interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 /**
- * Test endpoint برای ایجاد notification تستی
- * فقط در development mode کار می‌کند
+ * Test endpoint to create a test notification
+ * Only available in development mode
  */
 export async function POST(request: NextRequest) {
   // فقط در development
@@ -26,20 +36,21 @@ export async function POST(request: NextRequest) {
 
     const { title, message, type = 'info' } = await request.json();
 
-    // ایجاد notification تستی
-    const notification = {
-      id: `test-${Date.now()}`,
+    // Create test notification
+    const notificationId = `test-${Date.now()}`;
+    const notification: Notification = {
+      id: notificationId,
       userId: payload.userId,
       title: title || 'Test Notification',
-      message: message || 'این یک notification تستی است',
+      message: message || 'This is a test notification',
       type,
       isRead: false,
       createdAt: new Date().toISOString()
     };
 
-    await lmdb.insert('notifications', notification);
+    await lmdb.create('notifications', notificationId, notification);
 
-    // Broadcast فوری به کاربر
+    // Broadcast immediately to user
     await SSEBroadcast.broadcastToUser(payload.userId);
 
     console.log('✅ Test notification created and broadcasted:', notification);
@@ -60,7 +71,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Health check و statistics
+ * Health check and statistics
  */
 export async function GET(request: NextRequest) {
   try {
@@ -74,12 +85,12 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // آمار کلی
-    const allNotifications = await lmdb.query('notifications', () => true);
+    // Overall statistics
+    const allNotifications = await lmdb.query('notifications', () => true) as Notification[];
     const userNotifications = allNotifications.filter(
-      (n: any) => n.userId === payload.userId
+      (n) => n.userId === payload.userId
     );
-    const unreadCount = userNotifications.filter((n: any) => !n.isRead).length;
+    const unreadCount = userNotifications.filter((n) => !n.isRead).length;
 
     return Response.json({
       stats: {

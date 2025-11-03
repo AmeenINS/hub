@@ -37,6 +37,7 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
+import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -70,6 +71,7 @@ interface User {
   fullNameEn: string;
   fullNameAr?: string;
   phoneNumber?: string;
+  avatarUrl?: string;
   position?: string;
   department?: string;
   managerId?: string;
@@ -319,6 +321,17 @@ export default function EditUserPage() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Avatar Upload Section */}
+          {userData && (
+            <UserAvatarUpload
+              userId={userId}
+              currentAvatarUrl={userData.avatarUrl}
+              userFullName={userData.fullNameEn}
+              token={token || undefined}
+              variant="card"
+            />
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>{t('users.basicInformation')}</CardTitle>
