@@ -171,7 +171,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // CRM Module
     {
-      title: 'CRM & Sales',
+      title: t('modules.crm'),
       url: '/dashboard/crm',
       icon: Users2,
       iconColor: 'text-purple-600 dark:text-purple-400',
@@ -179,37 +179,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'crm',
       items: [
         {
-          title: 'Contacts',
+          title: t('modules.contacts'),
           url: '/dashboard/crm/contacts',
           icon: UserCheck,
           iconColor: 'text-purple-500',
         },
         {
-          title: 'Companies',
+          title: t('modules.companies'),
           url: '/dashboard/crm/companies',
           icon: Building2,
           iconColor: 'text-purple-600',
         },
         {
-          title: 'Leads',
+          title: t('modules.leads'),
           url: '/dashboard/crm/leads',
           icon: Target,
           iconColor: 'text-purple-700',
         },
         {
-          title: 'Deals',
+          title: t('modules.deals'),
           url: '/dashboard/crm/deals',
           icon: Briefcase,
           iconColor: 'text-purple-800',
         },
         {
-          title: 'Activities',
+          title: t('modules.activities'),
           url: '/dashboard/crm/activities',
           icon: Activity,
           iconColor: 'text-purple-500',
         },
         {
-          title: 'Campaigns',
+          title: t('modules.campaigns'),
           url: '/dashboard/crm/campaigns',
           icon: Mail,
           iconColor: 'text-purple-600',
@@ -218,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Policy Management Module
     {
-      title: 'Policy Management',
+      title: t('modules.policies'),
       url: '/dashboard/policies',
       icon: FileText,
       iconColor: 'text-emerald-600 dark:text-emerald-400',
@@ -226,31 +226,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'policies',
       items: [
         {
-          title: 'All Policies',
+          title: t('modules.allPolicies'),
           url: '/dashboard/policies',
           icon: FileCheck,
           iconColor: 'text-emerald-500',
         },
         {
-          title: 'New Policy',
+          title: t('modules.newPolicy'),
           url: '/dashboard/policies/new',
           icon: FileText,
           iconColor: 'text-emerald-600',
         },
         {
-          title: 'Renewals',
+          title: t('modules.renewals'),
           url: '/dashboard/policies/renewals',
           icon: Clock,
           iconColor: 'text-emerald-700',
         },
         {
-          title: 'Expired',
+          title: t('modules.expired'),
           url: '/dashboard/policies/expired',
           icon: AlertCircle,
           iconColor: 'text-red-500',
         },
         {
-          title: 'Policy Types',
+          title: t('modules.policyTypes'),
           url: '/dashboard/policies/types',
           icon: Layers,
           iconColor: 'text-emerald-600',
@@ -259,7 +259,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Claims Management Module
     {
-      title: 'Claims Management',
+      title: t('modules.claims'),
       url: '/dashboard/claims',
       icon: ClipboardList,
       iconColor: 'text-orange-600 dark:text-orange-400',
@@ -267,37 +267,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'claims',
       items: [
         {
-          title: 'All Claims',
+          title: t('modules.allClaims'),
           url: '/dashboard/claims',
           icon: ClipboardList,
           iconColor: 'text-orange-500',
         },
         {
-          title: 'New Claim',
+          title: t('modules.newClaim'),
           url: '/dashboard/claims/new',
           icon: FileText,
           iconColor: 'text-orange-600',
         },
         {
-          title: 'Pending',
+          title: t('modules.pending'),
           url: '/dashboard/claims/pending',
           icon: Clock,
           iconColor: 'text-yellow-600',
         },
         {
-          title: 'Approved',
+          title: t('modules.approved'),
           url: '/dashboard/claims/approved',
           icon: CheckCircle2,
           iconColor: 'text-green-600',
         },
         {
-          title: 'Rejected',
+          title: t('modules.rejected'),
           url: '/dashboard/claims/rejected',
           icon: AlertCircle,
           iconColor: 'text-red-600',
         },
         {
-          title: 'Processing',
+          title: t('modules.processing'),
           url: '/dashboard/claims/processing',
           icon: Workflow,
           iconColor: 'text-orange-700',
@@ -306,7 +306,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Commission & Accounting Module
     {
-      title: 'Finance & Accounting',
+      title: t('modules.accounting'),
       url: '/dashboard/accounting',
       icon: Calculator,
       iconColor: 'text-teal-600 dark:text-teal-400',
@@ -314,37 +314,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'accounting',
       items: [
         {
-          title: 'Commission',
+          title: t('modules.commission'),
           url: '/dashboard/commission',
           icon: DollarSign,
           iconColor: 'text-teal-500',
         },
         {
-          title: 'Payouts',
+          title: t('modules.payouts'),
           url: '/dashboard/commission/payouts',
           icon: Wallet,
           iconColor: 'text-teal-600',
         },
         {
-          title: 'Invoices',
+          title: t('modules.invoices'),
           url: '/dashboard/accounting/invoices',
           icon: Receipt,
           iconColor: 'text-teal-700',
         },
         {
-          title: 'Payments',
+          title: t('modules.payments'),
           url: '/dashboard/accounting/payments',
           icon: CreditCard,
           iconColor: 'text-teal-800',
         },
         {
-          title: 'Transactions',
+          title: t('modules.transactions'),
           url: '/dashboard/accounting/transactions',
           icon: Banknote,
           iconColor: 'text-teal-600',
         },
         {
-          title: 'Reports',
+          title: t('nav.reports'),
           url: '/dashboard/accounting/reports',
           icon: FileSpreadsheet,
           iconColor: 'text-teal-700',
@@ -353,7 +353,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Workflow & Automation Module
     {
-      title: 'Workflow & Tasks',
+      title: t('modules.workflows'),
       url: '/dashboard/workflows',
       icon: GitBranch,
       iconColor: 'text-indigo-600 dark:text-indigo-400',
@@ -361,19 +361,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'workflows',
       items: [
         {
-          title: 'Workflows',
+          title: t('modules.workflows'),
           url: '/dashboard/workflows',
           icon: GitBranch,
           iconColor: 'text-indigo-500',
         },
         {
-          title: 'Automations',
+          title: t('modules.automations'),
           url: '/dashboard/workflows/automations',
           icon: Workflow,
           iconColor: 'text-indigo-600',
         },
         {
-          title: 'Templates',
+          title: t('modules.templates'),
           url: '/dashboard/workflows/templates',
           icon: Folder,
           iconColor: 'text-indigo-700',
@@ -411,7 +411,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Scheduler Module
     {
-      title: 'Scheduler & Calendar',
+      title: t('modules.scheduler'),
       url: '/dashboard/scheduler',
       icon: CalendarIcon,
       iconColor: 'text-cyan-600 dark:text-cyan-400',
@@ -419,19 +419,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'scheduler',
       items: [
         {
-          title: 'All Events',
+          title: t('modules.allEvents'),
           url: '/dashboard/scheduler',
           icon: CalendarIcon,
           iconColor: 'text-cyan-500',
         },
         {
-          title: 'New Event',
+          title: t('modules.newEvent'),
           url: '/dashboard/scheduler/new',
           icon: FileText,
           iconColor: 'text-cyan-600',
         },
         {
-          title: 'Calendar View',
+          title: t('modules.calendarView'),
           url: '/dashboard/scheduler?view=calendar',
           icon: Clock,
           iconColor: 'text-cyan-700',
@@ -440,7 +440,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Inventory Module (if applicable for insurance products)
     {
-      title: 'Inventory & Products',
+      title: t('modules.inventory'),
       url: '/dashboard/inventory',
       icon: Package,
       iconColor: 'text-amber-600 dark:text-amber-400',
@@ -448,19 +448,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'inventory',
       items: [
         {
-          title: 'All Products',
+          title: t('modules.allProducts'),
           url: '/dashboard/inventory',
           icon: Package,
           iconColor: 'text-amber-500',
         },
         {
-          title: 'Categories',
+          title: t('modules.categories'),
           url: '/dashboard/inventory/categories',
           icon: Layers,
           iconColor: 'text-amber-600',
         },
         {
-          title: 'Stock',
+          title: t('modules.stock'),
           url: '/dashboard/inventory/stock',
           icon: ShoppingCart,
           iconColor: 'text-amber-700',
@@ -469,7 +469,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     // Procurement Module
     {
-      title: 'Procurement',
+      title: t('modules.procurement'),
       url: '/dashboard/procurement',
       icon: TruckIcon,
       iconColor: 'text-yellow-600 dark:text-yellow-400',
@@ -477,19 +477,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       module: 'procurement',
       items: [
         {
-          title: 'Purchase Orders',
+          title: t('modules.purchaseOrders'),
           url: '/dashboard/procurement/orders',
           icon: FileText,
           iconColor: 'text-yellow-500',
         },
         {
-          title: 'Suppliers',
+          title: t('modules.suppliers'),
           url: '/dashboard/procurement/suppliers',
           icon: Building2,
           iconColor: 'text-yellow-600',
         },
         {
-          title: 'Requisitions',
+          title: t('modules.requisitions'),
           url: '/dashboard/procurement/requisitions',
           icon: ClipboardList,
           iconColor: 'text-yellow-700',

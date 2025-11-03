@@ -91,6 +91,69 @@ export const translations = {
       settings: 'Settings',
     },
     
+    // Modules - Sidebar Menu
+    modules: {
+      crm: 'CRM',
+      crmDesc: 'Customer Relations',
+      contacts: 'Contacts',
+      companies: 'Companies',
+      leads: 'Leads',
+      deals: 'Deals',
+      activities: 'Activities',
+      campaigns: 'Campaigns',
+      
+      policies: 'Policy Management',
+      policiesDesc: 'Insurance Policies',
+      allPolicies: 'All Policies',
+      newPolicy: 'New Policy',
+      renewals: 'Renewals',
+      expired: 'Expired',
+      policyTypes: 'Policy Types',
+      
+      claims: 'Claims Management',
+      claimsDesc: 'Process Claims',
+      allClaims: 'All Claims',
+      newClaim: 'New Claim',
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      processing: 'Processing',
+      
+      accounting: 'Finance & Accounting',
+      accountingDesc: 'Financial Management',
+      commission: 'Commission',
+      payouts: 'Payouts',
+      invoices: 'Invoices',
+      payments: 'Payments',
+      transactions: 'Transactions',
+      
+      scheduler: 'Scheduler',
+      schedulerDesc: 'Calendar & Events',
+      allEvents: 'All Events',
+      newEvent: 'New Event',
+      calendarView: 'Calendar View',
+      
+      workflows: 'Workflow',
+      workflowsDesc: 'Automation & Workflows',
+      automations: 'Automations',
+      templates: 'Templates',
+      
+      orgChart: 'Org Chart',
+      orgChartDesc: 'Organization Structure',
+      
+      inventory: 'Inventory',
+      inventoryDesc: 'Products & Stock',
+      allProducts: 'All Products',
+      categories: 'Categories',
+      stock: 'Stock',
+      
+      procurement: 'Procurement',
+      procurementDesc: 'Purchase Orders',
+      purchaseOrders: 'Purchase Orders',
+      suppliers: 'Suppliers',
+      requisitions: 'Requisitions',
+    },
+    
     // Dashboard
     dashboard: {
       title: 'Dashboard',
@@ -132,6 +195,10 @@ export const translations = {
       organizationChart: 'Organization Chart',
       orgChartDescription: 'View the organizational structure and hierarchy',
       noUsersData: 'No users data available',
+      salesReports: 'Sales Reports',
+      financialReports: 'Financial Reports',
+      performance: 'Performance',
+      customReports: 'Custom Reports',
     },
     
     // Tasks
@@ -708,6 +775,69 @@ export const translations = {
       settings: 'الإعدادات',
     },
     
+    // Modules - Sidebar Menu
+    modules: {
+      crm: 'إدارة علاقات العملاء',
+      crmDesc: 'العلاقات مع العملاء',
+      contacts: 'جهات الاتصال',
+      companies: 'الشركات',
+      leads: 'العملاء المحتملون',
+      deals: 'الصفقات',
+      activities: 'الأنشطة',
+      campaigns: 'الحملات',
+      
+      policies: 'إدارة البوالص',
+      policiesDesc: 'بوالص التأمين',
+      allPolicies: 'جميع البوالص',
+      newPolicy: 'بوليصة جديدة',
+      renewals: 'التجديدات',
+      expired: 'المنتهية',
+      policyTypes: 'أنواع البوالص',
+      
+      claims: 'إدارة المطالبات',
+      claimsDesc: 'معالجة المطالبات',
+      allClaims: 'جميع المطالبات',
+      newClaim: 'مطالبة جديدة',
+      pending: 'قيد الانتظار',
+      approved: 'موافق عليها',
+      rejected: 'مرفوضة',
+      processing: 'قيد المعالجة',
+      
+      accounting: 'المالية والمحاسبة',
+      accountingDesc: 'الإدارة المالية',
+      commission: 'العمولات',
+      payouts: 'المدفوعات',
+      invoices: 'الفواتير',
+      payments: 'الدفعات',
+      transactions: 'المعاملات',
+      
+      scheduler: 'المجدول',
+      schedulerDesc: 'التقويم والفعاليات',
+      allEvents: 'جميع الفعاليات',
+      newEvent: 'فعالية جديدة',
+      calendarView: 'عرض التقويم',
+      
+      workflows: 'سير العمل',
+      workflowsDesc: 'الأتمتة وسير العمل',
+      automations: 'الأتمتة',
+      templates: 'القوالب',
+      
+      orgChart: 'المخطط التنظيمي',
+      orgChartDesc: 'الهيكل التنظيمي',
+      
+      inventory: 'المخزون',
+      inventoryDesc: 'المنتجات والمخزون',
+      allProducts: 'جميع المنتجات',
+      categories: 'الفئات',
+      stock: 'المخزون',
+      
+      procurement: 'المشتريات',
+      procurementDesc: 'أوامر الشراء',
+      purchaseOrders: 'أوامر الشراء',
+      suppliers: 'الموردون',
+      requisitions: 'طلبات الشراء',
+    },
+    
     // Dashboard
     dashboard: {
       title: 'لوحة التحكم',
@@ -749,6 +879,10 @@ export const translations = {
       organizationChart: 'المخطط التنظيمي',
       orgChartDescription: 'عرض الهيكل التنظيمي والتسلسل الهرمي',
       noUsersData: 'لا توجد بيانات مستخدمين متاحة',
+      salesReports: 'تقارير المبيعات',
+      financialReports: 'التقارير المالية',
+      performance: 'الأداء',
+      customReports: 'تقارير مخصصة',
     },
     
     // Tasks

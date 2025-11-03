@@ -20,10 +20,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const { t } = useI18n();
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +184,7 @@ export default function LoginPage() {
               transition={{ delay: 0.3 }}
             >
               <CardTitle className="text-2xl text-center font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">
-                {t('auth.loginTitle')}
+                {mounted ? t('auth.loginTitle') : ''}
               </CardTitle>
             </motion.div>
             <motion.div
@@ -188,7 +193,7 @@ export default function LoginPage() {
               transition={{ delay: 0.4 }}
             >
               <CardDescription className="text-center">
-                {t('auth.loginSubtitle')}
+                {mounted ? t('auth.loginSubtitle') : ''}
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -200,7 +205,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <Label htmlFor="email">{t('auth.email')}</Label>
+              <Label htmlFor="email">{mounted && t('auth.email')}</Label>
                             <Input
                 id="email"
                 name="email"
@@ -210,7 +215,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('auth.emailPlaceholder')}
+                placeholder={mounted ? t('auth.emailPlaceholder') : ''}
                 dir="ltr"
                 className="text-left"
               />
@@ -221,7 +226,7 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Label htmlFor="password">{t('auth.password')}</Label>
+              <Label htmlFor="password">{mounted && t('auth.password')}</Label>
                             <Input
                 id="password"
                 name="password"
@@ -231,7 +236,7 @@ export default function LoginPage() {
                 disabled={isLoading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('auth.passwordPlaceholder')}
+                placeholder={mounted ? t('auth.passwordPlaceholder') : ''}
                 dir="ltr"
                 className="text-left"
               />
@@ -252,7 +257,7 @@ export default function LoginPage() {
                 htmlFor="remember"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                {t('auth.rememberMe')}
+                {mounted && t('auth.rememberMe')}
               </label>
             </motion.div>
           </CardContent>
@@ -281,7 +286,7 @@ export default function LoginPage() {
                       ⟳
                     </motion.div>
                   ) : (
-                    t('auth.login')
+                    mounted ? t('auth.login') : 'Login'
                   )}
                 </Button>
               </motion.div>
@@ -296,7 +301,7 @@ export default function LoginPage() {
               whileHover={{ scale: 1.05 }}
             >
               <a href="#" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                {t('auth.forgotPassword')}
+                {mounted && t('auth.forgotPassword')}
               </a>
             </motion.div>
           </CardFooter>
