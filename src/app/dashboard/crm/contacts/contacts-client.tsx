@@ -79,13 +79,17 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
 
   // Filter contacts based on search
   const filteredContacts = contacts.filter(contact => {
-    const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase();
+    const fullNameEn = contact.fullNameEn?.toLowerCase() || "";
+    const fullNameAr = contact.fullNameAr?.toLowerCase() || "";
+    const legacyFullName = `${contact.firstName ?? ""} ${contact.lastName ?? ""}`.trim().toLowerCase();
     const email = contact.email?.toLowerCase() || "";
     const phone = contact.phone || "";
     const company = contact.companyId ? companyMap[contact.companyId]?.toLowerCase() || "" : "";
     const query = searchQuery.toLowerCase();
 
-    return fullName.includes(query) || 
+    return fullNameEn.includes(query) ||
+           fullNameAr.includes(query) ||
+           legacyFullName.includes(query) ||
            email.includes(query) || 
            phone.includes(query) || 
            company.includes(query);
@@ -211,12 +215,22 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                   <div className="flex items-center space-x-4">
                     <Avatar>
                       <AvatarFallback>
-                        {contact.firstName[0]}{contact.lastName[0]}
+                        {(contact.fullNameEn || contact.fullNameAr || `${contact.firstName ?? ""} ${contact.lastName ?? ""}` || "?")
+                          .split(" ")
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((part) => part[0]?.toUpperCase())
+                          .join("") || "?"}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-medium">{contact.firstName} {contact.lastName}</h3>
+                        <div className="flex flex-col">
+                          <h3 className="font-medium">{contact.fullNameEn || [contact.firstName, contact.lastName].filter(Boolean).join(" ")}</h3>
+                          {contact.fullNameAr && (
+                            <span className="text-xs text-muted-foreground">{contact.fullNameAr}</span>
+                          )}
+                        </div>
                         <Badge variant={getStatusBadgeVariant(contact.type)}>
                           {getStatusLabel(contact.type)}
                         </Badge>
@@ -257,14 +271,20 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                   <div className="flex items-center space-x-2">
                     {contact.email && (
                       <Button variant="ghost" size="sm" asChild>
-                        <a href={`mailto:${contact.email}`} title={`Email ${contact.firstName}`}>
+                        <a
+                          href={`mailto:${contact.email}`}
+                          title={`Email ${contact.fullNameEn || contact.fullNameAr || contact.email}`}
+                        >
                           <Mail className="h-4 w-4" />
                         </a>
                       </Button>
                     )}
                     {contact.phone && (
                       <Button variant="ghost" size="sm" asChild>
-                        <a href={`tel:${contact.phone}`} title={`Call ${contact.firstName}`}>
+                        <a
+                          href={`tel:${contact.phone}`}
+                          title={`Call ${contact.fullNameEn || contact.fullNameAr || contact.phone}`}
+                        >
                           <Phone className="h-4 w-4" />
                         </a>
                       </Button>
@@ -314,7 +334,9 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
         title={t('crm.deleteContactTitle')}
         description={
           contactToDelete
-            ? `${t('crm.deleteContactDescription')}\n\n${contactToDelete.firstName} ${contactToDelete.lastName}`
+            ? `${t('crm.deleteContactDescription')}\n\n${contactToDelete.fullNameEn || [contactToDelete.firstName, contactToDelete.lastName].filter(Boolean).join(' ') || contactToDelete.fullNameAr || ''}${
+                contactToDelete.fullNameAr ? `\n${contactToDelete.fullNameAr}` : ''
+              }`
             : t('crm.deleteContactDescription')
         }
         confirmText={isDeleting ? t('common.deleting') : t('common.delete')}

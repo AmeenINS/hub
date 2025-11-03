@@ -461,8 +461,8 @@ export const translations = {
       
       // Contact form fields
       basicInformation: 'Basic Information',
-      firstName: 'First Name',
-      lastName: 'Last Name',
+      fullNameEn: 'Full Name (English)',
+      fullNameAr: 'Full Name (Arabic)',
       email: 'Email Address',
       phone: 'Phone Number',
       
@@ -543,8 +543,8 @@ export const translations = {
       unauthorized: 'Authentication required',
       
       // Placeholders
-      firstNamePlaceholder: 'Ahmed',
-      lastNamePlaceholder: 'Al Amri',
+      fullNameEnPlaceholder: 'Ahmed Al Amri',
+      fullNameArPlaceholder: 'أحمد العامري',
       emailPlaceholder: 'ahmed.alamri@company.om',
       phonePlaceholder: '+968 9123 4567',
       companyPlaceholder: 'Oman Telecom',
@@ -977,8 +977,8 @@ export const translations = {
       
       // حقول نموذج جهة الاتصال
       basicInformation: 'المعلومات الأساسية',
-      firstName: 'الاسم الأول',
-      lastName: 'اسم العائلة',
+      fullNameEn: 'الاسم الكامل (بالإنجليزية)',
+      fullNameAr: 'الاسم الكامل (بالعربية)',
       email: 'البريد الإلكتروني',
       phone: 'رقم الهاتف',
       
@@ -1059,8 +1059,8 @@ export const translations = {
       unauthorized: 'مطلوب مصادقة',
       
       // النصوص التوضيحية
-      firstNamePlaceholder: 'أحمد',
-      lastNamePlaceholder: 'العامري',
+      fullNameEnPlaceholder: 'Ahmed Al Amri',
+      fullNameArPlaceholder: 'أحمد العامري',
       emailPlaceholder: 'ahmed.alamri@company.om',
       phonePlaceholder: '+968 9123 4567',
       companyPlaceholder: 'شركة عمان للاتصالات',

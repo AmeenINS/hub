@@ -68,8 +68,11 @@ export class ContactService {
     const allContacts = await this.getAllContacts();
     const searchTerm = query.toLowerCase();
     return allContacts.filter((contact: Contact) => 
-      contact.firstName.toLowerCase().includes(searchTerm) ||
-      contact.lastName.toLowerCase().includes(searchTerm) ||
+      contact.fullNameEn?.toLowerCase().includes(searchTerm) ||
+      contact.fullNameAr?.toLowerCase().includes(searchTerm) ||
+      `${contact.firstName ?? ''} ${contact.lastName ?? ''}`.trim().toLowerCase().includes(searchTerm) ||
+      contact.firstName?.toLowerCase().includes(searchTerm) ||
+      contact.lastName?.toLowerCase().includes(searchTerm) ||
       contact.email?.toLowerCase().includes(searchTerm) ||
       contact.phone?.includes(searchTerm)
     );

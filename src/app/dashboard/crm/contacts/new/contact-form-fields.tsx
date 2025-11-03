@@ -34,12 +34,12 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
         <div className="grid gap-4 md:grid-cols-2">
           <FormField
             control={form.control}
-            name="firstName"
+            name="fullNameEn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name *</FormLabel>
+                <FormLabel>Full Name (English) *</FormLabel>
                 <FormControl>
-                  <Input placeholder="أحمد" {...field} />
+                  <Input placeholder="Ahmed Al Amri" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -47,12 +47,12 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           />
           <FormField
             control={form.control}
-            name="lastName"
+            name="fullNameAr"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name *</FormLabel>
+                <FormLabel>Full Name (Arabic)</FormLabel>
                 <FormControl>
-                  <Input placeholder="العامري" {...field} />
+                  <Input placeholder="أحمد العامري" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -42,8 +42,8 @@ export function useContactForm() {
       // Map form data to database Contact type
       const contactData = {
         type: data.type, // Already in correct format (LEAD, CUSTOMER, PARTNER, SUPPLIER)
-        firstName: data.firstName,
-        lastName: data.lastName,
+        fullNameEn: data.fullNameEn.trim(),
+        fullNameAr: data.fullNameAr?.trim() || undefined,
         email: data.email,
         phone: data.phone,
         jobTitle: data.position,

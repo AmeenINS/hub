@@ -119,8 +119,20 @@ export default function ContactProfileClient({
     });
   };
 
-  const fullName = `${contact.firstName} ${contact.lastName}`;
-  const initials = `${contact.firstName[0]}${contact.lastName[0]}`;
+  const displayNameEn =
+    contact.fullNameEn ||
+    [contact.firstName, contact.lastName].filter(Boolean).join(' ').trim();
+  const displayNameAr = contact.fullNameAr || '';
+  const fallbackName = displayNameEn || displayNameAr || contact.email || contact.phone || '';
+  const initials =
+    fallbackName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || '?';
+  const primaryName = displayNameEn || displayNameAr || '';
+  const secondaryName = displayNameAr && displayNameAr !== primaryName ? displayNameAr : '';
 
   return (
     <div className="space-y-6">
@@ -164,7 +176,14 @@ export default function ContactProfileClient({
             <div className="flex-1 space-y-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-2xl font-bold">{fullName}</h2>
+                  <div className="flex flex-col">
+                    <h2 className="text-2xl font-bold">
+                      {primaryName || t('crm.contactProfile')}
+                    </h2>
+                    {secondaryName && (
+                      <span className="text-base text-muted-foreground">{secondaryName}</span>
+                    )}
+                  </div>
                   <Badge className={getContactTypeColor(contact.type)}>{contact.type}</Badge>
                 </div>
                 {contact.jobTitle && (
@@ -425,13 +444,15 @@ export default function ContactProfileClient({
                   <Separator />
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-muted-foreground">{t('crm.firstName')}</dt>
-                      <dd className="text-sm font-medium">{contact.firstName}</dd>
+                      <dt className="text-sm text-muted-foreground">{t('crm.fullNameEn')}</dt>
+                      <dd className="text-sm font-medium">{displayNameEn || '-'}</dd>
                     </div>
-                    <div>
-                      <dt className="text-sm text-muted-foreground">{t('crm.lastName')}</dt>
-                      <dd className="text-sm font-medium">{contact.lastName}</dd>
-                    </div>
+                    {displayNameAr && (
+                      <div>
+                        <dt className="text-sm text-muted-foreground">{t('crm.fullNameAr')}</dt>
+                        <dd className="text-sm font-medium">{displayNameAr}</dd>
+                      </div>
+                    )}
                     <div>
                       <dt className="text-sm text-muted-foreground">{t('crm.type')}</dt>
                       <dd className="text-sm font-medium">
@@ -560,7 +581,9 @@ export default function ContactProfileClient({
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDelete}
         title={t('crm.deleteContactTitle')}
-        description={`${t('crm.deleteContactDescription')}\n\n${fullName}`}
+        description={`${t('crm.deleteContactDescription')}\n\n${primaryName || t('crm.contactProfile')}${
+          secondaryName ? `\n${secondaryName}` : ''
+        }`}
         confirmText={isDeleting ? t('common.deleting') : t('common.delete')}
         cancelText={t('common.cancel')}
         variant="danger"
