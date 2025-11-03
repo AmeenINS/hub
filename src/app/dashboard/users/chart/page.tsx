@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import OrgChart from '@/components/dashboard/org-chart';
+import OrgChartFlow from '@/components/dashboard/org-chart-flow';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
@@ -82,7 +82,7 @@ export default function OrgChartPage() {
 
         // Replace position IDs with names in users
         const usersWithPositionNames = fetchedUsers.map((user: User) => {
-          const positionEntry = user.position ? positionMap.get(user.position) : undefined;
+          const positionEntry = user.position ? positionMap.get(user.position) as Position | undefined : undefined;
           const positionName = positionEntry
             ? [positionEntry.name, positionEntry.nameAr].filter(Boolean).join(' / ')
             : user.position;
@@ -183,7 +183,7 @@ export default function OrgChartPage() {
           </CardContent>
         </Card>
       ) : (
-        <OrgChart users={users} />
+        <OrgChartFlow users={users} />
       )}
     </div>
   );

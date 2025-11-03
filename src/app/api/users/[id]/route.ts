@@ -102,8 +102,13 @@ export async function PATCH(
       );
     }
 
-    // Check if user can manage this target user (self or subordinate)
-    if (userId !== id) {
+    // Get current user to check if they're a top-level admin
+    const currentUser = await userService.getUserById(userId);
+    
+    // Check if user can manage this target user
+    // Top-level admins (no managerId) can manage anyone
+    // Other users can only manage themselves or their subordinates
+    if (userId !== id && currentUser?.managerId) {
       const isSubordinate = await userService.isSubordinate(userId, id);
       if (!isSubordinate) {
         return NextResponse.json(
@@ -179,8 +184,13 @@ export async function DELETE(
       );
     }
 
-    // Check if user can manage this target user (self or subordinate)
-    if (userId !== id) {
+    // Get current user to check if they're a top-level admin
+    const currentUser = await userService.getUserById(userId);
+    
+    // Check if user can manage this target user
+    // Top-level admins (no managerId) can manage anyone
+    // Other users can only manage themselves or their subordinates
+    if (userId !== id && currentUser?.managerId) {
       const isSubordinate = await userService.isSubordinate(userId, id);
       if (!isSubordinate) {
         return NextResponse.json(

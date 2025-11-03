@@ -16,7 +16,7 @@ const isArgon2Hash = (value?: string | null): value is string =>
 export class UserService {
   private readonly dbName = 'users';
 
-  private normalizeUser(rawUser: User & Record<string, unknown>): User {
+  private normalizeUser(rawUser: User | (User & Record<string, unknown>)): User {
     const user = { ...rawUser } as User & {
       firstName?: string;
       lastName?: string;

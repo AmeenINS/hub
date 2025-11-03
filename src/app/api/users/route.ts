@@ -44,11 +44,19 @@ export async function GET(request: NextRequest) {
 
     const userService = new UserService();
     
-    // Get all subordinates + self
-    const allSubordinates = await userService.getAllSubordinates(userId);
-    const self = await userService.getUserById(userId);
+    // Get current user to check if they're a top-level admin
+    const currentUser = await userService.getUserById(userId);
     
-    const managedUsers = self ? [self, ...allSubordinates] : allSubordinates;
+    let managedUsers;
+    
+    // If user has no manager (top-level admin), show all users
+    if (!currentUser?.managerId) {
+      managedUsers = await userService.getAllUsers();
+    } else {
+      // Otherwise, show only subordinates + self
+      const allSubordinates = await userService.getAllSubordinates(userId);
+      managedUsers = currentUser ? [currentUser, ...allSubordinates] : allSubordinates;
+    }
 
     // Remove passwords from response
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
