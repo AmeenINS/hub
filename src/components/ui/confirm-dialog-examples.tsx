@@ -196,8 +196,8 @@ export function Example5() {
 
 interface Contact {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
 }
 
 export function Example6({ contacts }: { contacts: Contact[] }) {
@@ -230,7 +230,8 @@ export function Example6({ contacts }: { contacts: Contact[] }) {
       {/* Your table/list UI */}
       {contacts.map(contact => (
         <div key={contact.id}>
-          {contact.firstName} {contact.lastName}
+          {contact.fullNameEn}
+          {contact.fullNameAr ? ` / ${contact.fullNameAr}` : ""}
           <Button onClick={() => openDeleteDialog(contact)}>Delete</Button>
         </div>
       ))}
@@ -243,7 +244,9 @@ export function Example6({ contacts }: { contacts: Contact[] }) {
         title={t('crm.deleteContactTitle')}
         description={
           contactToDelete
-            ? `${t('crm.deleteContactDescription')}\n\n${contactToDelete.firstName} ${contactToDelete.lastName}`
+            ? `${t('crm.deleteContactDescription')}\n\n${contactToDelete.fullNameEn}${
+                contactToDelete.fullNameAr ? `\n${contactToDelete.fullNameAr}` : ''
+              }`
             : t('crm.deleteContactDescription')
         }
         confirmText={isDeleting ? t('common.deleting') : t('common.delete')}

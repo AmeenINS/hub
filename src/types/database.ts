@@ -343,8 +343,14 @@ export enum ActivityStatus {
 export interface Contact {
   id: string;
   type: ContactType;
-  firstName: string;
-  lastName: string;
+  fullNameEn: string;
+  fullNameAr?: string;
+  /**
+   * Deprecated: maintained for backward compatibility with existing records.
+   * Use fullNameEn/fullNameAr fields instead.
+   */
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   mobile?: string;

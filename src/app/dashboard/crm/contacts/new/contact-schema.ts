@@ -9,8 +9,8 @@ import * as z from "zod";
  * Contact form validation schema
  */
 export const contactFormSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  fullNameEn: z.string().min(2, "Full name (English) must be at least 2 characters"),
+  fullNameAr: z.string().min(2, "Full name (Arabic) must be at least 2 characters").optional(),
   email: z.string().email("Please enter a valid email address").optional(),
   phone: z.string().min(10, "Phone number is required"),
   company: z.string().optional(),
@@ -69,8 +69,8 @@ export const sourceOptions = [
  * Default form values
  */
 export const defaultContactFormValues: Partial<ContactFormData> = {
-  firstName: "",
-  lastName: "",
+  fullNameEn: "",
+  fullNameAr: "",
   email: "",
   phone: "",
   company: "",

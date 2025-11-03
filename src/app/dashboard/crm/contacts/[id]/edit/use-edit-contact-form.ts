@@ -67,9 +67,10 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
           const contact = result.data;
           
           // Set form values
+          const fallbackFullName = [contact.firstName, contact.lastName].filter(Boolean).join(' ').trim();
           form.reset({
-            firstName: contact.firstName || "",
-            lastName: contact.lastName || "",
+            fullNameEn: contact.fullNameEn || fallbackFullName || "",
+            fullNameAr: contact.fullNameAr || "",
             email: contact.email || "",
             phone: contact.phone || "",
             company: contact.companyId || "",
@@ -136,8 +137,8 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
       }
 
       const contactData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+        fullNameEn: data.fullNameEn.trim(),
+        fullNameAr: data.fullNameAr?.trim() || undefined,
         email: data.email || undefined,
         phone: data.phone,
         companyId: data.company || undefined,
