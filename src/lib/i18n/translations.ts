@@ -13,6 +13,7 @@ export const translations = {
       saving: 'Saving...',
       cancel: 'Cancel',
       delete: 'Delete',
+      deleting: 'Deleting...',
       edit: 'Edit',
       create: 'Create',
       search: 'Search',
@@ -49,6 +50,10 @@ export const translations = {
       noData: 'No data found',
       refresh: 'Refresh',
       error: 'Error',
+      note: 'Note',
+      areYouSure: 'Are you sure?',
+      thisActionCannotBeUndone: 'This action cannot be undone.',
+      continue: 'Continue',
     },
     
     // Auth
@@ -431,6 +436,123 @@ export const translations = {
       level: 'Level',
     },
     
+    // CRM
+    crm: {
+      title: 'CRM',
+      contacts: 'Contacts',
+      contactsDescription: 'Manage and organize your customer contacts',
+      addContact: 'Add Contact',
+      editContact: 'Edit Contact',
+      deleteContact: 'Delete Contact',
+      contactDetails: 'Contact Details',
+      allContacts: 'All Contacts',
+      contactDatabase: 'Your complete contact database',
+      noContactsFound: 'No contacts found',
+      tryAdjustingSearch: 'Try adjusting your search query',
+      getStarted: 'Get started by creating your first contact',
+      
+      // Contact form fields
+      basicInformation: 'Basic Information',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email Address',
+      phone: 'Phone Number',
+      
+      companyInformation: 'Company Information',
+      companyName: 'Company Name',
+      jobTitle: 'Job Title',
+      department: 'Department',
+      
+      addressInformation: 'Address Information',
+      streetAddress: 'Street Address',
+      city: 'City',
+      state: 'State',
+      zipCode: 'ZIP Code',
+      country: 'Country',
+      
+      statusClassification: 'Status & Classification',
+      contactType: 'Contact Type',
+      leadSource: 'Lead Source',
+      preferredContactMethod: 'Preferred Contact Method',
+      
+      tags: 'Tags',
+      addTag: 'Add tag',
+      
+      notes: 'Notes',
+      additionalNotes: 'Add any additional notes about this contact...',
+      
+      // Contact types
+      lead: 'Lead',
+      customer: 'Customer',
+      partner: 'Partner',
+      supplier: 'Supplier',
+      
+      // Actions and messages
+      createContact: 'Create Contact',
+      saveChanges: 'Save Changes',
+      creating: 'Creating...',
+      updating: 'Updating...',
+      loading: 'Loading...',
+      pleaseWait: 'Please wait while we load the contact data',
+      updateInfo: 'Update contact information in your CRM system',
+      createInfo: 'Create a new contact in your CRM system',
+      
+      contactCreated: 'Contact created successfully',
+      contactUpdated: 'Contact updated successfully',
+      contactDeleted: 'Contact deleted successfully',
+      failedToCreate: 'Failed to create contact',
+      failedToUpdate: 'Failed to update contact',
+      failedToDelete: 'Failed to delete contact',
+      failedToLoad: 'Failed to load contact data',
+      
+      deleteContactTitle: 'Delete Contact',
+      deleteContactDescription: 'Are you sure you want to delete this contact? This action cannot be undone and all associated data will be permanently removed.',
+      
+      // Contact Profile
+      contactProfile: 'Contact Profile',
+      viewContactDetails: 'View complete contact information',
+      overview: 'Overview',
+      details: 'Details',
+      activity: 'Activity',
+      contactInfo: 'Contact Info',
+      companyInfo: 'Company Info',
+      addressInfo: 'Address Info',
+      metadata: 'Metadata',
+      completeInformation: 'Complete Information',
+      allContactDetails: 'All contact details and information',
+      personalInformation: 'Personal Information',
+      professionalInformation: 'Professional Information',
+      recentActivity: 'Recent Activity',
+      activityHistory: 'Contact activity history and timeline',
+      internalNotes: 'Internal notes and comments',
+      noCompanyLinked: 'No company linked to this contact',
+      noAddressProvided: 'No address information provided',
+      noAdditionalActivity: 'No additional activity to display',
+      noNotesAvailable: 'No notes available for this contact',
+      preferredMethod: 'Preferred Method',
+      
+      requiredFields: 'Fields marked with asterisk (*) are required',
+      unauthorized: 'Authentication required',
+      
+      // Placeholders
+      firstNamePlaceholder: 'Ahmed',
+      lastNamePlaceholder: 'Al Amri',
+      emailPlaceholder: 'ahmed.alamri@company.om',
+      phonePlaceholder: '+968 9123 4567',
+      companyPlaceholder: 'Oman Telecom',
+      jobTitlePlaceholder: 'Sales Manager',
+      departmentPlaceholder: 'Sales',
+      addressPlaceholder: 'Sultan Qaboos Street, Muscat',
+      cityPlaceholder: 'Muscat',
+      statePlaceholder: 'Muscat Governorate',
+      zipPlaceholder: '100',
+      countryPlaceholder: 'Oman',
+      
+      selectType: 'Select type',
+      selectSource: 'Select source',
+      selectMethod: 'Select method',
+    },
+    
     // Support
     support: {
       title: 'Support',
@@ -500,6 +622,7 @@ export const translations = {
       saving: 'جاري الحفظ...',
       cancel: 'إلغاء',
       delete: 'حذف',
+      deleting: 'جاري الحذف...',
       edit: 'تعديل',
       create: 'إنشاء',
       search: 'بحث',
@@ -536,6 +659,10 @@ export const translations = {
       noData: 'لا توجد بيانات',
       refresh: 'تحديث',
       error: 'خطأ',
+      note: 'ملاحظة',
+      areYouSure: 'هل أنت متأكد؟',
+      thisActionCannotBeUndone: 'لا يمكن التراجع عن هذا الإجراء.',
+      continue: 'متابعة',
     },
     
     // Auth
@@ -817,6 +944,123 @@ export const translations = {
       createSuccess: 'تم إنشاء الدور بنجاح',
       createError: 'فشل إنشاء الدور',
       permissionsWarning: 'ولكن فشل تعيين الصلاحيات',
+    },
+    
+    // CRM
+    crm: {
+      title: 'إدارة علاقات العملاء',
+      contacts: 'جهات الاتصال',
+      contactsDescription: 'إدارة وتنظيم جهات اتصال العملاء',
+      addContact: 'إضافة جهة اتصال',
+      editContact: 'تعديل جهة الاتصال',
+      deleteContact: 'حذف جهة الاتصال',
+      contactDetails: 'تفاصيل جهة الاتصال',
+      allContacts: 'جميع جهات الاتصال',
+      contactDatabase: 'قاعدة بيانات جهات الاتصال الكاملة',
+      noContactsFound: 'لم يتم العثور على جهات اتصال',
+      tryAdjustingSearch: 'جرب تعديل استعلام البحث',
+      getStarted: 'ابدأ بإنشاء أول جهة اتصال',
+      
+      // حقول نموذج جهة الاتصال
+      basicInformation: 'المعلومات الأساسية',
+      firstName: 'الاسم الأول',
+      lastName: 'اسم العائلة',
+      email: 'البريد الإلكتروني',
+      phone: 'رقم الهاتف',
+      
+      companyInformation: 'معلومات الشركة',
+      companyName: 'اسم الشركة',
+      jobTitle: 'المسمى الوظيفي',
+      department: 'القسم',
+      
+      addressInformation: 'معلومات العنوان',
+      streetAddress: 'عنوان الشارع',
+      city: 'المدينة',
+      state: 'المحافظة',
+      zipCode: 'الرمز البريدي',
+      country: 'البلد',
+      
+      statusClassification: 'الحالة والتصنيف',
+      contactType: 'نوع جهة الاتصال',
+      leadSource: 'مصدر العميل',
+      preferredContactMethod: 'طريقة الاتصال المفضلة',
+      
+      tags: 'الوسوم',
+      addTag: 'إضافة وسم',
+      
+      notes: 'ملاحظات',
+      additionalNotes: 'أضف أي ملاحظات إضافية حول جهة الاتصال...',
+      
+      // أنواع جهات الاتصال
+      lead: 'عميل محتمل',
+      customer: 'عميل',
+      partner: 'شريك',
+      supplier: 'مورد',
+      
+      // الإجراءات والرسائل
+      createContact: 'إنشاء جهة اتصال',
+      saveChanges: 'حفظ التغييرات',
+      creating: 'جاري الإنشاء...',
+      updating: 'جاري التحديث...',
+      loading: 'جاري التحميل...',
+      pleaseWait: 'يرجى الانتظار بينما نقوم بتحميل بيانات جهة الاتصال',
+      updateInfo: 'تحديث معلومات جهة الاتصال في نظام إدارة علاقات العملاء',
+      createInfo: 'إنشاء جهة اتصال جديدة في نظام إدارة علاقات العملاء',
+      
+      contactCreated: 'تم إنشاء جهة الاتصال بنجاح',
+      contactUpdated: 'تم تحديث جهة الاتصال بنجاح',
+      contactDeleted: 'تم حذف جهة الاتصال بنجاح',
+      failedToCreate: 'فشل إنشاء جهة الاتصال',
+      failedToUpdate: 'فشل تحديث جهة الاتصال',
+      failedToDelete: 'فشل حذف جهة الاتصال',
+      failedToLoad: 'فشل تحميل بيانات جهة الاتصال',
+      
+      deleteContactTitle: 'حذف جهة الاتصال',
+      deleteContactDescription: 'هل أنت متأكد من حذف جهة الاتصال هذه؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع البيانات المرتبطة نهائياً.',
+      
+      // صفحة الملف الشخصي
+      contactProfile: 'الملف الشخصي لجهة الاتصال',
+      viewContactDetails: 'عرض معلومات جهة الاتصال الكاملة',
+      overview: 'نظرة عامة',
+      details: 'التفاصيل',
+      activity: 'النشاط',
+      contactInfo: 'معلومات الاتصال',
+      companyInfo: 'معلومات الشركة',
+      addressInfo: 'معلومات العنوان',
+      metadata: 'بيانات وصفية',
+      completeInformation: 'المعلومات الكاملة',
+      allContactDetails: 'جميع تفاصيل ومعلومات جهة الاتصال',
+      personalInformation: 'المعلومات الشخصية',
+      professionalInformation: 'المعلومات المهنية',
+      recentActivity: 'النشاط الأخير',
+      activityHistory: 'سجل نشاط جهة الاتصال والجدول الزمني',
+      internalNotes: 'ملاحظات داخلية وتعليقات',
+      noCompanyLinked: 'لا توجد شركة مرتبطة بجهة الاتصال هذه',
+      noAddressProvided: 'لم يتم تقديم معلومات العنوان',
+      noAdditionalActivity: 'لا يوجد نشاط إضافي لعرضه',
+      noNotesAvailable: 'لا توجد ملاحظات متاحة لجهة الاتصال هذه',
+      preferredMethod: 'الطريقة المفضلة',
+      
+      requiredFields: 'الحقول المميزة بعلامة النجمة (*) مطلوبة',
+      unauthorized: 'مطلوب مصادقة',
+      
+      // النصوص التوضيحية
+      firstNamePlaceholder: 'أحمد',
+      lastNamePlaceholder: 'العامري',
+      emailPlaceholder: 'ahmed.alamri@company.om',
+      phonePlaceholder: '+968 9123 4567',
+      companyPlaceholder: 'شركة عمان للاتصالات',
+      jobTitlePlaceholder: 'مدير المبيعات',
+      departmentPlaceholder: 'المبيعات',
+      addressPlaceholder: 'شارع السلطان قابوس، مسقط',
+      cityPlaceholder: 'مسقط',
+      statePlaceholder: 'محافظة مسقط',
+      zipPlaceholder: '100',
+      countryPlaceholder: 'عمان',
+      
+      selectType: 'اختر النوع',
+      selectSource: 'اختر المصدر',
+      selectMethod: 'اختر الطريقة',
     },
     
         // Reports

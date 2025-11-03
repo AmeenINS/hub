@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { ContactService } from '@/lib/db/crm-service';
 import { JWTService } from '@/lib/auth/jwt';
 import { checkPermission } from '@/lib/auth/middleware';
@@ -86,6 +87,9 @@ export async function POST(request: NextRequest) {
     };
 
     const contact = await contactService.createContact(contactData);
+
+    // Revalidate the contacts page to show new contact
+    revalidatePath('/dashboard/crm/contacts');
 
     return NextResponse.json({
       success: true,

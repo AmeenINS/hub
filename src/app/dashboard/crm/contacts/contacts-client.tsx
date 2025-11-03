@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Contact, ContactType } from "@/types/database";
 import { useToast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n/i18n-context";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import Cookies from "js-cookie";
 
 interface ContactsClientProps {
@@ -69,7 +71,11 @@ const getStatusLabel = (type: ContactType) => {
 export default function ContactsClient({ initialContacts, companyMap }: ContactsClientProps) {
   const [contacts, setContacts] = useState(initialContacts);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
+  const { t } = useI18n();
 
   // Filter contacts based on search
   const filteredContacts = contacts.filter(contact => {
@@ -85,19 +91,27 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
            company.includes(query);
   });
 
-  const handleDelete = async (contactId: string) => {
+  const openDeleteDialog = (contact: Contact) => {
+    setContactToDelete(contact);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!contactToDelete) return;
+
+    setIsDeleting(true);
     try {
       const token = Cookies.get('auth-token');
       if (!token) {
         toast({
-          title: "Error",
-          description: "Authentication required",
+          title: t('common.error'),
+          description: t('crm.unauthorized'),
           variant: "destructive",
         });
         return;
       }
 
-      const response = await fetch(`/api/crm/contacts/${contactId}`, {
+      const response = await fetch(`/api/crm/contacts/${contactToDelete.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -105,20 +119,24 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
       });
 
       if (response.ok) {
-        setContacts(contacts.filter(c => c.id !== contactId));
+        setContacts(contacts.filter(c => c.id !== contactToDelete.id));
         toast({
-          title: "Success",
-          description: "Contact deleted successfully",
+          title: t('messages.success'),
+          description: t('crm.contactDeleted'),
         });
+        setDeleteDialogOpen(false);
+        setContactToDelete(null);
       } else {
         throw new Error('Failed to delete contact');
       }
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to delete contact",
+        title: t('common.error'),
+        description: t('crm.failedToDelete'),
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -273,7 +291,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
                           className="text-destructive"
-                          onClick={() => handleDelete(contact.id)}
+                          onClick={() => openDeleteDialog(contact)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete Contact
@@ -287,6 +305,23 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        title={t('crm.deleteContactTitle')}
+        description={
+          contactToDelete
+            ? `${t('crm.deleteContactDescription')}\n\n${contactToDelete.firstName} ${contactToDelete.lastName}`
+            : t('crm.deleteContactDescription')
+        }
+        confirmText={isDeleting ? t('common.deleting') : t('common.delete')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </>
   );
 }

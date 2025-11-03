@@ -9,6 +9,8 @@ class LMDBManager {
   private static instance: LMDBManager;
   private db: RootDatabase | null = null;
   private databases: Map<string, LMDBDatabase> = new Map();
+  private initializing: Promise<void> | null = null;
+  private isInitialized = false;
 
   private constructor() {}
 
@@ -23,29 +25,44 @@ class LMDBManager {
    * Initialize LMDB database
    */
   async initialize() {
-    if (this.db) return;
+    if (this.isInitialized) return;
+    if (this.initializing) {
+      await this.initializing;
+      return;
+    }
 
     const dbPath = process.env.LMDB_PATH || './data/lmdb';
     const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '35');
     const mapSize = parseInt(process.env.LMDB_MAP_SIZE || '10485760');
 
-    try {
-      this.db = open({
-        path: path.resolve(process.cwd(), dbPath),
-        compression: true,
-        maxDbs,
-        mapSize,
-        encoding: 'json',
-      });
+    const initialization = (async () => {
+      try {
+        this.db = open({
+          path: path.resolve(process.cwd(), dbPath),
+          compression: true,
+          maxDbs,
+          mapSize,
+          encoding: 'json',
+        });
 
-      // Initialize all database stores
-      await this.initializeDatabases();
+        // Initialize all database stores
+        await this.initializeDatabases();
+        this.isInitialized = true;
 
-      console.log('✅ LMDB Database initialized successfully');
-    } catch (error) {
-      console.error('❌ Failed to initialize LMDB:', error);
-      throw error;
-    }
+        console.log('✅ LMDB Database initialized successfully');
+      } catch (error) {
+        this.db = null;
+        this.databases.clear();
+        this.isInitialized = false;
+        console.error('❌ Failed to initialize LMDB:', error);
+        throw error;
+      } finally {
+        this.initializing = null;
+      }
+    })();
+
+    this.initializing = initialization;
+    await initialization;
   }
 
   /**
@@ -101,7 +118,7 @@ class LMDBManager {
    * Ensure database is initialized
    */
   private async ensureInitialized() {
-    if (!this.db) {
+    if (!this.isInitialized || !this.db) {
       await this.initialize();
     }
   }
@@ -125,6 +142,7 @@ class LMDBManager {
       await this.db.close();
       this.databases.clear();
       this.db = null;
+      this.isInitialized = false;
       console.log('✅ LMDB Database closed successfully');
     }
   }

@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   description: "Manage your customer contacts"
 };
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ContactsPage() {
   // Fetch contacts from database
   const contactService = new ContactService();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { ContactService } from '@/lib/db/crm-service';
 import { JWTService } from '@/lib/auth/jwt';
 import { checkPermission } from '@/lib/auth/middleware';
@@ -66,6 +67,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const contactService = new ContactService();
     const updatedContact = await contactService.updateContact(id, body);
 
+    // Revalidate the contacts page to show updated data
+    revalidatePath('/dashboard/crm/contacts');
+
     return NextResponse.json({
       success: true,
       data: updatedContact,
@@ -108,6 +112,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!deleted) {
       return NextResponse.json({ success: false, error: 'Contact not found' }, { status: 404 });
     }
+
+    // Revalidate the contacts page to reflect deletion
+    revalidatePath('/dashboard/crm/contacts');
 
     return NextResponse.json({
       success: true,
