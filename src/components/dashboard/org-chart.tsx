@@ -4,7 +4,6 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   Tooltip,
   TooltipContent,
@@ -13,6 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Mail, Building2, Users as UsersIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { getLocalizedUserName, getUserInitials } from '@/lib/utils';
 
 interface User {

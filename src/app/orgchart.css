@@ -1,0 +1,115 @@
+/* Custom styles for ReactFlow organizational chart */
+
+/* Make edges more visible */
+.react-flow__edge-path {
+  stroke-width: 3 !important;
+  stroke: hsl(var(--primary)) !important;
+}
+
+/* Edge markers (arrows) */
+.react-flow__arrowhead {
+  fill: hsl(var(--primary)) !important;
+}
+
+/* Hover effect for edges */
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 4 !important;
+  stroke: hsl(var(--primary) / 0.8) !important;
+}
+
+/* Selected edge */
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 4 !important;
+  stroke: hsl(var(--primary)) !important;
+}
+
+/* Connection handles */
+.react-flow__handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: hsl(var(--primary)) !important;
+  border: 2px solid hsl(var(--background)) !important;
+}
+
+.react-flow__handle-top {
+  top: -6px !important;
+}
+
+.react-flow__handle-bottom {
+  bottom: -6px !important;
+}
+
+.react-flow__handle:hover {
+  background: hsl(var(--primary) / 0.8) !important;
+  transform: scale(1.2);
+}
+
+/* Node selection */
+.react-flow__node.selected {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Controls styling */
+.react-flow__controls {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.react-flow__controls-button {
+  background: hsl(var(--background));
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.react-flow__controls-button:hover {
+  background: hsl(var(--muted));
+}
+
+/* MiniMap styling */
+.react-flow__minimap {
+  background: hsl(var(--background));
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.react-flow__minimap-mask {
+  fill: hsl(var(--muted) / 0.6);
+}
+
+.react-flow__minimap-node {
+  stroke: hsl(var(--border));
+  stroke-width: 1;
+}
+
+/* Panel styling */
+.react-flow__panel {
+  margin: 10px;
+}
+
+/* Background pattern */
+.react-flow__background {
+  background-color: transparent;
+}
+
+/* Attribution - hide it */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Smooth transitions */
+.react-flow__edge-path {
+  transition: stroke-width 0.2s ease;
+}
+
+/* Make sure nodes are draggable */
+.react-flow__node {
+  cursor: move;
+}
+
+.react-flow__node.selected,
+.react-flow__node:hover {
+  cursor: grab;
+}
+
+.react-flow__node:active {
+  cursor: grabbing;
+}

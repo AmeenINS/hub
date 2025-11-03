@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import OrgChartFlow from '@/components/dashboard/org-chart-flow';
+import OrgChart from '@/components/dashboard/org-chart-reactflow';
 import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
@@ -19,6 +19,7 @@ interface User {
   email: string;
   role?: string;
   position?: string;
+  positionId?: string;
   department?: string;
   managerId?: string;
   createdAt?: string;
@@ -76,19 +77,20 @@ export default function OrgChartPage() {
         const fetchedPositions = Array.isArray(positionsData) ? positionsData : (positionsData.data || []);
 
         // Map position IDs to names
-        const positionMap = new Map(
+        const positionMap = new Map<string, Position>(
           fetchedPositions.map((p: Position) => [p.id, p])
         );
 
         // Replace position IDs with names in users
         const usersWithPositionNames = fetchedUsers.map((user: User) => {
-          const positionEntry = user.position ? positionMap.get(user.position) as Position | undefined : undefined;
+          const positionEntry = user.position ? positionMap.get(user.position) : undefined;
           const positionName = positionEntry
             ? [positionEntry.name, positionEntry.nameAr].filter(Boolean).join(' / ')
             : user.position;
           return {
             ...user,
             position: positionName,
+            positionId: user.position, // Keep original ID
           };
         });
 
@@ -183,7 +185,7 @@ export default function OrgChartPage() {
           </CardContent>
         </Card>
       ) : (
-        <OrgChartFlow users={users} />
+        <OrgChart users={users} />
       )}
     </div>
   );
