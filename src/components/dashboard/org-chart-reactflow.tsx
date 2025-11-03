@@ -226,14 +226,14 @@ const getLayoutedElements = (users: User[]) => {
         type: 'smoothstep',
         animated: false,
         style: { 
-          stroke: 'hsl(var(--primary))',
-          strokeWidth: 3,
+          stroke: '#3b82f6',
+          strokeWidth: 4,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 25,
           height: 25,
-          color: 'hsl(var(--primary))',
+          color: '#3b82f6',
         },
       });
       
@@ -286,6 +286,14 @@ const OrgChartReactFlow: React.FC<OrgChartProps> = ({ users }) => {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
   const [edges, , onEdgesChange] = useEdgesState(initialEdges);
 
+  // Debug: Log edges to console
+  React.useEffect(() => {
+    console.log('🔗 Edges in ReactFlow:', {
+      count: edges.length,
+      edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target, type: e.type })),
+    });
+  }, [edges]);
+
   if (!users || users.length === 0) {
     return (
       <Card>
@@ -327,8 +335,8 @@ const OrgChartReactFlow: React.FC<OrgChartProps> = ({ users }) => {
             type: 'smoothstep',
             animated: false,
             style: {
-              strokeWidth: 3,
-              stroke: 'hsl(var(--primary))',
+              strokeWidth: 4,
+              stroke: '#3b82f6',
             },
           }}
           connectionLineType={ConnectionLineType.SmoothStep}

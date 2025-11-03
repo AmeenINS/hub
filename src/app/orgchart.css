@@ -1,47 +1,77 @@
 /* Custom styles for ReactFlow organizational chart */
 
-/* Make edges more visible */
+/* FORCE edges to be visible with maximum priority */
+.react-flow__edges {
+  z-index: 100 !important;
+}
+
+.react-flow__edge {
+  pointer-events: all !important;
+  z-index: 100 !important;
+}
+
+/* Make edges VERY visible with solid colors */
 .react-flow__edge-path {
-  stroke-width: 3 !important;
-  stroke: hsl(var(--primary)) !important;
+  stroke-width: 4px !important;
+  stroke: #3b82f6 !important; /* Blue color */
+  stroke-opacity: 1 !important;
+  fill: none !important;
+}
+
+/* Straight edge type */
+.react-flow__edge.straight .react-flow__edge-path {
+  stroke-width: 4px !important;
+  stroke: #3b82f6 !important;
+}
+
+/* Smoothstep edge type */
+.react-flow__edge.smoothstep .react-flow__edge-path {
+  stroke-width: 4px !important;
+  stroke: #3b82f6 !important;
 }
 
 /* Edge markers (arrows) */
 .react-flow__arrowhead {
-  fill: hsl(var(--primary)) !important;
+  fill: #3b82f6 !important;
+  stroke: #3b82f6 !important;
+}
+
+.react-flow__edge marker {
+  fill: #3b82f6 !important;
 }
 
 /* Hover effect for edges */
 .react-flow__edge:hover .react-flow__edge-path {
-  stroke-width: 4 !important;
-  stroke: hsl(var(--primary) / 0.8) !important;
+  stroke-width: 5px !important;
+  stroke: #2563eb !important;
 }
 
 /* Selected edge */
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke-width: 4 !important;
-  stroke: hsl(var(--primary)) !important;
+  stroke-width: 5px !important;
+  stroke: #1d4ed8 !important;
+}
+
+/* Make sure edges are visible in both light and dark mode */
+.dark .react-flow__edge-path {
+  stroke: #60a5fa !important;
+}
+
+.dark .react-flow__arrowhead {
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
 }
 
 /* Connection handles */
 .react-flow__handle {
   width: 12px !important;
   height: 12px !important;
-  background: hsl(var(--primary)) !important;
-  border: 2px solid hsl(var(--background)) !important;
+  background: #3b82f6 !important;
+  border: 2px solid white !important;
 }
 
-.react-flow__handle-top {
-  top: -6px !important;
-}
-
-.react-flow__handle-bottom {
-  bottom: -6px !important;
-}
-
-.react-flow__handle:hover {
-  background: hsl(var(--primary) / 0.8) !important;
-  transform: scale(1.2);
+.dark .react-flow__handle {
+  border: 2px solid #1e293b !important;
 }
 
 /* Node selection */
