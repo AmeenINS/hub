@@ -2,6 +2,7 @@
 
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Card, CardContent } from '@/components/ui/card';
+import type { Note } from '@/lib/db/notes-service';
 import { 
   Users, 
   ListTodo, 
@@ -39,7 +40,8 @@ import {
   Wallet,
   Layers,
   ShoppingCart,
-  Folder
+  Folder,
+  Lightbulb
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
@@ -78,6 +80,11 @@ export default function DashboardPage() {
   const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
   const [selectedModule, setSelectedModule] = React.useState<AppModule | null>(null);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [notesStats, setNotesStats] = React.useState<{
+    total: number;
+    pinned: number;
+    archived: number;
+  }>({ total: 0, pinned: 0, archived: 0 });
 
   const getModuleColor = (iconColor: string) => {
     const colorMap: Record<string, string> = {
@@ -148,6 +155,40 @@ export default function DashboardPage() {
     };
 
     fetchPermissions();
+  }, [token]);
+
+  // Fetch notes statistics
+  React.useEffect(() => {
+    const fetchNotesStats = async () => {
+      if (!token) return;
+      
+      try {
+        const [activeResponse, archivedResponse] = await Promise.all([
+          apiClient.get<Note[]>('/api/notes'),
+          apiClient.get<Note[]>('/api/notes?archived=true')
+        ]);
+        
+        if (activeResponse.success && activeResponse.data) {
+          const activeNotes = activeResponse.data;
+          const pinnedCount = activeNotes.filter((note: Note) => note.pinned).length;
+          
+          let archivedCount = 0;
+          if (archivedResponse.success && archivedResponse.data) {
+            archivedCount = archivedResponse.data.filter((note: Note) => note.archived).length;
+          }
+          
+          setNotesStats({
+            total: activeNotes.length,
+            pinned: pinnedCount,
+            archived: archivedCount
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch notes stats:', getErrorMessage(error));
+      }
+    };
+
+    fetchNotesStats();
   }, [token]);
 
   const hasModuleAccess = (module: string) => {
@@ -241,6 +282,15 @@ export default function DashboardPage() {
         { title: t('tasks.allTasks'), url: '/dashboard/tasks', icon: ListTodo, iconColor: 'text-pink-500' },
         { title: t('tasks.createTask'), url: '/dashboard/tasks/new', icon: FileText, iconColor: 'text-pink-600' },
         { title: t('tasks.myTasks'), url: '/dashboard/tasks/my-tasks', icon: UserCheck, iconColor: 'text-pink-700' },
+      ],
+    },
+    {
+      title: t('nav.notes'),
+      icon: Lightbulb,
+      color: 'from-yellow-500 to-yellow-600',
+      module: 'notes',
+      subItems: [
+        { title: t('nav.notes'), url: '/dashboard/notes', icon: Lightbulb, iconColor: 'text-yellow-500' },
       ],
     },
     {
@@ -353,12 +403,94 @@ export default function DashboardPage() {
 
   const accessibleModules = appModules.filter(module => 
     module.module === 'dashboard' || 
-    module.module === 'settings' || 
+    module.module === 'settings' ||
+    module.module === 'notes' ||
+    module.module === 'notifications' ||
     hasModuleAccess(module.module)
   );
 
   return (
-    <div className="p-6">
+    <div className="p-6 space-y-6">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Total Notes */}
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t('notes.title')}
+                </p>
+                <p className="text-3xl font-bold mt-2">
+                  {notesStats.total}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600">
+                <Lightbulb className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pinned Notes */}
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t('notes.pinned')}
+                </p>
+                <p className="text-3xl font-bold mt-2">
+                  {notesStats.pinned}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
+                <CheckCircle2 className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Archived Notes */}
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t('notes.archivedNotes')}
+                </p>
+                <p className="text-3xl font-bold mt-2">
+                  {notesStats.archived}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600">
+                <Folder className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Notifications */}
+        <Card className="hover:shadow-lg transition-shadow duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t('nav.notifications')}
+                </p>
+                <p className="text-3xl font-bold mt-2">
+                  {unreadCount}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
+                <Bell className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modules Grid */}
       <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
         {accessibleModules.map((module, index) => (
           <Card 

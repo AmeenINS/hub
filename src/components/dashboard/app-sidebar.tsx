@@ -51,6 +51,7 @@ import {
   Network,
   Layers,
   Settings,
+  Lightbulb,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -155,6 +156,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     
     // Super admin has access to everything
     if (isSuperAdmin(permissions)) {
+      return true;
+    }
+    
+    // Public modules accessible to all users
+    const publicModules = ['dashboard', 'notes', 'notifications'];
+    if (publicModules.includes(moduleName)) {
       return true;
     }
     
@@ -416,6 +423,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           iconColor: 'text-pink-700',
         },
       ],
+    },
+    // Notes Module
+    {
+      title: t('nav.notes'),
+      url: '/dashboard/notes',
+      icon: Lightbulb,
+      iconColor: 'text-yellow-600 dark:text-yellow-400',
+      isActive: pathname === '/dashboard/notes',
+      module: 'notes',
     },
     // Scheduler Module
     {

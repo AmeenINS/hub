@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Home, 
-  Users, 
   ClipboardList, 
   Settings,
-  BarChart3,
+  Lightbulb,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n/i18n-context';
@@ -24,9 +23,9 @@ export function MobileNav() {
       icon: Home,
     },
     {
-      title: t('users.users'),
-      href: '/dashboard/users',
-      icon: Users,
+      title: t('nav.notes'),
+      href: '/dashboard/notes',
+      icon: Lightbulb,
     },
     {
       title: t('tasks.tasks'),

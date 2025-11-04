@@ -1,10 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/store/auth-store';
+import { apiClient } from '@/lib/api-client';
 
 interface NotificationUpdate {
   type: 'notification_update';
   unreadCount: number;
   timestamp: string;
+}
+
+interface Notification {
+  id: string;
+  isRead: boolean;
 }
 
 const POLLING_INTERVAL = 30000; // 30 seconds
@@ -24,15 +30,10 @@ export function useRealTimeNotifications() {
     try {
       if (!token) return;
       
-      const response = await fetch('/api/notifications', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.get<Notification[]>('/api/notifications');
       
-      if (response.ok) {
-        const notifications = await response.json();
-        const unreadNotifications = notifications.filter((n: { isRead: boolean }) => !n.isRead);
+      if (response.success && response.data) {
+        const unreadNotifications = response.data.filter((n: Notification) => !n.isRead);
         setUnreadCount(unreadNotifications.length);
       }
     } catch (error) {
@@ -173,14 +174,9 @@ export function useRealTimeNotifications() {
     try {
       if (!token) return;
       
-      const response = await fetch(`/api/notifications/${notificationId}/mark-read`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.put(`/api/notifications/${notificationId}/read`);
       
-      if (response.ok) {
+      if (response.success) {
         // Optimistically update the count
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
@@ -197,14 +193,9 @@ export function useRealTimeNotifications() {
     try {
       if (!token) return;
       
-      const response = await fetch('/api/notifications/mark-all-read', {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await apiClient.put('/api/notifications/mark-all-read');
       
-      if (response.ok) {
+      if (response.success) {
         setUnreadCount(0);
       }
     } catch (error) {

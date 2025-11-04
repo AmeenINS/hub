@@ -6,20 +6,20 @@ export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const payload = JWTService.verifyToken(token);
     if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Invalid token' }, { status: 401 });
     }
 
     const notificationService = new NotificationService();
     const unreadNotifications = await notificationService.getUnreadNotifications(payload.userId);
     
-    return NextResponse.json({ count: unreadNotifications.length });
+    return NextResponse.json({ success: true, data: { count: unreadNotifications.length } });
   } catch (error) {
     console.error('Error fetching unread count:', error);
-    return NextResponse.json({ error: 'Failed to fetch unread count' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to fetch unread count' }, { status: 500 });
   }
 }

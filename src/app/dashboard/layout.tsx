@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Lightbulb } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
@@ -9,6 +11,7 @@ import { MobileNav } from '@/components/dashboard/mobile-nav';
 import { Spinner } from '@/components/ui/spinner';
 import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
 import SchedulerNotificationService from '@/components/scheduler/notification-service';
 import { NotificationButton } from '@/components/dashboard/notification-button';
 import 'overlayscrollbars/overlayscrollbars.css';
@@ -56,8 +59,15 @@ export default function DashboardLayout({
               <SidebarTrigger className="hidden md:flex -ml-1 rtl:-ml-0 rtl:-mr-1" />
               <Separator orientation="vertical" className="mr-2 rtl:mr-0 rtl:ml-2 h-4" />
               
-              {/* Spacer to push notification button to the right */}
+              {/* Spacer to push buttons to the right */}
               <div className="flex-1" />
+              
+              {/* Notes quick access button */}
+              <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
+                <Link href="/dashboard/notes">
+                  <Lightbulb className="h-5 w-5" />
+                </Link>
+              </Button>
               
               {/* Notification button */}
               <NotificationButton />

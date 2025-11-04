@@ -115,6 +115,9 @@ class LMDBManager {
     this.databases.set('campaigns', this.db.openDB({ name: 'campaigns', encoding: 'json' }));
     this.databases.set('emailTemplates', this.db.openDB({ name: 'emailTemplates', encoding: 'json' }));
     this.databases.set('reports', this.db.openDB({ name: 'reports', encoding: 'json' }));
+
+    // Notes
+    this.databases.set('notes', this.db.openDB({ name: 'notes', encoding: 'json' }));
   }
 
   /**

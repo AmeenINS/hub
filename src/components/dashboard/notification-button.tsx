@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
+import { apiClient } from '@/lib/api-client';
 
 interface Notification {
   id: string;
@@ -40,15 +41,10 @@ export function NotificationButton() {
     if (!token) return;
 
     try {
-      const response = await fetch('/api/notifications', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get<Notification[]>('/api/notifications');
 
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
+      if (response.success && response.data) {
+        setNotifications(response.data);
       }
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
