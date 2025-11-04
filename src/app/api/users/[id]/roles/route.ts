@@ -94,10 +94,11 @@ export async function PUT(
     const body = await request.json();
     const { roleId } = body;
 
-    console.log('=== Update User Role ===');
+    console.log('\n=== Update User Role ===');
     console.log('User ID:', userId);
     console.log('New Role ID:', roleId);
     console.log('Updated by:', payload.userId);
+    console.log('Timestamp:', new Date().toISOString());
 
     if (!roleId) {
       return NextResponse.json(
@@ -106,22 +107,41 @@ export async function PUT(
       );
     }
 
+    // Make sure LMDB is initialized
+    const { lmdb } = await import('@/lib/db/lmdb');
+    await lmdb.initialize();
+    console.log('LMDB initialized');
+
     // Remove existing roles
     const existingRoles = await userRoleService.getUserRolesByUser(userId);
-    console.log('Existing roles:', existingRoles);
+    console.log('Existing roles count:', existingRoles.length);
+    console.log('Existing roles:', JSON.stringify(existingRoles, null, 2));
     
     for (const role of existingRoles) {
-      await userRoleService.removeRoleFromUser(userId, role.roleId);
-      console.log('Removed role:', role.roleId);
+      const removed = await userRoleService.removeRoleFromUser(userId, role.roleId);
+      console.log(`Removed role ${role.roleId}:`, removed);
     }
 
     // Assign new role
-    await userRoleService.assignRoleToUser(userId, roleId, payload.userId);
-    console.log('✅ Assigned new role:', roleId);
+    const assignedRole = await userRoleService.assignRoleToUser(userId, roleId, payload.userId);
+    console.log('✅ Assigned new role:', JSON.stringify(assignedRole, null, 2));
 
     // Verify the change
     const updatedRoles = await userRoleService.getUserRolesByUser(userId);
-    console.log('Updated roles:', updatedRoles);
+    console.log('Updated roles count:', updatedRoles.length);
+    console.log('Updated roles:', JSON.stringify(updatedRoles, null, 2));
+    
+    if (updatedRoles.length !== 1 || updatedRoles[0].roleId !== roleId) {
+      console.error('❌ VERIFICATION FAILED!');
+      console.error('Expected 1 role with roleId:', roleId);
+      console.error('Got:', updatedRoles.length, 'roles');
+      return NextResponse.json({
+        success: false,
+        error: 'Role assignment verification failed',
+      }, { status: 500 });
+    }
+    
+    console.log('✅ Verification passed');
     console.log('========================');
 
     return NextResponse.json({

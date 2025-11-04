@@ -151,7 +151,12 @@ export default function EditUserPage() {
 
         // Set user roles
         if (userRolesResponse.success && userRolesResponse.data) {
-          setUserRoles(Array.isArray(userRolesResponse.data) ? userRolesResponse.data : []);
+          const rolesArray = Array.isArray(userRolesResponse.data) ? userRolesResponse.data : [];
+          console.log('📋 Fetched user roles:', rolesArray);
+          setUserRoles(rolesArray);
+        } else {
+          console.warn('⚠️ No user roles data in response:', userRolesResponse);
+          setUserRoles([]);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -171,9 +176,15 @@ export default function EditUserPage() {
   React.useEffect(() => {
     if (!userData || positions.length === 0) return;
 
+    console.log('📝 Populating form with user data...');
+    console.log('User roles:', userRoles);
+
     let currentRoleId = '';
     if (userRoles.length > 0) {
       currentRoleId = userRoles[0].roleId;
+      console.log('Current role ID:', currentRoleId);
+    } else {
+      console.warn('⚠️ No role assigned to user');
     }
 
     // Convert position name to ID if needed
