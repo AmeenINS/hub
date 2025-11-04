@@ -4,8 +4,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import { checkUserPermission } from '@/lib/auth/permissions';
 import { useAuthStore } from '@/store/auth-store';
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Hook to check a single permission
@@ -34,8 +34,16 @@ export function usePermission(module: string, action: string) {
       }
 
       try {
-        const result = await checkUserPermission(user.id, module, action);
-        setHasPermission(result);
+        const response = await apiClient.get<Record<string, string[]>>(
+          `/api/users/me/permissions?modules=${module}`
+        );
+        
+        if (response.success && response.data) {
+          const modulePermissions = response.data[module] || [];
+          setHasPermission(modulePermissions.includes(action));
+        } else {
+          setHasPermission(false);
+        }
       } catch (error) {
         console.error('Permission check failed:', error);
         setHasPermission(false);
@@ -84,14 +92,26 @@ export function useModulePermissions(module: string) {
       }
 
       try {
-        const [canView, canCreate, canEdit, canDelete] = await Promise.all([
-          checkUserPermission(user.id, module, 'view'),
-          checkUserPermission(user.id, module, 'create'),
-          checkUserPermission(user.id, module, 'edit'),
-          checkUserPermission(user.id, module, 'delete'),
-        ]);
+        const response = await apiClient.get<Record<string, string[]>>(
+          `/api/users/me/permissions?modules=${module}`
+        );
 
-        setPermissions({ canView, canCreate, canEdit, canDelete });
+        if (response.success && response.data) {
+          const modulePermissions = response.data[module] || [];
+          setPermissions({
+            canView: modulePermissions.includes('view'),
+            canCreate: modulePermissions.includes('create'),
+            canEdit: modulePermissions.includes('edit'),
+            canDelete: modulePermissions.includes('delete'),
+          });
+        } else {
+          setPermissions({
+            canView: false,
+            canCreate: false,
+            canEdit: false,
+            canDelete: false,
+          });
+        }
       } catch (error) {
         console.error('Permission check failed:', error);
         setPermissions({
@@ -141,16 +161,24 @@ export function useCustomPermissions(module: string, actions: string[]) {
       }
 
       try {
-        const results = await Promise.all(
-          actions.map((action) => checkUserPermission(user.id, module, action))
+        const response = await apiClient.get<Record<string, string[]>>(
+          `/api/users/me/permissions?modules=${module}`
         );
 
-        const permissionMap: Record<string, boolean> = {};
-        actions.forEach((action, index) => {
-          permissionMap[action] = results[index];
-        });
-
-        setPermissions(permissionMap);
+        if (response.success && response.data) {
+          const modulePermissions = response.data[module] || [];
+          const permissionMap: Record<string, boolean> = {};
+          actions.forEach((action) => {
+            permissionMap[action] = modulePermissions.includes(action);
+          });
+          setPermissions(permissionMap);
+        } else {
+          const permissionMap: Record<string, boolean> = {};
+          actions.forEach((action) => {
+            permissionMap[action] = false;
+          });
+          setPermissions(permissionMap);
+        }
       } catch (error) {
         console.error('Permission check failed:', error);
         const permissionMap: Record<string, boolean> = {};

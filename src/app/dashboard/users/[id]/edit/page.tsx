@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,10 +34,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
 import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -71,11 +71,16 @@ interface User {
   fullNameEn: string;
   fullNameAr?: string;
   phoneNumber?: string;
-  avatarUrl?: string;
   position?: string;
   department?: string;
   managerId?: string;
   isActive: boolean;
+  avatarUrl?: string;
+}
+
+interface UserRole {
+  userId: string;
+  roleId: string;
 }
 
 export default function EditUserPage() {
@@ -83,14 +88,14 @@ export default function EditUserPage() {
   const params = useParams();
   const userId = params.id as string;
   const { t } = useI18n();
-  const { token } = useAuthStore();
+  
   const [loading, setLoading] = React.useState(false);
   const [loadingData, setLoadingData] = React.useState(true);
   const [roles, setRoles] = React.useState<Role[]>([]);
   const [positions, setPositions] = React.useState<Position[]>([]);
   const [users, setUsers] = React.useState<User[]>([]);
   const [userData, setUserData] = React.useState<User | null>(null);
-  const [userRoles, setUserRoles] = React.useState<{ id: string; roleId: string }[]>([]);
+  const [userRoles, setUserRoles] = React.useState<UserRole[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -107,89 +112,67 @@ export default function EditUserPage() {
     },
   });
 
-  // Fetch initial data (roles, positions, users) - only once
+  // Fetch all data on mount
   React.useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        // Fetch roles
-        const rolesResponse = await fetch('/api/roles', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (rolesResponse.ok) {
-          const rolesResult = await rolesResponse.json();
-          if (rolesResult.success) {
-            setRoles(rolesResult.data);
-          }
-        }
-
-        // Fetch positions
-        const positionsResponse = await fetch('/api/positions');
-        if (positionsResponse.ok) {
-          const positionsData = await positionsResponse.json();
-          setPositions(positionsData);
-        }
-
-        // Fetch users for manager selection
-        const usersResponse = await fetch('/api/users', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (usersResponse.ok) {
-          const usersResult = await usersResponse.json();
-          if (usersResult.success) {
-            setUsers(usersResult.data.filter((u: User) => u.id !== userId));
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching initial data:', error);
-      }
-    };
-
-    if (token) {
-      fetchInitialData();
-    }
-  }, [token, userId]);
-
-  // Fetch user data and populate form
-  React.useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAllData = async () => {
       try {
         setLoadingData(true);
 
-        // Fetch user data
-        const userResponse = await fetch(`/api/users/${userId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        // Fetch all data in parallel
+        const [rolesResponse, positionsResponse, usersResponse, userResponse, userRolesResponse] = 
+          await Promise.all([
+            apiClient.get<{ success: boolean; data: Role[] }>('/api/roles'),
+            apiClient.get<Position[]>('/api/positions'),
+            apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
+            apiClient.get<{ success: boolean; data: User }>(`/api/users/${userId}`),
+            apiClient.get<UserRole[]>(`/api/users/${userId}/roles`),
+          ]);
 
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch user');
+        // Set roles
+        if (rolesResponse.success && rolesResponse.data) {
+          const rolesData = rolesResponse.data as unknown as { success: boolean; data: Role[] };
+          if (rolesData.success && rolesData.data) {
+            setRoles(rolesData.data);
+          }
         }
 
-        const userResult = await userResponse.json();
-        const fetchedUserData = userResult.success ? userResult.data : userResult;
-        
-        setUserData(fetchedUserData);
+        // Set positions
+        if (positionsResponse.success && positionsResponse.data) {
+          setPositions(Array.isArray(positionsResponse.data) ? positionsResponse.data : []);
+        }
 
-        // Get user's current role
-        const userRolesResponse = await fetch(`/api/users/${userId}/roles`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (userRolesResponse.ok) {
-          const fetchedUserRoles = await userRolesResponse.json();
-          setUserRoles(fetchedUserRoles);
+        // Set users
+        if (usersResponse.success && usersResponse.data) {
+          const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
+          if (usersData.success && usersData.data) {
+            setUsers(usersData.data.filter((u: User) => u.id !== userId));
+          }
+        }
+
+        // Set user data
+        if (userResponse.success && userResponse.data) {
+          const userData = userResponse.data as unknown as { success: boolean; data: User };
+          const fetchedUser = userData.success ? userData.data : userResponse.data;
+          setUserData(fetchedUser as User);
+        }
+
+        // Set user roles
+        if (userRolesResponse.success && userRolesResponse.data) {
+          setUserRoles(Array.isArray(userRolesResponse.data) ? userRolesResponse.data : []);
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error(t('users.fetchError'));
+        console.error('Error fetching data:', error);
+        toast.error(getErrorMessage(error, t('users.fetchError')));
         router.push('/dashboard/users');
       } finally {
         setLoadingData(false);
       }
     };
 
-    if (userId && token) {
-      fetchUserData();
+    if (userId) {
+      fetchAllData();
     }
-  }, [userId, token, router, t]);
+  }, [userId, router, t]);
 
   // Populate form when data is ready
   React.useEffect(() => {
@@ -229,8 +212,6 @@ export default function EditUserPage() {
       isActive: userData.isActive !== false,
     };
     
-    console.log('Form data to populate:', formData);
-    
     form.reset(formData);
   }, [userData, userRoles, positions, form]);
 
@@ -239,51 +220,40 @@ export default function EditUserPage() {
       setLoading(true);
 
       // Update user basic info
-      const userResponse = await fetch(`/api/users/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          email: data.email,
-          fullNameEn: data.fullNameEn,
-          fullNameAr: data.fullNameAr || undefined,
-          phoneNumber: data.phoneNumber,
-          position: data.position && data.position !== 'none' ? data.position : undefined,
-          department: data.department,
-          managerId: data.managerId && data.managerId !== 'none' ? data.managerId : undefined,
-          isActive: data.isActive,
-        }),
-      });
+      const userUpdatePayload = {
+        email: data.email,
+        fullNameEn: data.fullNameEn,
+        fullNameAr: data.fullNameAr || null,
+        phoneNumber: data.phoneNumber || null,
+        position: data.position && data.position !== 'none' ? data.position : null,
+        department: data.department || null,
+        managerId: data.managerId && data.managerId !== 'none' ? data.managerId : null,
+        isActive: data.isActive,
+      };
 
-      if (!userResponse.ok) {
-        const errorData = await userResponse.json();
-        console.error('Failed to update user:', errorData);
-        throw new Error(errorData.error || 'Failed to update user');
+      const userResponse = await apiClient.patch(`/api/users/${userId}`, userUpdatePayload);
+
+      if (!userResponse.success) {
+        throw new Error(userResponse.message || 'Failed to update user');
       }
 
-      // Update user role
-      if (data.roleId) {
-        const roleResponse = await fetch(`/api/users/${userId}/roles`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ roleId: data.roleId }),
+      // Update user role if changed
+      const currentRoleId = userRoles.length > 0 ? userRoles[0].roleId : '';
+      if (data.roleId !== currentRoleId) {
+        const roleResponse = await apiClient.put(`/api/users/${userId}/roles`, {
+          roleId: data.roleId,
         });
 
-        if (!roleResponse.ok) {
-          console.error('Failed to update role');
+        if (!roleResponse.success) {
+          throw new Error(roleResponse.message || 'Failed to update role');
         }
       }
 
-      toast.success(t('users.updateSuccess'));
+      toast.success(t('messages.updateSuccess'));
       router.push('/dashboard/users');
     } catch (error) {
       console.error('Error updating user:', error);
-      toast.error(t('users.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
       setLoading(false);
     }
@@ -291,56 +261,74 @@ export default function EditUserPage() {
 
   if (loadingData) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="text-lg">{t('common.loading')}</div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">{t('users.notFound')}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.back()}
+          onClick={() => router.push('/dashboard/users')}
         >
           <RTLChevron>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
           </RTLChevron>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">{t('users.editUser')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('users.editUserDescription')}
+          <h2 className="text-3xl font-bold tracking-tight">
+            {t('users.editUser')}
+          </h2>
+          <p className="text-muted-foreground">
+            {t('users.userDetails')}
           </p>
         </div>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Avatar Upload Section */}
-          {userData && (
-            <UserAvatarUpload
-              userId={userId}
-              currentAvatarUrl={userData.avatarUrl}
-              userFullName={userData.fullNameEn}
-              token={token || undefined}
-              variant="card"
-            />
-          )}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('users.editUser')}</CardTitle>
+          <CardDescription>
+            Update user information and settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Avatar Upload Section */}
+              <Card className="border-dashed">
+                <CardHeader>
+                  <CardTitle className="text-base">Profile Picture</CardTitle>
+                  <CardDescription>
+                    Update the user&apos;s profile picture
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <UserAvatarUpload
+                    userId={userId}
+                    currentAvatarUrl={userData.avatarUrl}
+                    userFullName={userData.fullNameEn}
+                    onAvatarUpdated={(newUrl: string) => {
+                      setUserData(prev => prev ? { ...prev, avatarUrl: newUrl } : null);
+                    }}
+                    variant="card"
+                  />
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('users.basicInformation')}</CardTitle>
-              <CardDescription>
-                {t('users.basicInformationDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="fullNameEn"
@@ -348,7 +336,7 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>{t('users.fullNameEn') || 'Full Name (English)'}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="John Doe" />
+                        <Input placeholder="John Doe" {...field} />
                       </FormControl>
                       <FormDescription>
                         {t('users.fullNameEnDescription') || 'Enter the full name in English'}
@@ -365,7 +353,7 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>{t('users.fullNameAr') || 'Full Name (Arabic)'}</FormLabel>
                       <FormControl>
-                        <Input {...field} dir="rtl" placeholder="محمد أحمد" />
+                        <Input placeholder="محمد أحمد" dir="rtl" {...field} />
                       </FormControl>
                       <FormDescription>
                         {t('users.fullNameArDescription') || 'Optional: enter the full name in Arabic'}
@@ -374,47 +362,41 @@ export default function EditUserPage() {
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('users.email')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('users.phoneNumber')}</FormLabel>
-                      <FormControl>
-                        <Input {...field} type="tel" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('users.organizationInformation')}</CardTitle>
-              <CardDescription>
-                {t('users.organizationInformationDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('auth.email')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="john.doe@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('users.phoneNumber')}</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="+1234567890" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="position"
@@ -454,56 +436,14 @@ export default function EditUserPage() {
                     <FormItem>
                       <FormLabel>{t('users.department')}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder={t('users.departmentPlaceholder')} />
+                        <Input placeholder={t('users.departmentPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={form.control}
-                  name="managerId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('users.manager')}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('users.selectManager')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">{t('users.noManager')}</SelectItem>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {[user.fullNameEn, user.fullNameAr].filter(Boolean).join(' / ') || user.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        {t('users.managerDescription')}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('users.roleAndAccess')}</CardTitle>
-              <CardDescription>
-                {t('users.roleAndAccessDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <FormField
                 control={form.control}
                 name="roleId"
@@ -512,30 +452,55 @@ export default function EditUserPage() {
                     <FormLabel>{t('users.role')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={t('users.selectRole')} />
+                          <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {roles.map((role) => (
                           <SelectItem key={role.id} value={role.id}>
-                            <div>
-                              <div className="font-medium">{role.name}</div>
-                              {role.description && (
-                                <div className="text-xs text-muted-foreground">
-                                  {role.description}
-                                </div>
-                              )}
-                            </div>
+                            {role.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      {t('users.roleAccessDescription')}
+                      {roles.find(r => r.id === field.value)?.description || 'Select a role for this user'}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="managerId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Manager (Optional)</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value || undefined)}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="No Manager (Optional)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">No Manager</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {[user.fullNameEn, user.fullNameAr].filter(Boolean).join(' / ') || user.email} ({user.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Select a manager for this user (defines reporting hierarchy)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -549,14 +514,14 @@ export default function EditUserPage() {
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        {t('users.activeStatus')}
+                        {t('users.active')}
                       </FormLabel>
                       <FormDescription>
-                        {t('users.activeStatusDescription')}
+                        Enable or disable this user account
                       </FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
+                      <Switch dir="ltr"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />
@@ -564,33 +529,34 @@ export default function EditUserPage() {
                   </FormItem>
                 )}
               />
-            </CardContent>
-          </Card>
 
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.back()}
-              disabled={loading}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <span className="mr-2">{t('common.saving')}</span>
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  {t('common.save')}
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push('/dashboard/users')}
+                  disabled={loading}
+                >
+                  {t('common.cancel')}
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('common.loading')}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      {t('common.save')}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

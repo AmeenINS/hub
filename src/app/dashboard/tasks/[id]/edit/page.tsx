@@ -1,11 +1,20 @@
 'use client';
 
+// React & Next.js
 import * as React from 'react';
 import { useRouter, useParams } from 'next/navigation';
+
+// External libraries
 import { ArrowLeft, Save, Loader2, Calendar, User, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
+// Internal utilities
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { useI18n } from '@/lib/i18n/i18n-context';
+import { getCombinedUserName } from '@/lib/utils';
+
+// Components
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,11 +34,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { useAuthStore } from '@/store/auth-store';
 import { RTLChevron } from '@/components/ui/rtl-icon';
-import { getCombinedUserName } from '@/lib/utils';
 
+// Types & Interfaces
 interface User {
   id: string;
   fullNameEn: string;
@@ -37,9 +44,24 @@ interface User {
   email: string;
 }
 
+interface TaskData {
+  title: string;
+  description: string;
+  status: string;
+  priority: string;
+  assigneeId?: string;
+  dueDate?: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+// Component
 export default function EditTaskPage() {
   const { t } = useI18n();
-  const { token } = useAuthStore();
   const router = useRouter();
   const params = useParams();
   const taskId = params.id as string;
@@ -70,59 +92,46 @@ export default function EditTaskPage() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch task details
-        const taskResponse = await fetch(`/api/tasks/${taskId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        // Fetch task details and users in parallel
+        const [taskResponse, usersResponse] = await Promise.all([
+          apiClient.get<TaskData>(`/api/tasks/${taskId}`),
+          apiClient.get<User[]>('/api/users'),
+        ]);
 
-        // Fetch users for assignee selection
-        const usersResponse = await fetch('/api/users', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (taskResponse.ok && usersResponse.ok) {
-          const taskData = await taskResponse.json();
-          const usersData = await usersResponse.json();
-
-          if (taskData.success) {
-            const task = taskData.data;
-            // Convert status and priority from uppercase to lowercase for form
-            const statusMap: Record<string, 'todo' | 'in-progress' | 'completed'> = {
-              'TODO': 'todo',
-              'IN_PROGRESS': 'in-progress',
-              'DONE': 'completed',
-              'COMPLETED': 'completed',
-            };
-            const priorityMap: Record<string, 'low' | 'medium' | 'high' | 'urgent'> = {
-              'LOW': 'low',
-              'MEDIUM': 'medium',
-              'HIGH': 'high',
-              'URGENT': 'urgent',
-            };
-            
-            setFormData({
-              title: task.title,
-              description: task.description,
-              status: statusMap[task.status] || 'todo',
-              priority: priorityMap[task.priority] || 'medium',
-              assigneeId: task.assigneeId || '',
-              dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
-            });
-          } else {
-            toast.error(t('tasks.fetchError'));
-            router.push('/dashboard/tasks');
-          }
-
-          if (usersData.success) {
-            setUsers(usersData.data || []);
-          }
+        if (taskResponse.success && taskResponse.data) {
+          const task = taskResponse.data;
+          // Convert status and priority from uppercase to lowercase for form
+          const statusMap: Record<string, 'todo' | 'in-progress' | 'completed'> = {
+            'TODO': 'todo',
+            'IN_PROGRESS': 'in-progress',
+            'DONE': 'completed',
+            'COMPLETED': 'completed',
+          };
+          const priorityMap: Record<string, 'low' | 'medium' | 'high' | 'urgent'> = {
+            'LOW': 'low',
+            'MEDIUM': 'medium',
+            'HIGH': 'high',
+            'URGENT': 'urgent',
+          };
+          
+          setFormData({
+            title: task.title,
+            description: task.description,
+            status: statusMap[task.status] || 'todo',
+            priority: priorityMap[task.priority] || 'medium',
+            assigneeId: task.assigneeId || '',
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+          });
         } else {
           toast.error(t('tasks.fetchError'));
           router.push('/dashboard/tasks');
         }
+
+        if (usersResponse.success && usersResponse.data) {
+          setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
+        }
       } catch (error) {
-        console.error('Failed to fetch task:', error);
-        toast.error(t('tasks.fetchError'));
+        toast.error(getErrorMessage(error, t('tasks.fetchError')));
         router.push('/dashboard/tasks');
       } finally {
         setInitialLoading(false);
@@ -132,7 +141,7 @@ export default function EditTaskPage() {
     if (taskId) {
       fetchData();
     }
-  }, [taskId, token, t, router]);
+  }, [taskId, t, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,34 +164,18 @@ export default function EditTaskPage() {
         'urgent': 'URGENT',
       };
 
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          title: validatedData.title,
-          description: validatedData.description,
-          status: statusMap[validatedData.status],
-          priority: priorityMap[validatedData.priority],
-          assigneeId: validatedData.assigneeId || null,
-          dueDate: validatedData.dueDate ? new Date(validatedData.dueDate).toISOString() : null,
-        }),
+      const response = await apiClient.put<ApiResponse<unknown>>(`/api/tasks/${taskId}`, {
+        title: validatedData.title,
+        description: validatedData.description,
+        status: statusMap[validatedData.status],
+        priority: priorityMap[validatedData.priority],
+        assigneeId: validatedData.assigneeId || null,
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate).toISOString() : null,
       });
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('tasks.updateSuccess'));
         router.push('/dashboard/tasks');
-      } else {
-        let errorMessage = t('tasks.updateError');
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -194,8 +187,7 @@ export default function EditTaskPage() {
         });
         setErrors(fieldErrors);
       } else {
-        console.error('Failed to update task:', error);
-        toast.error(t('tasks.updateError'));
+        toast.error(getErrorMessage(error, t('tasks.updateError')));
       }
     } finally {
       setLoading(false);
@@ -216,27 +208,14 @@ export default function EditTaskPage() {
 
     setDeleting(true);
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.delete<ApiResponse<unknown>>(`/api/tasks/${taskId}`);
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('messages.deleteSuccess'));
         router.push('/dashboard/tasks');
-      } else {
-        let errorMessage = t('messages.deleteError');
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
       }
     } catch (error) {
-      console.error('Failed to delete task:', error);
-      toast.error(t('messages.deleteError'));
+      toast.error(getErrorMessage(error, t('messages.deleteError')));
     } finally {
       setDeleting(false);
     }

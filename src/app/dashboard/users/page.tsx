@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlus, RefreshCw } from 'lucide-react';
+import { UserPlus, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -24,116 +24,118 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { UsersDataTable, User } from '@/components/dashboard/users-data-table';
-import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { getCombinedUserName } from '@/lib/utils';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { useModulePermissions } from '@/hooks/use-permissions';
 
 export default function UsersPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { token, isLoading: authLoading } = useAuthStore();
+  const { permissions, isLoading: permissionsLoading } = useModulePermissions('users');
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [mounted, setMounted] = React.useState(false);
   const [deleteDialog, setDeleteDialog] = React.useState<{
     open: boolean;
     user: User | null;
   }>({ open: false, user: null });
 
-  // Wait for auth store to hydrate
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const fetchUsers = React.useCallback(async () => {
-    if (!mounted || authLoading) return;
+    if (!permissions.canView) return;
     
     try {
       setLoading(true);
-      const response = await fetch('/api/users', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.get<User[]>('/api/users');
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error(t('auth.loginError'));
-          router.push('/login');
-          return;
-        }
-        throw new Error('Failed to fetch users');
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        setUsers(result.data);
+      if (response.success && response.data) {
+        setUsers(response.data);
+      } else {
+        toast.error(response.message || t('messages.errorFetchingData'));
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast.error(t('messages.errorFetchingData'));
+      toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
     } finally {
       setLoading(false);
     }
-  }, [token, t, router, mounted, authLoading]);
+  }, [permissions.canView, t]);
 
   React.useEffect(() => {
-    if (mounted && !authLoading) {
+    if (permissions.canView) {
       fetchUsers();
     }
-  }, [mounted, authLoading, fetchUsers]);
+  }, [permissions.canView, fetchUsers]);
 
   const handleEdit = (user: User) => {
+    if (!permissions.canEdit) {
+      toast.error(t('messages.noPermission'));
+      return;
+    }
     router.push(`/dashboard/users/${user.id}/edit`);
   };
 
   const handleDelete = (user: User) => {
+    if (!permissions.canDelete) {
+      toast.error(t('messages.noPermission'));
+      return;
+    }
     setDeleteDialog({ open: true, user });
   };
 
   const confirmDelete = async () => {
-    if (!deleteDialog.user) return;
+    if (!deleteDialog.user || !permissions.canDelete) return;
 
     try {
-      const response = await fetch(`/api/users/${deleteDialog.user.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.delete(`/api/users/${deleteDialog.user.id}`);
 
-      if (!response.ok) {
-        throw new Error('Failed to delete user');
+      if (response.success) {
+        toast.success(response.message || t('messages.deleteSuccess'));
+        fetchUsers();
+      } else {
+        toast.error(response.message || t('messages.deleteError'));
       }
-
-      toast.success(t('messages.deleteSuccess'));
-      fetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error(t('messages.deleteError'));
+      toast.error(getErrorMessage(error, t('messages.deleteError')));
     } finally {
       setDeleteDialog({ open: false, user: null });
     }
   };
 
   const handleToggleStatus = async (user: User) => {
+    if (!permissions.canEdit) {
+      toast.error(t('messages.noPermission'));
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ isActive: !user.isActive }),
+      const response = await apiClient.patch(`/api/users/${user.id}`, {
+        isActive: !user.isActive
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update user status');
+      if (response.success) {
+        toast.success(response.message || t('messages.updateSuccess'));
+        fetchUsers();
+      } else {
+        toast.error(response.message || t('messages.updateError'));
       }
-
-      toast.success(t('messages.updateSuccess'));
-      fetchUsers();
     } catch (error) {
       console.error('Error updating user:', error);
-      toast.error(t('messages.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     }
   };
+
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!permissions.canView) {
+    return null;
+  }
 
   return (
     <>
@@ -154,10 +156,12 @@ export default function UsersPage() {
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
-            <Button onClick={() => router.push('/dashboard/users/new')}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              {t('users.createUser')}
-            </Button>
+            {permissions.canCreate && (
+              <Button onClick={() => router.push('/dashboard/users/new')}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                {t('users.createUser')}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -173,7 +177,7 @@ export default function UsersPage() {
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : (
               <UsersDataTable

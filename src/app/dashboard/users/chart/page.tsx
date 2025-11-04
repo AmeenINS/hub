@@ -2,15 +2,15 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import OrgChart from '@/components/dashboard/org-chart-reactflow';
-import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
 
 interface User {
   id: string;
@@ -37,45 +37,30 @@ interface Position {
 export default function OrgChartPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { token, isLoading: authLoading } = useAuthStore();
   const [users, setUsers] = React.useState<User[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [mounted, setMounted] = React.useState(false);
-
-  // Wait for auth store to hydrate
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fetchUsers = React.useCallback(async () => {
-    if (!mounted || authLoading) return;
-
     try {
-      // Fetch users
-      const response = await fetch('/api/users', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      setLoading(true);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
+      // Fetch users and positions in parallel
+      const [usersResponse, positionsResponse] = await Promise.all([
+        apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
+        apiClient.get<Position[]>('/api/positions'),
+      ]);
+
+      let fetchedUsers: User[] = [];
+      if (usersResponse.success && usersResponse.data) {
+        const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
+        fetchedUsers = usersData.success && usersData.data ? usersData.data : [];
       }
 
-      const data = await response.json();
-      const fetchedUsers = data.data || [];
-
-      // Fetch positions
-      const positionsResponse = await fetch('/api/positions', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (positionsResponse.ok) {
-        const positionsData = await positionsResponse.json();
-        // API returns array directly, not { data: [] }
-        const fetchedPositions = Array.isArray(positionsData) ? positionsData : (positionsData.data || []);
+      // Process positions if available
+      if (positionsResponse.success && positionsResponse.data) {
+        const fetchedPositions = Array.isArray(positionsResponse.data) 
+          ? positionsResponse.data 
+          : [];
 
         // Map position IDs to names
         const positionMap = new Map<string, Position>(
@@ -100,94 +85,72 @@ export default function OrgChartPage() {
         setUsers(fetchedUsers);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error(t('common.error') || 'Failed to fetch users');
+      console.error('Error fetching org chart data:', error);
+      toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
     } finally {
       setLoading(false);
     }
-  }, [mounted, token, authLoading, t]);
+  }, [t]);
 
   React.useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleRefresh = () => {
-    setLoading(true);
-    fetchUsers();
-  };
-
-  const handleBack = () => {
-    router.back();
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleBack}
-              className="h-8 w-8"
-            >
-              <RTLChevron>
-                <ArrowLeft className="h-4 w-4" />
-              </RTLChevron>
-            </Button>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {t('dashboard.orgChart') || 'Organizational Chart'}
-            </h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push('/dashboard/users')}
+          >
+            <RTLChevron>
+              <ArrowLeft className="h-4 w-4" />
+            </RTLChevron>
+          </Button>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              {t('users.orgChart')}
+            </h2>
+            <p className="text-muted-foreground">
+              {t('users.orgChartDescription')}
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            {t('dashboard.orgChartPageDesc') ||
-              'View your organization structure and employee hierarchy'}
-          </p>
         </div>
-
         <Button
-          onClick={handleRefresh}
-          disabled={loading}
           variant="outline"
-          size="sm"
+          size="icon"
+          onClick={fetchUsers}
+          disabled={loading}
         >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          {t('common.refresh') || 'Refresh'}
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
-      {/* Content */}
-      {loading ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2" />
+      <Card>
+        <CardContent className="p-6">
+          {users.length > 0 ? (
+            <div className="w-full h-[calc(100vh-300px)] min-h-[600px]">
+              <OrgChart users={users} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-96">
               <p className="text-muted-foreground">
-                {t('common.loading') || 'Loading...'}
+                {t('users.noUsersFound')}
               </p>
             </div>
-          </CardContent>
-        </Card>
-      ) : users.length === 0 ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-2">
-                {t('common.noData') || 'No users found'}
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => router.push('/dashboard/users/new')}
-              >
-                {t('users.createNew') || 'Create New User'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <OrgChart users={users} />
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

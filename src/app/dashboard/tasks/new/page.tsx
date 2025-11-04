@@ -1,13 +1,22 @@
 'use client';
 
+// React & Next.js
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+
+// External libraries
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
+// Internal utilities
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { useI18n } from '@/lib/i18n/i18n-context';
+import { getCombinedUserName } from '@/lib/utils';
+
+// Components
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -34,12 +43,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAuthStore } from '@/store/auth-store';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { TaskPriority } from '@/types/database';
 import { RTLChevron } from '@/components/ui/rtl-icon';
-import { getCombinedUserName } from '@/lib/utils';
 
+// Types
+import { TaskPriority } from '@/types/database';
+
+// Types & Interfaces
 interface User {
   id: string;
   email: string;
@@ -47,10 +56,16 @@ interface User {
   fullNameAr?: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+// Component
 export default function NewTaskPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { token } = useAuthStore();
 
   const formSchema = z.object({
     title: z.string().min(3, t('validation.titleMinLength')),
@@ -78,19 +93,14 @@ export default function NewTaskPage() {
     },
   });
 
-  // Fetch users (self + subordinates) on mount
+  // Fetch users on mount
   React.useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const response = await apiClient.get<ApiResponse<User[]>>('/api/users');
 
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setUsers(result.data);
-          }
+        if (response.success && response.data) {
+          setUsers(Array.isArray(response.data) ? response.data : []);
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -99,10 +109,8 @@ export default function NewTaskPage() {
       }
     };
 
-    if (token) {
-      fetchUsers();
-    }
-  }, [token]);
+    fetchUsers();
+  }, []);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -116,26 +124,14 @@ export default function NewTaskPage() {
         assignees: selectedAssignees,
       };
 
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await apiClient.post<ApiResponse<unknown>>('/api/tasks', payload);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || t('messages.createError'));
+      if (response.success) {
+        toast.success(t('messages.createSuccess'));
+        router.push('/dashboard/tasks');
       }
-
-      toast.success(t('messages.createSuccess'));
-      router.push('/dashboard/tasks');
     } catch (error) {
-      console.error('Error creating task:', error);
-      toast.error(error instanceof Error ? error.message : t('messages.createError'));
+      toast.error(getErrorMessage(error, t('messages.createError')));
     } finally {
       setLoading(false);
     }

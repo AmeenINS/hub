@@ -225,6 +225,12 @@ export const translations = {
       createdAt: 'Created At',
       updatedAt: 'Updated At',
       completedAt: 'Completed At',
+      // Kanban board
+      dragAndDrop: 'Drag and drop tasks to change status',
+      task: 'task',
+      tasks: 'tasks',
+      newTask: 'New Task',
+      noTasks: 'No tasks found',
       status: {
         todo: 'To Do',
         inProgress: 'In Progress',
@@ -929,6 +935,12 @@ export const translations = {
       createdAt: 'تاريخ الإنشاء',
       updatedAt: 'تاريخ التحديث',
       completedAt: 'تاريخ الإكمال',
+      // Kanban board
+      dragAndDrop: 'اسحب وأفلت المهام لتغيير الحالة',
+      task: 'مهمة',
+      tasks: 'مهام',
+      newTask: 'مهمة جديدة',
+      noTasks: 'لا توجد مهام',
       status: {
         todo: 'للقيام به',
         inProgress: 'قيد التنفيذ',

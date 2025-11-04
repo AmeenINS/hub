@@ -1,13 +1,21 @@
 'use client';
 
-import { Task, TaskStatus, TaskPriority } from '@/types/database';
+// React & utilities
+import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
+import { motion, AnimatePresence } from 'motion/react';
+
+// Internal utilities
+import { useI18n } from '@/lib/i18n/i18n-context';
+
+// Components
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+
+// Types
+import { Task, TaskStatus, TaskPriority } from '@/types/database';
 
 interface KanbanBoardProps {
   tasks: Task[];
@@ -15,31 +23,32 @@ interface KanbanBoardProps {
   onStatusChange: (taskId: string, newStatus: TaskStatus) => void;
 }
 
-const statusColumns = [
-  { 
-    status: TaskStatus.TODO, 
-    label: 'To Do',
-  },
-  { 
-    status: TaskStatus.IN_PROGRESS, 
-    label: 'In Progress',
-  },
-  { 
-    status: TaskStatus.DONE, 
-    label: 'Done',
-  },
-];
-
 const priorityConfig = {
-  [TaskPriority.LOW]: { label: 'Low', variant: 'secondary' as const },
-  [TaskPriority.MEDIUM]: { label: 'Medium', variant: 'default' as const },
-  [TaskPriority.HIGH]: { label: 'High', variant: 'default' as const },
-  [TaskPriority.URGENT]: { label: 'Urgent', variant: 'destructive' as const },
+  [TaskPriority.LOW]: { variant: 'secondary' as const },
+  [TaskPriority.MEDIUM]: { variant: 'default' as const },
+  [TaskPriority.HIGH]: { variant: 'default' as const },
+  [TaskPriority.URGENT]: { variant: 'destructive' as const },
 };
 
 export default function KanbanBoard({ tasks, onTaskClick, onStatusChange }: KanbanBoardProps) {
+  const { t } = useI18n();
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
+
+  const statusColumns = [
+    { 
+      status: TaskStatus.TODO, 
+      label: t('tasks.status.todo'),
+    },
+    { 
+      status: TaskStatus.IN_PROGRESS, 
+      label: t('tasks.status.inProgress'),
+    },
+    { 
+      status: TaskStatus.DONE, 
+      label: t('tasks.status.done'),
+    },
+  ];
 
   const getTasksByStatus = useMemo(() => {
     return (status: TaskStatus) => {
@@ -131,7 +140,7 @@ export default function KanbanBoard({ tasks, onTaskClick, onStatusChange }: Kanb
                 
                 {columnTasks.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground text-sm">
-                    <p>No tasks</p>
+                    <p>{t('tasks.noTasks')}</p>
                   </div>
                 )}
               </div>
@@ -152,8 +161,16 @@ interface TaskCardProps {
 }
 
 function TaskCard({ task, onClick, onDragStart, onDragEnd, isDragging }: TaskCardProps) {
+  const { t } = useI18n();
   const priorityInfo = priorityConfig[task.priority];
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== TaskStatus.DONE;
+
+  const priorityLabels: Record<TaskPriority, string> = {
+    LOW: t('tasks.priorityLow'),
+    MEDIUM: t('tasks.priorityMedium'),
+    HIGH: t('tasks.priorityHigh'),
+    URGENT: t('tasks.priorityUrgent'),
+  };
 
   return (
     <motion.div
@@ -176,11 +193,11 @@ function TaskCard({ task, onClick, onDragStart, onDragEnd, isDragging }: TaskCar
           {/* Priority & Overdue */}
           <div className="flex items-center justify-between">
             <Badge variant={priorityInfo.variant} className="text-xs">
-              {priorityInfo.label}
+              {priorityLabels[task.priority]}
             </Badge>
             {isOverdue && (
               <Badge variant="destructive" className="text-xs">
-                Overdue
+                {t('tasks.overdue')}
               </Badge>
             )}
           </div>

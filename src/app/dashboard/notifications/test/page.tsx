@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
 import { Bell, RefreshCw, Send, Activity, Wifi, WifiOff } from 'lucide-react';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { toast } from 'sonner';
 
 interface Notification {
   id: string;
@@ -49,10 +51,9 @@ export default function NotificationTestPage() {
   // Load statistics
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/notifications/test');
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
+      const response = await apiClient.get<NotificationStats>('/api/notifications/test');
+      if (response.success && response.data) {
+        setStats(response.data);
       }
     } catch (error) {
       console.error('Error loading stats:', error);
@@ -63,276 +64,236 @@ export default function NotificationTestPage() {
   const sendTestNotification = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/notifications/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testForm)
-      });
+      const response = await apiClient.post<{ sseConnections: number }>('/api/notifications/test', testForm);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('✅ Test notification sent:', result);
-        alert('✅ Notification sent successfully!\nSSE Connections: ' + result.sseConnections);
+      if (response.success && response.data) {
+        console.log('✅ Test notification sent:', response.data);
+        toast.success(
+          `✅ Notification sent successfully!\nSSE Connections: ${response.data.sseConnections}`
+        );
         
         // Refresh statistics
         await loadStats();
       } else {
-        const error = await response.json();
-        alert('❌ Error: ' + error.error);
+        toast.error(response.message || 'Failed to send notification');
       }
     } catch (error) {
-      console.error('Error sending test notification:', error);
-      alert('❌ Error sending notification');
+      console.error('Error sending notification:', error);
+      toast.error(getErrorMessage(error, 'Failed to send notification'));
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial load
   useEffect(() => {
     loadStats();
-  }, []);
-
-  // Auto-refresh statistics
-  useEffect(() => {
     const interval = setInterval(loadStats, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl" dir="rtl">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Notification System Test</h1>
-            <p className="text-muted-foreground mt-2">
-              Test real-time notifications in development mode
-            </p>
-          </div>
-          <Button onClick={loadStats} variant="outline" size="icon">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Activity className="h-8 w-8" />
+            Notification System Test
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Test and monitor the real-time notification system
+          </p>
         </div>
+        <Button onClick={loadStats} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+      </div>
 
-        {/* Connection Status */}
+      {/* Connection Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            {isConnected ? (
+              <Wifi className="h-5 w-5 text-green-500" />
+            ) : (
+              <WifiOff className="h-5 w-5 text-red-500" />
+            )}
+            Connection Status
+          </CardTitle>
+          <CardDescription>
+            Real-time notification connection status
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span>Status:</span>
+            <Badge variant={isConnected ? 'default' : 'destructive'}>
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Mode:</span>
+            <Badge variant="outline">
+              {usePolling ? 'Polling Fallback' : 'SSE'}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Unread Count:</span>
+            <Badge variant="secondary">{unreadCount}</Badge>
+          </div>
+          {stats && (
+            <>
+              <div className="flex items-center justify-between">
+                <span>Active SSE Connections:</span>
+                <Badge variant="secondary">{stats.stats.sseConnections}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Total SSE Connections:</span>
+                <Badge variant="outline">{stats.stats.totalSseConnections}</Badge>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Statistics */}
+      {stats && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistics</CardTitle>
+            <CardDescription>Current notification statistics</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold">{stats.stats.totalNotifications}</div>
+                <div className="text-sm text-muted-foreground">Total Notifications</div>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold">{stats.stats.userNotifications}</div>
+                <div className="text-sm text-muted-foreground">Your Notifications</div>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold">{stats.stats.unreadCount}</div>
+                <div className="text-sm text-muted-foreground">Unread</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Test Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Send Test Notification</CardTitle>
+          <CardDescription>
+            Create and send a test notification to yourself
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={testForm.title}
+              onChange={(e) => setTestForm({ ...testForm, title: e.target.value })}
+              placeholder="Notification title"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="message">Message</Label>
+            <Input
+              id="message"
+              value={testForm.message}
+              onChange={(e) => setTestForm({ ...testForm, message: e.target.value })}
+              placeholder="Notification message"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="type">Type</Label>
+            <Input
+              id="type"
+              value={testForm.type}
+              onChange={(e) => setTestForm({ ...testForm, type: e.target.value })}
+              placeholder="info, success, warning, error"
+            />
+          </div>
+          <Button 
+            onClick={sendTestNotification} 
+            disabled={loading}
+            className="w-full"
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {loading ? 'Sending...' : 'Send Test Notification'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Recent Notifications */}
+      {stats && stats.recentNotifications.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Connection Status
+              <Bell className="h-5 w-5" />
+              Recent Notifications
             </CardTitle>
+            <CardDescription>Latest 5 notifications from the system</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3 p-4 border rounded-lg">
-                {isConnected ? (
-                  <Wifi className="h-5 w-5 text-green-500" />
-                ) : (
-                  <WifiOff className="h-5 w-5 text-red-500" />
-                )}
-                <div>
-                  <div className="text-sm text-muted-foreground">SSE Status</div>
-                  <div className="font-semibold">
-                    {isConnected ? (
-                      <span className="text-green-600">Connected ✓</span>
-                    ) : (
-                      <span className="text-red-600">Disconnected ✗</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-4 border rounded-lg">
-                <Bell className="h-5 w-5 text-blue-500" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Unread Count</div>
-                  <div className="font-semibold text-2xl">{unreadCount}</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-4 border rounded-lg">
-                <Activity className="h-5 w-5 text-orange-500" />
-                <div>
-                  <div className="text-sm text-muted-foreground">Delivery Method</div>
-                  <div className="font-semibold">
-                    {usePolling ? (
-                      <Badge variant="outline">Polling (30s)</Badge>
-                    ) : (
-                      <Badge>SSE Real-time</Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistics */}
-        {stats && (
-          <Card>
-            <CardHeader>
-              <CardTitle>System Statistics</CardTitle>
-              <CardDescription>Overall notifications and connections statistics</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{stats.stats.totalNotifications}</div>
-                  <div className="text-sm text-muted-foreground">Total Notifications</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{stats.stats.userNotifications}</div>
-                  <div className="text-sm text-muted-foreground">Your Notifications</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{stats.stats.sseConnections}</div>
-                  <div className="text-sm text-muted-foreground">Your SSE Connections</div>
-                </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold">{stats.stats.totalSseConnections}</div>
-                  <div className="text-sm text-muted-foreground">Total SSE Connections</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Test Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Send Test Notification</CardTitle>
-            <CardDescription>
-              Create a test notification and observe its broadcast
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={testForm.title}
-                  onChange={(e) => setTestForm({ ...testForm, title: e.target.value })}
-                  placeholder="Notification title"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="message">Message</Label>
-                <Input
-                  id="message"
-                  value={testForm.message}
-                  onChange={(e) => setTestForm({ ...testForm, message: e.target.value })}
-                  placeholder="Notification message"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="type">Type</Label>
-                <select
-                  id="type"
-                  title="Notification type"
-                  value={testForm.type}
-                  onChange={(e) => setTestForm({ ...testForm, type: e.target.value })}
-                  className="w-full p-2 border rounded-md"
+            <div className="space-y-3">
+              {stats.recentNotifications.map((notif) => (
+                <div
+                  key={notif.id}
+                  className="flex items-start justify-between p-3 border rounded-lg"
                 >
-                  <option value="info">Info</option>
-                  <option value="success">Success</option>
-                  <option value="warning">Warning</option>
-                  <option value="error">Error</option>
-                </select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={sendTestNotification}
-                  disabled={loading}
-                  className="flex-1"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Test Notification
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  onClick={refreshNotifications}
-                  variant="outline"
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Manual Refresh
-                </Button>
-
-                <Button
-                  onClick={markAllAsRead}
-                  variant="outline"
-                >
-                  Mark All Read
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Notifications */}
-        {stats?.recentNotifications && stats.recentNotifications.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Notifications</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {stats.recentNotifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className={`p-3 border rounded-lg flex items-start gap-3 ${
-                      notif.isRead ? 'opacity-60' : 'bg-blue-50 dark:bg-blue-950'
-                    }`}
-                  >
-                    <Bell className="h-4 w-4 mt-1" />
-                    <div className="flex-1">
-                      <div className="font-semibold">{notif.title}</div>
-                      <div className="text-sm text-muted-foreground">{notif.message}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {new Date(notif.createdAt).toLocaleString('fa-IR')}
-                      </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{notif.title}</span>
+                      {!notif.isRead && (
+                        <Badge variant="default" className="text-xs">New</Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs">
+                        {notif.type}
+                      </Badge>
                     </div>
-                    <Badge variant={notif.isRead ? 'outline' : 'default'}>
-                      {notif.type}
-                    </Badge>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {notif.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {new Date(notif.createdAt).toLocaleString()}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Instructions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Test Instructions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="list-decimal list-inside space-y-2 text-sm">
-              <li>Check the connection status above (SSE should be connected)</li>
-              <li>Send a test notification</li>
-              <li>Unread count should increase immediately (within 1 second)</li>
-              <li>Check SSE logs in browser console</li>
-              <li>To test Polling, disconnect your internet</li>
-              <li>After 3 failed retries, it should switch to Polling</li>
-              <li>In Polling mode, updates happen every 30 seconds</li>
-            </ol>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Actions</CardTitle>
+          <CardDescription>Test various notification actions</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button 
+            onClick={refreshNotifications}
+            variant="outline"
+            className="w-full"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Notifications
+          </Button>
+          <Button 
+            onClick={markAllAsRead}
+            variant="outline"
+            className="w-full"
+          >
+            Mark All as Read
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

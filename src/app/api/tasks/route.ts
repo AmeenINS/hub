@@ -49,6 +49,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if myTasks query parameter is present
+    const { searchParams } = new URL(request.url);
+    const myTasksOnly = searchParams.get('myTasks') === 'true';
+
     // Fetch tasks visible to this user:
     // - tasks created by user
     // - tasks assigned to user
@@ -58,6 +62,12 @@ export async function GET(request: NextRequest) {
     // Get assignments for user
     const myAssignments = await taskAssignmentService.getAssignmentsByUser(userId);
     const myAssignedTaskIds = new Set(myAssignments.map((a) => a.taskId));
+
+    // If myTasks=true, only return tasks assigned to the current user
+    if (myTasksOnly) {
+      const myTasks = allTasks.filter((t) => myAssignedTaskIds.has(t.id));
+      return NextResponse.json({ success: true, data: myTasks });
+    }
 
     // Get ALL subordinates (recursive)
     const subs = await userService.getAllSubordinates(userId);

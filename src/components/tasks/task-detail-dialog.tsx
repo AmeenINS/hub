@@ -1,6 +1,15 @@
 'use client';
 
-import { Task, TaskStatus, TaskPriority, TaskComment, TaskActivity } from '@/types/database';
+// React & utilities
+import { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
+
+// Internal utilities
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { useI18n } from '@/lib/i18n/i18n-context';
+import { getCombinedUserName, getUserInitials } from '@/lib/utils';
+
+// Components
 import {
   Dialog,
   DialogContent,
@@ -14,17 +23,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, MessageSquare, History, X } from 'lucide-react';
-import { format } from 'date-fns';
-import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { getCombinedUserName, getUserInitials } from '@/lib/utils';
 
-const getAuthToken = () => {
-  return document.cookie
-    .split('; ')
-    .find(row => row.startsWith('auth-token='))
-    ?.split('=')[1];
-};
+// Types
+import { Task, TaskStatus, TaskPriority, TaskComment, TaskActivity } from '@/types/database';
 
 interface TaskDetailDialogProps {
   task: Task;
@@ -34,20 +36,6 @@ interface TaskDetailDialogProps {
   onRefresh: () => Promise<void>;
 }
 
-const priorityConfig = {
-  [TaskPriority.LOW]: { label: 'Low', emoji: '🟢' },
-  [TaskPriority.MEDIUM]: { label: 'Medium', emoji: '🟡' },
-  [TaskPriority.HIGH]: { label: 'High', emoji: '🟠' },
-  [TaskPriority.URGENT]: { label: 'Urgent', emoji: '🔴' },
-};
-
-const statusConfig = {
-  [TaskStatus.TODO]: { label: 'To Do', color: 'bg-slate-500' },
-  [TaskStatus.IN_PROGRESS]: { label: 'In Progress', color: 'bg-blue-500' },
-  [TaskStatus.DONE]: { label: 'Done', color: 'bg-green-500' },
-  [TaskStatus.CANCELLED]: { label: 'Cancelled', color: 'bg-red-500' },
-};
-
 export default function TaskDetailDialog({
   task,
   open,
@@ -55,6 +43,7 @@ export default function TaskDetailDialog({
   onUpdate,
   onRefresh,
 }: TaskDetailDialogProps) {
+  const { t } = useI18n();
   const [description, setDescription] = useState(task.description || '');
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -64,57 +53,75 @@ export default function TaskDetailDialog({
   const [assignments, setAssignments] = useState<Array<{ id: string; userId: string; taskId: string }>>([]);
   const [loading, setLoading] = useState(false);
 
+  const priorityConfig = {
+    [TaskPriority.LOW]: { emoji: '🟢' },
+    [TaskPriority.MEDIUM]: { emoji: '🟡' },
+    [TaskPriority.HIGH]: { emoji: '🟠' },
+    [TaskPriority.URGENT]: { emoji: '🔴' },
+  };
+
+  const statusConfig = {
+    [TaskStatus.TODO]: { color: 'bg-slate-500' },
+    [TaskStatus.IN_PROGRESS]: { color: 'bg-blue-500' },
+    [TaskStatus.DONE]: { color: 'bg-green-500' },
+    [TaskStatus.CANCELLED]: { color: 'bg-red-500' },
+  };
+
+  const statusLabels: Record<TaskStatus, string> = {
+    [TaskStatus.TODO]: t('tasks.status.todo'),
+    [TaskStatus.IN_PROGRESS]: t('tasks.status.inProgress'),
+    [TaskStatus.DONE]: t('tasks.status.done'),
+    [TaskStatus.CANCELLED]: t('tasks.status.cancelled'),
+  };
+
+  const priorityLabels: Record<TaskPriority, string> = {
+    [TaskPriority.LOW]: t('tasks.priorityLow'),
+    [TaskPriority.MEDIUM]: t('tasks.priorityMedium'),
+    [TaskPriority.HIGH]: t('tasks.priorityHigh'),
+    [TaskPriority.URGENT]: t('tasks.priorityUrgent'),
+  };
+
+  const fetchTaskDetails = useCallback(async () => {
+    try {
+      const [commentsRes, activitiesRes, assignmentsRes] = await Promise.all([
+        apiClient.get<TaskComment[]>(`/api/tasks/${task.id}/comments`),
+        apiClient.get<TaskActivity[]>(`/api/tasks/${task.id}/activities`),
+        apiClient.get<Array<{ id: string; userId: string; taskId: string }>>(`/api/tasks/${task.id}/assignments`),
+      ]);
+
+      if (commentsRes.success && commentsRes.data) {
+        setComments(Array.isArray(commentsRes.data) ? commentsRes.data : []);
+      }
+
+      if (activitiesRes.success && activitiesRes.data) {
+        setActivities(Array.isArray(activitiesRes.data) ? activitiesRes.data : []);
+      }
+
+      if (assignmentsRes.success && assignmentsRes.data) {
+        setAssignments(Array.isArray(assignmentsRes.data) ? assignmentsRes.data : []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch task details:', error);
+    }
+  }, [task.id]);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await apiClient.get<Array<{ id: string; fullNameEn: string; fullNameAr?: string; email: string }>>('/api/users');
+      if (response.success && response.data) {
+        setUsers(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (open) {
       fetchTaskDetails();
       fetchUsers();
     }
-  }, [open, task.id]);
-
-  const fetchTaskDetails = async () => {
-    try {
-      const token = getAuthToken();
-      const headers = { 'Authorization': `Bearer ${token}` };
-
-      // Fetch comments
-      const commentsRes = await fetch(`/api/tasks/${task.id}/comments`, { headers });
-      if (commentsRes.ok) {
-        const data = await commentsRes.json();
-        setComments(data.data || []);
-      }
-
-      // Fetch activities
-      const activitiesRes = await fetch(`/api/tasks/${task.id}/activities`, { headers });
-      if (activitiesRes.ok) {
-        const data = await activitiesRes.json();
-        setActivities(data.data || []);
-      }
-
-      // Fetch assignments
-      const assignmentsRes = await fetch(`/api/tasks/${task.id}/assignments`, { headers });
-      if (assignmentsRes.ok) {
-        const data = await assignmentsRes.json();
-        setAssignments(data.data || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch task details:', error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const token = getAuthToken();
-      const response = await fetch('/api/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.data || []);
-      }
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    }
-  };
+  }, [open, task.id, fetchTaskDetails, fetchUsers]);
 
   const handleSaveDescription = async () => {
     if (description === task.description) {
@@ -126,10 +133,10 @@ export default function TaskDetailDialog({
     try {
       await onUpdate(task.id, { description });
       setIsEditingDescription(false);
-      toast.success('Description updated');
+      toast.success(t('tasks.descriptionUpdated'));
       await onRefresh();
-    } catch {
-      toast.error('Failed to update description');
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedUpdate')));
     } finally {
       setLoading(false);
     }
@@ -139,10 +146,10 @@ export default function TaskDetailDialog({
     setLoading(true);
     try {
       await onUpdate(task.id, { status: newStatus });
-      toast.success('Status updated');
+      toast.success(t('tasks.statusUpdated'));
       await fetchTaskDetails();
-    } catch {
-      toast.error('Failed to update status');
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedUpdate')));
     } finally {
       setLoading(false);
     }
@@ -152,10 +159,9 @@ export default function TaskDetailDialog({
     setLoading(true);
     try {
       await onUpdate(task.id, { priority: newPriority });
-      toast.success('Priority updated');
-      await fetchTaskDetails();
-    } catch {
-      toast.error('Failed to update priority');
+      toast.success(t('tasks.priorityUpdated'));
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedUpdate')));
     } finally {
       setLoading(false);
     }
@@ -166,25 +172,17 @@ export default function TaskDetailDialog({
 
     setLoading(true);
     try {
-      const token = getAuthToken();
-      const response = await fetch(`/api/tasks/${task.id}/comments`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newComment }),
+      const response = await apiClient.post<TaskComment>(`/api/tasks/${task.id}/comments`, {
+        content: newComment,
       });
 
-      if (response.ok) {
+      if (response.success) {
         setNewComment('');
-        toast.success('Comment added');
         await fetchTaskDetails();
-      } else {
-        toast.error('Failed to add comment');
+        toast.success(t('tasks.commentAdded'));
       }
-    } catch {
-      toast.error('Failed to add comment');
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedAddComment')));
     } finally {
       setLoading(false);
     }
@@ -193,84 +191,34 @@ export default function TaskDetailDialog({
   const handleAssignUser = async (userId: string) => {
     setLoading(true);
     try {
-      const token = getAuthToken();
-      const response = await fetch(`/api/tasks/${task.id}/assignments`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ userId }),
+      const response = await apiClient.post<{ id: string; userId: string; taskId: string }>(`/api/tasks/${task.id}/assignments`, {
+        userId,
       });
 
-      if (response.ok) {
-        toast.success('User assigned');
+      if (response.success) {
         await fetchTaskDetails();
-      } else {
-        toast.error('Failed to assign user');
+        toast.success(t('tasks.userAssigned'));
       }
-    } catch {
-      toast.error('Failed to assign user');
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedAssignUser')));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUnassignUser = async (assignmentId: string) => {
+  const handleRemoveAssignment = async (assignmentId: string) => {
     setLoading(true);
     try {
-      const token = getAuthToken();
-      const response = await fetch(`/api/tasks/${task.id}/assignments/${assignmentId}`, {
-        method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        },
-      });
+      const response = await apiClient.delete(`/api/tasks/${task.id}/assignments/${assignmentId}`);
 
-      if (response.ok) {
-        toast.success('User unassigned');
+      if (response.success) {
         await fetchTaskDetails();
-      } else {
-        toast.error('Failed to unassign user');
+        toast.success(t('tasks.assignmentRemoved'));
       }
-    } catch {
-      toast.error('Failed to unassign user');
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('tasks.failedRemoveAssignment')));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getUserById = (userId: string) => {
-    return users.find((u) => u.id === userId);
-  };
-
-  const formatUserName = (userId: string) => {
-    const user = getUserById(userId);
-    return user ? getCombinedUserName(user) : 'Unknown';
-  };
-
-  const getActivityDescription = (activity: TaskActivity) => {
-    const userName = formatUserName(activity.userId);
-
-    switch (activity.type) {
-      case 'CREATED':
-        return `${userName} created this task`;
-      case 'STATUS_CHANGED':
-        return `${userName} changed status from ${activity.oldValue} to ${activity.newValue}`;
-      case 'PRIORITY_CHANGED':
-        return `${userName} changed priority from ${activity.oldValue} to ${activity.newValue}`;
-      case 'ASSIGNED':
-        return `${userName} assigned this task`;
-      case 'UNASSIGNED':
-        return `${userName} unassigned from this task`;
-      case 'COMMENT_ADDED':
-        return `${userName} added a comment`;
-      case 'UPDATED':
-        return `${userName} updated this task`;
-      case 'DUE_DATE_CHANGED':
-        return `${userName} changed due date`;
-      default:
-        return `${userName} performed an action`;
     }
   };
 
@@ -278,165 +226,183 @@ export default function TaskDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <DialogTitle className="text-2xl mb-2">{task.title}</DialogTitle>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge className={statusConfig[task.status].color}>
-                  {statusConfig[task.status].label}
-                </Badge>
-                <Badge variant="outline">
-                  <span className="mr-1">{priorityConfig[task.priority].emoji}</span>
-                  {priorityConfig[task.priority].label}
-                </Badge>
-                {task.dueDate && (
-                  <Badge variant="secondary">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')}
-                  </Badge>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl">{task.title}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue="details" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="details">Details</TabsTrigger>
-            <TabsTrigger value="comments">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Comments ({comments.length})
-            </TabsTrigger>
-            <TabsTrigger value="activity">
-              <History className="h-4 w-4 mr-2" />
-              Activity ({activities.length})
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-4">
+          {/* Status & Priority Badges */}
+          <div className="flex gap-2 items-center flex-wrap">
+            <Badge className={statusConfig[task.status].color}>
+              {statusLabels[task.status]}
+            </Badge>
+            <Badge variant="outline">
+              <span className="mr-1">{priorityConfig[task.priority].emoji}</span>
+              {priorityLabels[task.priority]}
+            </Badge>
+            {task.dueDate && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {format(new Date(task.dueDate), 'MMM dd, yyyy')}
+              </Badge>
+            )}
+          </div>
 
-          {/* Details Tab */}
-          <TabsContent value="details" className="space-y-6">
-            {/* Description */}
-            <div>
-              <h3 className="font-semibold mb-2">Description</h3>
-              {isEditingDescription ? (
-                <div className="space-y-2">
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={6}
-                    placeholder="Add a description..."
-                  />
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveDescription} disabled={loading}>
-                      Save
-                    </Button>
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="details">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {t('tasks.details')}
+              </TabsTrigger>
+              <TabsTrigger value="comments">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {t('tasks.comments')} ({comments.length})
+              </TabsTrigger>
+              <TabsTrigger value="activity">
+                <History className="h-4 w-4 mr-2" />
+                {t('tasks.activity')} ({activities.length})
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Details Tab */}
+            <TabsContent value="details" className="space-y-4">
+              {/* Description */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">{t('tasks.description')}</h3>
+                  {!isEditingDescription && (
                     <Button
-                      variant="outline"
-                      onClick={() => {
-                        setDescription(task.description || '');
-                        setIsEditingDescription(false);
-                      }}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingDescription(true)}
                     >
-                      Cancel
+                      {t('common.edit')}
                     </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="p-4 border rounded-md cursor-pointer hover:bg-muted/50"
-                  onClick={() => setIsEditingDescription(true)}
-                >
-                  {description || (
-                    <span className="text-muted-foreground italic">
-                      Click to add description...
-                    </span>
                   )}
                 </div>
-              )}
-            </div>
 
-            {/* Status & Priority */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Status</label>
-                <Select value={task.status} onValueChange={handleStatusChange} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statusConfig).map(([value, config]) => (
-                      <SelectItem key={value} value={value}>
-                        {config.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Priority</label>
-                <Select value={task.priority} onValueChange={handlePriorityChange} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(priorityConfig).map(([value, config]) => (
-                      <SelectItem key={value} value={value}>
-                        <span className="mr-2">{config.emoji}</span>
-                        {config.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Assignees */}
-            <div>
-              <h3 className="font-semibold mb-2">Assignees</h3>
-              <div className="space-y-2">
-                {assignments.map((assignment) => {
-                  const user = getUserById(assignment.userId);
-                  return (
-                    <div
-                      key={assignment.id}
-                      className="flex items-center justify-between p-2 border rounded-md"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>
-                          {user ? getUserInitials(user) : '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {user ? getCombinedUserName(user) : 'Unknown User'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{user?.email}</p>
-                        </div>
-                      </div>
+                {isEditingDescription ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={4}
+                      className="w-full"
+                    />
+                    <div className="flex gap-2">
                       <Button
-                        variant="ghost"
                         size="sm"
-                        onClick={() => handleUnassignUser(assignment.id)}
+                        onClick={handleSaveDescription}
                         disabled={loading}
                       >
-                        <X className="h-4 w-4" />
+                        {t('common.save')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setDescription(task.description || '');
+                          setIsEditingDescription(false);
+                        }}
+                      >
+                        {t('common.cancel')}
                       </Button>
                     </div>
-                  );
-                })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {task.description || t('tasks.noDescription')}
+                  </p>
+                )}
+              </div>
 
-                {/* Add Assignee */}
+              {/* Status & Priority Controls */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('tasks.taskStatus')}</label>
+                  <Select
+                    value={task.status}
+                    onValueChange={(value) => handleStatusChange(value as TaskStatus)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(TaskStatus).map((value) => (
+                        <SelectItem key={value} value={value}>
+                          {statusLabels[value as TaskStatus]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('tasks.taskPriority')}</label>
+                  <Select
+                    value={task.priority}
+                    onValueChange={(value) => handlePriorityChange(value as TaskPriority)}
+                    disabled={loading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(TaskPriority).map((value) => (
+                        <SelectItem key={value} value={value}>
+                          <span className="mr-2">{priorityConfig[value as TaskPriority].emoji}</span>
+                          {priorityLabels[value as TaskPriority]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Assigned Users */}
+              <div className="space-y-2">
+                <h3 className="font-semibold">{t('tasks.assignedUsers')}</h3>
+                <div className="flex flex-wrap gap-2">
+                  {assignments.map((assignment) => {
+                    const user = users.find((u) => u.id === assignment.userId);
+                    return user ? (
+                      <Badge key={assignment.id} variant="secondary" className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarFallback className="text-xs">
+                            {getUserInitials(user)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{getCombinedUserName(user)}</span>
+                        <button
+                          onClick={() => handleRemoveAssignment(assignment.id)}
+                          className="ml-1 hover:text-destructive"
+                          title={t('common.remove')}
+                          aria-label={t('common.remove')}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+
+                {/* Assign User Dropdown */}
                 <Select onValueChange={handleAssignUser} disabled={loading}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Add assignee..." />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('tasks.assignUser')} />
                   </SelectTrigger>
                   <SelectContent>
                     {users
-                      .filter(
-                        (u) => !assignments.some((a) => a.userId === u.id)
-                      )
+                      .filter((user) => !assignments.some((a) => a.userId === user.id))
                       .map((user) => (
                         <SelectItem key={user.id} value={user.id}>
                           {getCombinedUserName(user)} ({user.email})
@@ -445,105 +411,76 @@ export default function TaskDetailDialog({
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+            </TabsContent>
 
-            {/* Metadata */}
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-              <div>
-                <p className="text-sm text-muted-foreground">Created</p>
-                <p className="text-sm">
-                  {format(new Date(task.createdAt), 'MMM dd, yyyy HH:mm')}
-                </p>
+            {/* Comments Tab */}
+            <TabsContent value="comments" className="space-y-4">
+              <div className="space-y-2">
+                <Textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder={t('tasks.addComment')}
+                  rows={3}
+                />
+                <Button onClick={handleAddComment} disabled={loading || !newComment.trim()}>
+                  {t('tasks.postComment')}
+                </Button>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Last Updated</p>
-                <p className="text-sm">
-                  {format(new Date(task.updatedAt), 'MMM dd, yyyy HH:mm')}
-                </p>
+
+              <div className="space-y-4">
+                {comments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    {t('tasks.noComments')}
+                  </p>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {comment.userId?.slice(0, 2).toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">
+                          {comment.userId || t('common.unknown')}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.createdAt), 'MMM dd, yyyy HH:mm')}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+                    </div>
+                  ))
+                )}
               </div>
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Comments Tab */}
-          <TabsContent value="comments" className="space-y-4">
-            {/* Add Comment */}
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-              />
-              <Button onClick={handleAddComment} disabled={loading || !newComment.trim()}>
-                Add Comment
-              </Button>
-            </div>
-
-            {/* Comments List */}
-            <div className="space-y-3">
-              {comments.map((comment) => {
-                const user = getUserById(comment.userId);
-                return (
-                  <div key={comment.id} className="p-4 border rounded-md">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">
-                          {user ? getUserInitials(user) : '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium text-sm">
-                        {user ? getCombinedUserName(user) : 'Unknown'}
+            {/* Activity Tab */}
+            <TabsContent value="activity" className="space-y-2">
+              {activities.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t('tasks.noActivity')}
+                </p>
+              ) : (
+                activities.map((activity) => (
+                  <div key={activity.id} className="border-l-2 border-primary pl-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {activity.userId || t('common.system')}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {format(new Date(comment.createdAt), 'MMM dd, HH:mm')}
+                        {format(new Date(activity.createdAt), 'MMM dd, yyyy HH:mm')}
                       </span>
                     </div>
-                    <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                  </div>
-                );
-              })}
-
-              {comments.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  No comments yet. Be the first to comment!
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Activity Tab */}
-          <TabsContent value="activity" className="space-y-3">
-            {activities.map((activity) => {
-              const user = getUserById(activity.userId);
-              return (
-                <div key={activity.id} className="flex gap-3 p-3 border rounded-md">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs">
-                      {user ? getUserInitials(user) : '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-sm">{getActivityDescription(activity)}</p>
-                    {activity.comment && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {activity.comment}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(activity.createdAt), 'MMM dd, yyyy HH:mm')}
+                    <p className="text-sm text-muted-foreground">
+                      {activity.type} {activity.comment && `- ${activity.comment}`}
                     </p>
                   </div>
-                </div>
-              );
-            })}
-
-            {activities.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No activity yet
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </DialogContent>
     </Dialog>
   );

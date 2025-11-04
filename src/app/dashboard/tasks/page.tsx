@@ -1,10 +1,18 @@
 'use client';
 
+// React & Next.js
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
+
+// External libraries
 import { ListTodo, RefreshCw, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+// Internal utilities
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { useI18n } from '@/lib/i18n/i18n-context';
+
+// Components - UI
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,10 +30,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/store/auth-store';
-import { useI18n } from '@/lib/i18n/i18n-context';
+
+// Types
 import { TaskStatus, TaskPriority } from '@/types/database';
 
+// Types & Interfaces
 interface Task {
   id: string;
   title: string;
@@ -38,6 +47,7 @@ interface Task {
   assignedTo: string | null;
 }
 
+// Constants
 const statusColors: Record<TaskStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   TODO: 'secondary',
   IN_PROGRESS: 'default',
@@ -52,54 +62,32 @@ const priorityColors: Record<TaskPriority, 'default' | 'secondary' | 'outline' |
   URGENT: 'destructive',
 };
 
+// Component
 export default function TasksPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { token, isLoading: authLoading } = useAuthStore();
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [mounted, setMounted] = React.useState(false);
-
-  // Wait for auth store to hydrate
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const fetchTasks = React.useCallback(async () => {
-    if (!mounted || authLoading) return;
-
     try {
       setLoading(true);
-      const response = await fetch('/api/tasks', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.get<Task[]>('/api/tasks');
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast.error(t('auth.loginError'));
-          router.push('/login');
-          return;
-        }
-        throw new Error('Failed to fetch tasks');
-      }
-
-      const result = await response.json();
-      if (result.success) {
-        setTasks(result.data);
+      if (response.success && response.data) {
+        setTasks(Array.isArray(response.data) ? response.data : []);
       }
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      toast.error(t('messages.errorFetchingData'));
+      toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
     } finally {
       setLoading(false);
     }
-  }, [token, t, router, mounted, authLoading]);
+  }, [t]);
 
+  // Fetch tasks on mount
   React.useEffect(() => {
-    if (mounted && !authLoading) {
-      fetchTasks();
-    }
-  }, [mounted, authLoading, fetchTasks]);
+    fetchTasks();
+  }, [fetchTasks]);
 
   const getStatusLabel = (status: TaskStatus) => {
     const labels: Record<TaskStatus, string> = {

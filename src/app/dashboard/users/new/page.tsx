@@ -34,11 +34,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAuthStore } from '@/store/auth-store';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
 import { ImageUpload } from '@/components/ui/image-upload';
 import type { UploadedFile } from '@/components/ui/file-upload';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -77,7 +77,6 @@ interface User {
 export default function NewUserPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { token } = useAuthStore();
   const [loading, setLoading] = React.useState(false);
   const [roles, setRoles] = React.useState<Role[]>([]);
   const [loadingRoles, setLoadingRoles] = React.useState(true);
@@ -86,7 +85,6 @@ export default function NewUserPage() {
   const [users, setUsers] = React.useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(true);
   const [avatarUrl, setAvatarUrl] = React.useState<string>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [uploadedFile, setUploadedFile] = React.useState<UploadedFile | null>(null);
 
   const form = useForm<FormData>({
@@ -107,64 +105,49 @@ export default function NewUserPage() {
 
   // Fetch roles, positions and users on mount
   React.useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/roles', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        // Fetch all data in parallel
+        const [rolesResponse, positionsResponse, usersResponse] = await Promise.all([
+          apiClient.get<{ success: boolean; data: Role[] }>('/api/roles'),
+          apiClient.get<Position[]>('/api/positions'),
+          apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
+        ]);
 
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setRoles(result.data);
+        // Set roles
+        if (rolesResponse.success && rolesResponse.data) {
+          const rolesData = rolesResponse.data as unknown as { success: boolean; data: Role[] };
+          if (rolesData.success && rolesData.data) {
+            setRoles(rolesData.data);
           }
         }
-      } catch (error) {
-        console.error('Error fetching roles:', error);
-      } finally {
         setLoadingRoles(false);
-      }
-    };
 
-    const fetchPositions = async () => {
-      try {
-        const response = await fetch('/api/positions');
-        if (response.ok) {
-          const data = await response.json();
-          setPositions(data);
+        // Set positions
+        if (positionsResponse.success && positionsResponse.data) {
+          setPositions(Array.isArray(positionsResponse.data) ? positionsResponse.data : []);
         }
-      } catch (error) {
-        console.error('Error fetching positions:', error);
-      } finally {
         setLoadingPositions(false);
-      }
-    };
 
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setUsers(result.data);
+        // Set users
+        if (usersResponse.success && usersResponse.data) {
+          const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
+          if (usersData.success && usersData.data) {
+            setUsers(usersData.data);
           }
         }
+        setLoadingUsers(false);
       } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
+        console.error('Error fetching data:', error);
+        toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
+        setLoadingRoles(false);
+        setLoadingPositions(false);
         setLoadingUsers(false);
       }
     };
 
-    if (token) {
-      fetchRoles();
-      fetchPositions();
-      fetchUsers();
-    }
-  }, [token]);
+    fetchData();
+  }, [t]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -176,24 +159,17 @@ export default function NewUserPage() {
         ...(avatarUrl && { avatarUrl }),
       };
       
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(userData),
-      });
+      const response = await apiClient.post('/api/users', userData);
 
-      if (!response.ok) {
-        throw new Error('Failed to create user');
+      if (response.success) {
+        toast.success(response.message || t('messages.createSuccess'));
+        router.push('/dashboard/users');
+      } else {
+        toast.error(response.message || t('messages.createError'));
       }
-
-      toast.success(t('messages.createSuccess'));
-      router.push('/dashboard/users');
     } catch (error) {
       console.error('Error creating user:', error);
-      toast.error(t('messages.createError'));
+      toast.error(getErrorMessage(error, t('messages.createError')));
     } finally {
       setLoading(false);
     }

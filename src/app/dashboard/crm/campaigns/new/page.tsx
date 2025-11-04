@@ -9,12 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft,
-  Save,
   Send,
-  Calendar,
   Users,
   Mail,
   MessageSquare,
@@ -22,7 +19,6 @@ import {
   Twitter,
   Instagram,
   Linkedin,
-  DollarSign,
   Target,
   Settings
 } from "lucide-react";
@@ -46,9 +42,9 @@ const campaignSchema = z.object({
   smsContent: z.string().optional(),
   socialPlatforms: z.array(z.string()).optional(),
   socialContent: z.string().optional(),
-  automatedFollowUp: z.boolean().default(false),
-  trackConversions: z.boolean().default(true),
-  sendTestCampaign: z.boolean().default(false),
+  automatedFollowUp: z.boolean(),
+  trackConversions: z.boolean(),
+  sendTestCampaign: z.boolean(),
 });
 
 type CampaignFormData = z.infer<typeof campaignSchema>;
