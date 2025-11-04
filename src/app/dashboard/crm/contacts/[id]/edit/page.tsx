@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { useEditContactForm } from "./use-edit-contact-form";
+import { ContactAvatarUpload } from "@/components/crm/contact-avatar-upload";
 import {
   BasicInformationSection,
   CompanyInformationSection,
@@ -37,7 +38,9 @@ export default function EditContactPage() {
     isFetching,
     tags,
     newTag,
+    avatarUrl,
     setNewTag,
+    setAvatarUrl,
     onSubmit,
     addTag,
     removeTag,
@@ -99,6 +102,13 @@ export default function EditContactPage() {
 
             {/* Sidebar - 1 column on large screens */}
             <div className="space-y-6">
+              <ContactAvatarUpload
+                contactId={contactId}
+                currentAvatarUrl={avatarUrl}
+                contactName={form.watch("fullNameEn")}
+                onAvatarChange={setAvatarUrl}
+                variant="card"
+              />
               <StatusClassificationSection form={form} />
               <TagsSection
                 tags={tags}

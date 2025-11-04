@@ -358,6 +358,7 @@ export interface Contact {
   jobTitle?: string;
   department?: string;
   companyId?: string;
+  avatarUrl?: string;
   preferredContactMethod?: 'Email' | 'Phone' | 'SMS' | 'WhatsApp';
   address?: string;
   city?: string;

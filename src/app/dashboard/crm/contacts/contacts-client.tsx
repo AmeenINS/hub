@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Search, 
   Filter, 
@@ -214,6 +214,9 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                 <div key={contact.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="flex items-center space-x-4">
                     <Avatar>
+                      {contact.avatarUrl && (
+                        <AvatarImage src={contact.avatarUrl} alt={contact.fullNameEn || contact.fullNameAr || ''} />
+                      )}
                       <AvatarFallback>
                         {(contact.fullNameEn || contact.fullNameAr || `${contact.firstName ?? ""} ${contact.lastName ?? ""}` || "?")
                           .split(" ")

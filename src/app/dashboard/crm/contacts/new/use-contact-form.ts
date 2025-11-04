@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contactFormSchema, type ContactFormData, defaultContactFormValues } from "./contact-schema";
+import { apiClient, getErrorMessage } from "@/lib/api-client";
+import { toast } from "sonner";
 
 /**
  * Hook for managing contact form logic
@@ -17,6 +19,7 @@ export function useContactForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -29,16 +32,6 @@ export function useContactForm() {
   const onSubmit = async (data: ContactFormData) => {
     setIsLoading(true);
     try {
-      // Get authentication token from cookie
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1];
-
-      if (!token) {
-        throw new Error('Not authenticated. Please login again.');
-      }
-
       // Map form data to database Contact type
       const contactData = {
         type: data.type, // Already in correct format (LEAD, CUSTOMER, PARTNER, SUPPLIER)
@@ -48,6 +41,7 @@ export function useContactForm() {
         phone: data.phone,
         jobTitle: data.position,
         department: data.department,
+        avatarUrl: avatarUrl,
         preferredContactMethod: data.preferredContactMethod,
         address: data.address,
         city: data.city,
@@ -58,27 +52,17 @@ export function useContactForm() {
         tags: tags,
       };
 
-      // Submit to API
-      const response = await fetch('/api/crm/contacts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(contactData),
-      });
+      // Submit to API using apiClient
+      const response = await apiClient.post('/api/crm/contacts', contactData);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create contact');
+      if (response.success) {
+        toast.success(response.message || 'Contact created successfully');
+        router.push("/dashboard/crm/contacts");
+        router.refresh();
       }
-
-      // Success - redirect to contacts list
-      router.push("/dashboard/crm/contacts");
-      router.refresh();
     } catch (error) {
       console.error("Error creating contact:", error);
-      alert(error instanceof Error ? error.message : 'Failed to create contact');
+      toast.error(getErrorMessage(error, 'Failed to create contact'));
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +90,9 @@ export function useContactForm() {
     isLoading,
     tags,
     newTag,
+    avatarUrl,
     setNewTag,
+    setAvatarUrl,
     onSubmit,
     addTag,
     removeTag,

@@ -85,6 +85,49 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 /**
+ * PATCH /api/crm/contacts/[id]
+ * Partially update contact by ID (e.g., avatar only)
+ */
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = JWTService.verifyToken(token);
+    if (!payload) {
+      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+
+    const hasPermission = await checkPermission(payload.userId, 'crm_contacts', 'update');
+    if (!hasPermission) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const contactService = new ContactService();
+    const updatedContact = await contactService.updateContact(id, body);
+
+    // Revalidate the contacts page to show updated data
+    revalidatePath('/dashboard/crm/contacts');
+
+    return NextResponse.json({
+      success: true,
+      data: updatedContact,
+      message: 'Contact updated successfully',
+    });
+  } catch (error) {
+    logError('PATCH /api/crm/contacts/[id]', error);
+    if (error instanceof Error && error.message === 'Contact not found') {
+      return NextResponse.json({ success: false, error: 'Contact not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+/**
  * DELETE /api/crm/contacts/[id]
  * Delete contact by ID
  */

@@ -14,7 +14,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -169,6 +169,9 @@ export default function ContactProfileClient({
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <Avatar className="h-24 w-24">
+              {contact.avatarUrl && (
+                <AvatarImage src={contact.avatarUrl} alt={contact.fullNameEn || contact.fullNameAr || ''} />
+              )}
               <AvatarFallback className="text-2xl font-semibold">{initials}</AvatarFallback>
             </Avatar>
 

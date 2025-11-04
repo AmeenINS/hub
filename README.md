@@ -1,102 +1,394 @@
-# Ameen Hub - User Management & Task System
+# Ameen Hub - Enterprise Platform
 
-Enterprise-grade User Management and Task Management System built with Next.js, LMDB, and modern security standards.
+> **Modern, bilingual (Arabic/English), permission-based enterprise platform built with Next.js 16**
 
-## 🚀 Features
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-### User Management
-- ✅ Dynamic Role-Based Access Control (RBAC)
-- ✅ Super Admin initialization
-- ✅ Custom role creation
-- ✅ Fine-grained permissions (module + action level)
-- ✅ User-role relationships
-- ✅ Secure authentication (JWT/Argon2)
-- ✅ 2FA support for admins
-- ✅ Full audit logging
+## 🌟 Overview
 
-### Task Management
-- ✅ Task creation and assignment
-- ✅ Employee dashboard with assigned tasks
-- ✅ Manager dashboard with team overview
-- ✅ Task status tracking (To-Do, In-Progress, Done)
-- ✅ Priority levels (Low, Medium, High, Urgent)
-- ✅ Due dates and notifications
-- ✅ Task comments and attachments
-- ✅ Progress tracking
-- ✅ Exportable reports
+Ameen Hub is a comprehensive enterprise platform featuring advanced permission management, bilingual support (Arabic & English), and a modular architecture designed for scalability and security.
 
-### Security
-- 🔒 OWASP best practices
-- 🔒 Argon2 password hashing
-- 🔒 JWT authentication
-- 🔒 2FA support
-- 🔒 Audit trail for all actions
-- 🔒 Role-based middleware
-- 🔒 Centralized error handling
+## ✨ Key Features
+
+### 🔐 Advanced Permission System
+- **Granular Access Control**: Module-Action based permissions (e.g., `contacts.view`, `contacts.create`)
+- **Role-Based Access**: Flexible role management with custom permission sets
+- **UI-Level Security**: Permission checks before rendering (optimal UX)
+- **API-Level Security**: Every endpoint protected with authentication and authorization
+- **Dynamic Permissions**: Easy to add new features with automatic permission integration
+
+### 🌍 Full Internationalization (i18n)
+- **Bilingual Support**: Complete Arabic and English translations
+- **RTL Support**: Automatic right-to-left layout for Arabic
+- **Centralized Translations**: All text in structured translation files
+- **Type-Safe**: TypeScript support for translation keys
+
+### 🎨 Modern UI/UX
+- **shadcn/ui Components**: Beautiful, accessible component library
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Dark/Light Mode**: Theme switching support
+- **Loading States**: Skeleton loaders and progress indicators
+- **Error Handling**: User-friendly error messages and recovery options
+
+### 👥 User Management
+- User CRUD operations with permissions
+- Role assignment and management
+- Profile management with avatar upload
+- Activity tracking and audit logs
+- Password management and security
+
+### 📊 CRM System
+- **Contacts**: Lead, Customer, Supplier, Partner management
+- **Companies**: Organization management with relationships
+- **Deals**: Sales pipeline and opportunity tracking
+- **Tasks**: Task assignment and tracking
+- **Reports**: Analytics and reporting tools
+
+### 📅 Scheduler System
+- Event creation and management
+- Recurring events support
+- Notifications and reminders
+- Calendar views (day, week, month)
+- Time zone support
+
+### 🔒 Security
+- JWT-based authentication with httpOnly cookies
+- Argon2 password hashing
+- CSRF protection
+- Rate limiting
+- Input validation (client & server)
+- XSS prevention
+- SQL injection prevention (Prisma ORM)
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 16, React 19, TypeScript
-- **UI**: Tailwind CSS, Radix UI, shadcn/ui
-- **Database**: LMDB (Lightning Memory-Mapped Database)
-- **Authentication**: JWT, Argon2
-- **Logging**: Winston
-- **Forms**: React Hook Form, Zod
+### Core
+- **Framework**: Next.js 16.0 with App Router
+- **Language**: TypeScript 5.0
+- **React**: React 19
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT + Argon2
+
+### UI & Styling
+- **UI Library**: shadcn/ui (Radix UI)
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Forms**: React Hook Form + Zod validation
+- **Toast**: Sonner
+
+### State & Data
+- **Global State**: Zustand
+- **API Client**: Custom centralized client with automatic auth
+- **Data Fetching**: Server Components + Client Components
+
+### Development
+- **Package Manager**: npm
+- **Linting**: ESLint
+- **Type Checking**: TypeScript
+- **Build Tool**: Next.js with Turbopack
 
 ## 📦 Installation
 
 ```bash
+# Clone repository
+git clone https://github.com/AmeenINS/hub.git
+cd hub
+
 # Install dependencies
 npm install
 
-# Set up environment variables (already configured for LMDB)
-# Edit .env if needed
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
 
-# Run development server
+# Set up database
+npx prisma generate
+npx prisma db push
+
+# Run initial setup (creates admin user and permissions)
+npx tsx scripts/init-db.ts
+
+# Start development server
 npm run dev
 ```
 
-## 🗄️ Database Setup
-
-This project uses **LMDB** - a high-performance, embedded key-value database.
-
-### Configuration (.env)
-
-```env
-# LMDB Configuration
-LMDB_PATH="./data/lmdb"
-LMDB_MAX_DBS=10
-LMDB_MAP_SIZE=10485760  # 10MB (adjust as needed)
-
-# JWT Configuration
-JWT_SECRET="your-secret-key-change-this"
-JWT_EXPIRES_IN="7d"
-
-# NextAuth
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
-```
-
-### Initial Super Admin
-
-On first run, a super admin is created:
+Open [http://localhost:3000](http://localhost:3000) and login with:
 - **Email**: `admin@ameen.com`
 - **Password**: `Admin@123456`
 - ⚠️ **Change this password immediately!**
 
-## 🚀 Getting Started
+## 📁 Project Structure
 
-### 1. Install dependencies
-
-```bash
-npm install
+```
+hub/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── api/               # API routes
+│   │   │   ├── auth/         # Authentication endpoints
+│   │   │   ├── crm/          # CRM endpoints
+│   │   │   ├── permissions/  # Permission management
+│   │   │   └── users/        # User management
+│   │   ├── dashboard/        # Protected dashboard pages
+│   │   │   ├── crm/         # CRM pages
+│   │   │   ├── users/       # User management pages
+│   │   │   └── roles/       # Role management pages
+│   │   └── login/           # Login page
+│   │
+│   ├── components/            # React components
+│   │   ├── ui/              # shadcn/ui components
+│   │   ├── dashboard/       # Dashboard-specific components
+│   │   └── crm/            # CRM-specific components
+│   │
+│   ├── hooks/                # Custom React hooks
+│   │   ├── use-permissions.ts  # Permission hooks
+│   │   └── use-translation.ts  # Translation hook
+│   │
+│   ├── lib/                  # Utility libraries
+│   │   ├── api-client.ts    # Centralized API client
+│   │   ├── auth/           # Authentication utilities
+│   │   │   ├── jwt.ts      # JWT token management
+│   │   │   └── permissions.ts # Permission checking
+│   │   ├── db/             # Database utilities
+│   │   │   └── prisma.ts   # Prisma client
+│   │   └── i18n/           # Internationalization
+│   │       └── translations.ts # EN/AR translations
+│   │
+│   ├── store/               # Zustand global state
+│   │   └── auth-store.ts   # Authentication state
+│   │
+│   └── types/              # TypeScript type definitions
+│       └── database.ts     # Database types
+│
+├── scripts/                # Database and setup scripts
+│   ├── init-db.ts         # Initialize database
+│   ├── add-crm-permissions.ts
+│   └── create-super-admin.ts
+│
+├── docs/                   # Documentation
+│   └── EXAMPLE_NEW_FEATURE.md # Complete feature example
+│
+├── .github/
+│   └── copilot-instructions.md # GitHub Copilot rules
+│
+├── DEVELOPMENT_GUIDE.md   # Comprehensive development guide
+├── QUICK_REFERENCE.md     # Quick reference for common tasks
+└── README.md             # This file
 ```
 
-### 2. Start the development server
+## 🎯 Core Development Principles
+
+### 1. **Every UI Element Must Be Bilingual**
+```typescript
+// ❌ Wrong
+<Button>Save</Button>
+
+// ✅ Correct
+import { useTranslation } from '@/hooks/use-translation';
+const { t } = useTranslation();
+<Button>{t('common.save')}</Button>
+```
+
+### 2. **Every Feature Must Have Permissions**
+```typescript
+// ❌ Wrong - No permission check
+<Button onClick={handleDelete}>Delete</Button>
+
+// ✅ Correct - Permission check
+const { permissions } = useModulePermissions('contacts');
+{permissions.canDelete && (
+  <Button onClick={handleDelete}>Delete</Button>
+)}
+```
+
+### 3. **Always Use apiClient**
+```typescript
+// ❌ Wrong
+const response = await fetch('/api/contacts');
+
+// ✅ Correct
+import { apiClient } from '@/lib/api-client';
+const response = await apiClient.get('/api/contacts');
+```
+
+### 4. **Check Permissions Before Rendering**
+```typescript
+// ✅ Optimal UX - Check before mount
+useEffect(() => {
+  if (!permLoading && !permissions.canView) {
+    router.push('/dashboard/access-denied');
+  }
+}, [permissions, permLoading]);
+```
+
+## 🚀 Quick Start - Adding a New Feature
+
+### Step 1: Add Translations
+```typescript
+// src/lib/i18n/translations.ts
+export const translations = {
+  en: {
+    myFeature: {
+      title: 'My Feature',
+      create: 'Create New'
+    }
+  },
+  ar: {
+    myFeature: {
+      title: 'ميزتي',
+      create: 'إنشاء جديد'
+    }
+  }
+};
+```
+
+### Step 2: Create Permissions
+```bash
+# Create script: scripts/add-my-feature-permissions.ts
+npx tsx scripts/add-my-feature-permissions.ts
+```
+
+### Step 3: Create API Route
+```typescript
+// app/api/my-feature/route.ts
+import { verifyToken } from '@/lib/auth/jwt';
+import { checkUserPermission } from '@/lib/auth/permissions';
+
+export async function GET(request: NextRequest) {
+  const token = request.cookies.get('auth-token')?.value;
+  const decoded = verifyToken(token);
+  
+  const hasPermission = await checkUserPermission(
+    decoded.userId,
+    'myFeature',
+    'view'
+  );
+  
+  if (!hasPermission) {
+    return NextResponse.json({ success: false }, { status: 403 });
+  }
+  
+  // Your logic here
+}
+```
+
+### Step 4: Create Component
+```typescript
+// app/dashboard/my-feature/page.tsx
+'use client';
+
+import { useModulePermissions } from '@/hooks/use-permissions';
+import { useTranslation } from '@/hooks/use-translation';
+
+export default function MyFeaturePage() {
+  const { t } = useTranslation();
+  const { permissions, isLoading } = useModulePermissions('myFeature');
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (!permissions.canView) return null;
+  
+  return <div>{t('myFeature.title')}</div>;
+}
+```
+
+See [docs/EXAMPLE_NEW_FEATURE.md](docs/EXAMPLE_NEW_FEATURE.md) for complete example.
+
+## 📚 Documentation
+
+- **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Comprehensive development guide
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference for common tasks
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - GitHub Copilot rules
+- **[docs/EXAMPLE_NEW_FEATURE.md](docs/EXAMPLE_NEW_FEATURE.md)** - Complete feature example
+
+## 🧪 Testing
 
 ```bash
-npm run dev
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
 ```
+
+## 🏗️ Building for Production
+
+```bash
+# Build the application
+npm run build
+
+# Start production server
+npm run start
+```
+
+## 🌐 Environment Variables
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/ameen_hub"
+
+# JWT Authentication
+JWT_SECRET="your-secret-key-change-this-in-production"
+JWT_EXPIRES_IN="7d"
+
+# NextAuth
+NEXTAUTH_SECRET="your-nextauth-secret-change-this"
+NEXTAUTH_URL="http://localhost:3000"
+
+# App
+NEXT_PUBLIC_API_URL="http://localhost:3000"
+```
+
+## 🤝 Contributing
+
+1. Read [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)
+2. Create a feature branch
+3. Follow the coding standards
+4. Add translations (EN + AR)
+5. Add permissions
+6. Write tests
+7. Submit pull request
+
+### Coding Standards
+
+- ✅ Use TypeScript (no `any` types)
+- ✅ Use `apiClient` for all API calls
+- ✅ Add all text to translation files
+- ✅ Add permissions for all features
+- ✅ Use shadcn/ui components
+- ✅ Write responsive code (mobile-first)
+- ✅ Add error handling
+- ✅ Write tests
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## � Team
+
+**Maintained by**: Ameen INS Development Team
+
+## 🐛 Issues & Support
+
+For issues and support, please open an issue on GitHub or contact the development team.
+
+## 🚀 Roadmap
+
+- [ ] Multi-tenancy support
+- [ ] Advanced reporting and analytics
+- [ ] Email notifications
+- [ ] Mobile app (React Native)
+- [ ] API documentation (Swagger)
+- [ ] Automated testing
+- [ ] CI/CD pipeline
+- [ ] Docker support
+
+---
+
+**Built with ❤️ using Next.js, TypeScript, and modern web technologies**
 
 ### 3. Access the application
 

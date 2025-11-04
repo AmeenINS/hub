@@ -10,6 +10,7 @@ import { Form } from "@/components/ui/form";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useContactForm } from "./use-contact-form";
+import { ContactAvatarUpload } from "@/components/crm/contact-avatar-upload";
 import {
   BasicInformationSection,
   CompanyInformationSection,
@@ -29,7 +30,9 @@ export default function NewContactPage() {
     isLoading,
     tags,
     newTag,
+    avatarUrl,
     setNewTag,
+    setAvatarUrl,
     onSubmit,
     addTag,
     removeTag,
@@ -66,6 +69,12 @@ export default function NewContactPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              <ContactAvatarUpload
+                currentAvatarUrl={avatarUrl}
+                contactName={form.watch("fullNameEn")}
+                onAvatarChange={setAvatarUrl}
+                variant="card"
+              />
               <StatusClassificationSection form={form} />
               <TagsSection
                 tags={tags}

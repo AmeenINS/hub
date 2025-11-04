@@ -16,6 +16,7 @@ export const contactFormSchema = z.object({
   company: z.string().optional(),
   position: z.string().optional(),
   department: z.string().optional(),
+  avatarUrl: z.string().optional(),
   type: z.enum(["LEAD", "CUSTOMER", "PARTNER", "SUPPLIER"]),
   source: z.enum(["Website", "Referral", "Cold Email", "LinkedIn", "Trade Show", "Other"]),
   preferredContactMethod: z.enum(["Email", "Phone", "SMS", "WhatsApp"]).optional(),

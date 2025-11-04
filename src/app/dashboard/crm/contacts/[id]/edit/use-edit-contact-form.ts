@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import { contactFormSchema, ContactFormData, defaultContactFormValues } from "../../new/contact-schema";
+import { apiClient, getErrorMessage } from "@/lib/api-client";
+import { Contact } from "@/types/database";
 
 interface UseEditContactFormProps {
   contactId: string;
@@ -23,6 +25,7 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
   const [isFetching, setIsFetching] = useState(true);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -35,36 +38,11 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
     
     const fetchContact = async () => {
       try {
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('auth-token='))
-          ?.split('=')[1];
-
-        if (!token) {
-          toast({
-            title: t('common.error'),
-            description: t('crm.unauthorized'),
-            variant: "destructive",
-          });
-          router.push("/login");
-          return;
-        }
-
-        const response = await fetch(`/api/crm/contacts/${contactId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch contact');
-        }
-
-        const result = await response.json();
+        const response = await apiClient.get<Contact>(`/api/crm/contacts/${contactId}`);
         
         // Only update state if component is still mounted
-        if (isMounted && result.success && result.data) {
-          const contact = result.data;
+        if (isMounted && response.success && response.data) {
+          const contact = response.data;
           
           // Set form values
           const fallbackFullName = [contact.firstName, contact.lastName].filter(Boolean).join(' ').trim();
@@ -77,16 +55,21 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
             position: contact.jobTitle || "",
             department: contact.department || "",
             type: contact.type || "LEAD",
-            source: contact.source || "Website",
+            source: "Website", // Default value
             preferredContactMethod: contact.preferredContactMethod || "Phone",
             address: contact.address || "",
             city: contact.city || "",
             state: contact.state || "",
-            zipCode: contact.postalCode || "",
+            zipCode: contact.zipCode || "",
             country: contact.country || "",
             notes: contact.notes || "",
             tags: contact.tags || [],
           });
+
+          // Set avatar URL
+          if (contact.avatarUrl) {
+            setAvatarUrl(contact.avatarUrl);
+          }
 
           // Set tags
           if (contact.tags && Array.isArray(contact.tags)) {
@@ -98,7 +81,7 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
         if (isMounted) {
           toast({
             title: t('common.error'),
-            description: t('crm.failedToLoad'),
+            description: getErrorMessage(error, t('crm.failedToLoad')),
             variant: "destructive",
           });
         }
@@ -121,21 +104,6 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
   const onSubmit = async (data: ContactFormData) => {
     setIsLoading(true);
     try {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1];
-
-      if (!token) {
-        toast({
-          title: t('common.error'),
-          description: t('crm.unauthorized'),
-          variant: "destructive",
-        });
-        router.push("/login");
-        return;
-      }
-
       const contactData = {
         fullNameEn: data.fullNameEn.trim(),
         fullNameAr: data.fullNameAr?.trim() || undefined,
@@ -144,42 +112,33 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
         companyId: data.company || undefined,
         jobTitle: data.position || undefined,
         department: data.department || undefined,
+        avatarUrl: avatarUrl,
         type: data.type,
-        source: data.source,
         preferredContactMethod: data.preferredContactMethod || undefined,
         address: data.address || undefined,
         city: data.city || undefined,
         state: data.state || undefined,
-        postalCode: data.zipCode || undefined,
+        zipCode: data.zipCode || undefined,
         country: data.country || undefined,
         notes: data.notes || undefined,
         tags: tags,
       };
 
-      const response = await fetch(`/api/crm/contacts/${contactId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(contactData),
-      });
+      const response = await apiClient.put(`/api/crm/contacts/${contactId}`, contactData);
 
-      if (!response.ok) {
-        throw new Error('Failed to update contact');
+      if (response.success) {
+        toast({
+          title: t('messages.success'),
+          description: response.message || t('crm.contactUpdated'),
+        });
+
+        router.push("/dashboard/crm/contacts");
       }
-
-      toast({
-        title: t('messages.success'),
-        description: t('crm.contactUpdated'),
-      });
-
-      router.push("/dashboard/crm/contacts");
     } catch (error) {
       console.error("Error updating contact:", error);
       toast({
         title: t('common.error'),
-        description: t('crm.failedToUpdate'),
+        description: getErrorMessage(error, t('crm.failedToUpdate')),
         variant: "destructive",
       });
     } finally {
@@ -204,7 +163,9 @@ export function useEditContactForm({ contactId }: UseEditContactFormProps) {
     isFetching,
     tags,
     newTag,
+    avatarUrl,
     setNewTag,
+    setAvatarUrl,
     onSubmit,
     addTag,
     removeTag,
