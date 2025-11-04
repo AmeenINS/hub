@@ -57,7 +57,7 @@ export class ContactService {
   }
 
   /**
-   * Soft delete a contact (حذف منطقی - قابل بازیابی)
+   * Soft delete a contact
    * Contact is marked as deleted but not physically removed from database
    */
   async softDeleteContact(id: string, userId: string): Promise<boolean> {
@@ -70,7 +70,7 @@ export class ContactService {
   }
 
   /**
-   * Restore a soft-deleted contact (بازیابی)
+   * Restore a soft-deleted contact
    */
   async restoreContact(id: string, userId: string): Promise<Contact | null> {
     const existing = await lmdb.getById<Contact>(this.dbName, id);
@@ -82,7 +82,7 @@ export class ContactService {
   }
 
   /**
-   * Get all soft-deleted contacts (سطل زباله)
+   * Get all soft-deleted contacts
    */
   async getDeletedContacts(): Promise<Contact[]> {
     const allContacts = await lmdb.getAll<Contact>(this.dbName);
@@ -90,7 +90,7 @@ export class ContactService {
   }
 
   /**
-   * Permanently delete a contact (حذف دائمی - فقط برای Admin)
+   * Permanently delete a contact - Admin only
    * WARNING: This cannot be undone!
    */
   async permanentDeleteContact(id: string): Promise<boolean> {
