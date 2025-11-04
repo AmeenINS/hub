@@ -1,11 +1,34 @@
 "use client";
 
+// React & Next.js
 import { useState } from "react";
+import Link from "next/link";
+
+// Internal utilities
+import { apiClient, getErrorMessage } from "@/lib/api-client";
+import { useI18n } from "@/lib/i18n/i18n-context";
+
+// Components - UI
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/hooks/use-toast";
+
+// Types
+import { Contact, ContactType } from "@/types/database";
+
+// Icons
 import { 
   Search, 
   Filter, 
@@ -16,28 +39,17 @@ import {
   Building2,
   Edit,
   Trash2,
-  User
+  User,
+  Archive
 } from "lucide-react";
-import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Contact, ContactType } from "@/types/database";
-import { useToast } from "@/hooks/use-toast";
-import { useI18n } from "@/lib/i18n/i18n-context";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import Cookies from "js-cookie";
 
+// Types & Interfaces
 interface ContactsClientProps {
   initialContacts: Contact[];
   companyMap: Record<string, string>;
 }
 
+// Helper Functions
 const getStatusBadgeVariant = (type: ContactType) => {
   switch (type) {
     case ContactType.CUSTOMER:
@@ -53,21 +65,22 @@ const getStatusBadgeVariant = (type: ContactType) => {
   }
 };
 
-const getStatusLabel = (type: ContactType) => {
+const getStatusLabel = (type: ContactType, t: (key: string) => string) => {
   switch (type) {
     case ContactType.CUSTOMER:
-      return "Customer";
+      return t('crm.customer');
     case ContactType.LEAD:
-      return "Lead";
+      return t('crm.lead');
     case ContactType.PARTNER:
-      return "Partner";
+      return t('crm.partner');
     case ContactType.SUPPLIER:
-      return "Supplier";
+      return t('crm.supplier');
     default:
       return type;
   }
 };
 
+// Component
 export default function ContactsClient({ initialContacts, companyMap }: ContactsClientProps) {
   const [contacts, setContacts] = useState(initialContacts);
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,24 +118,9 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
 
     setIsDeleting(true);
     try {
-      const token = Cookies.get('auth-token');
-      if (!token) {
-        toast({
-          title: t('common.error'),
-          description: t('crm.unauthorized'),
-          variant: "destructive",
-        });
-        return;
-      }
+      const response = await apiClient.delete(`/api/crm/contacts/${contactToDelete.id}`);
 
-      const response = await fetch(`/api/crm/contacts/${contactToDelete.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
+      if (response.success) {
         setContacts(contacts.filter(c => c.id !== contactToDelete.id));
         toast({
           title: t('messages.success'),
@@ -130,13 +128,11 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
         });
         setDeleteDialogOpen(false);
         setContactToDelete(null);
-      } else {
-        throw new Error('Failed to delete contact');
       }
-    } catch {
+    } catch (error) {
       toast({
         title: t('common.error'),
-        description: t('crm.failedToDelete'),
+        description: getErrorMessage(error, t('crm.failedToDelete')),
         variant: "destructive",
       });
     } finally {
@@ -149,17 +145,25 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('crm.contacts')}</h1>
           <p className="text-muted-foreground">
-            Manage and organize your customer contacts
+            {t('crm.contactsDescription')}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/crm/contacts/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/crm/contacts/trash">
+              <Archive className="h-4 w-4 mr-2" />
+              {t('crm.trash')}
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/crm/contacts/new">
+              <Plus className="h-4 w-4 mr-2" />
+              {t('crm.addContact')}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter */}
@@ -169,7 +173,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search contacts..."
+                placeholder={t('common.search')}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -177,7 +181,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
             </div>
             <Button variant="outline">
               <Filter className="h-4 w-4 mr-2" />
-              Filter
+              {t('common.filter')}
             </Button>
           </div>
         </CardContent>
@@ -186,24 +190,24 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
       {/* Contacts List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Contacts ({filteredContacts.length})</CardTitle>
+          <CardTitle>{t('crm.allContacts')} ({filteredContacts.length})</CardTitle>
           <CardDescription>
-            Your complete contact database
+            {t('crm.contactDatabase')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredContacts.length === 0 ? (
             <div className="text-center py-12">
               <User className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-semibold">No contacts found</h3>
+              <h3 className="mt-4 text-lg font-semibold">{t('crm.noContactsFound')}</h3>
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? "Try adjusting your search query" : "Get started by creating your first contact"}
+                {searchQuery ? t('crm.tryAdjustingSearch') : t('crm.getStarted')}
               </p>
               {!searchQuery && (
                 <Button asChild>
                   <Link href="/dashboard/crm/contacts/new">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Contact
+                    {t('crm.addContact')}
                   </Link>
                 </Button>
               )}
@@ -235,7 +239,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                           )}
                         </div>
                         <Badge variant={getStatusBadgeVariant(contact.type)}>
-                          {getStatusLabel(contact.type)}
+                          {getStatusLabel(contact.type, t)}
                         </Badge>
                       </div>
                       <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -299,16 +303,16 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/crm/contacts/${contact.id}/edit`}>
                             <Edit className="mr-2 h-4 w-4" />
-                            Edit Contact
+                            {t('crm.editContactAction')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/crm/contacts/${contact.id}`}>
-                            View Profile
+                            {t('crm.viewProfile')}
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -317,7 +321,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                           onClick={() => openDeleteDialog(contact)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Contact
+                          {t('crm.deleteContactAction')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

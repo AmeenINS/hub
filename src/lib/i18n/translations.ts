@@ -609,6 +609,28 @@ export const translations = {
       requiredFields: 'Fields marked with asterisk (*) are required',
       unauthorized: 'Authentication required',
       
+      // Actions
+      editContactAction: 'Edit Contact',
+      viewProfile: 'View Profile',
+      deleteContactAction: 'Delete Contact',
+      emailContact: 'Email',
+      callContact: 'Call',
+      restore: 'Restore',
+      permanentDelete: 'Delete Permanently',
+      
+      // Trash & Recovery
+      trash: 'Trash',
+      trashDescription: 'Deleted contacts that can be restored',
+      trashEmpty: 'Trash is empty',
+      movedToTrash: 'Contact moved to trash',
+      restoredFromTrash: 'Contact restored successfully',
+      permanentlyDeleted: 'Contact permanently deleted',
+      cannotBeUndone: 'This action cannot be undone',
+      deleteForever: 'Delete Forever',
+      restoreContact: 'Restore Contact',
+      deletedContacts: 'Deleted Contacts',
+      backToContacts: 'Back to Contacts',
+      
       // Placeholders
       fullNameEnPlaceholder: 'Ahmed Al Amri',
       fullNameArPlaceholder: 'أحمد العامري',
@@ -1109,7 +1131,7 @@ export const translations = {
       tryAdjustingSearch: 'جرب تعديل استعلام البحث',
       getStarted: 'ابدأ بإنشاء أول جهة اتصال',
       
-      // حقول نموذج جهة الاتصال
+      // Contact form fields (Arabic translations)
       basicInformation: 'المعلومات الأساسية',
       fullNameEn: 'الاسم الكامل (بالإنجليزية)',
       fullNameAr: 'الاسم الكامل (بالعربية)',
@@ -1139,13 +1161,13 @@ export const translations = {
       notes: 'ملاحظات',
       additionalNotes: 'أضف أي ملاحظات إضافية حول جهة الاتصال...',
       
-      // أنواع جهات الاتصال
+      // Contact types (Arabic translations)
       lead: 'عميل محتمل',
       customer: 'عميل',
       partner: 'شريك',
       supplier: 'مورد',
       
-      // الإجراءات والرسائل
+      // Actions and messages (Arabic translations)
       createContact: 'إنشاء جهة اتصال',
       saveChanges: 'حفظ التغييرات',
       creating: 'جاري الإنشاء...',
@@ -1166,7 +1188,7 @@ export const translations = {
       deleteContactTitle: 'حذف جهة الاتصال',
       deleteContactDescription: 'هل أنت متأكد من حذف جهة الاتصال هذه؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع البيانات المرتبطة نهائياً.',
       
-      // صفحة الملف الشخصي
+      // Profile page (Arabic translations)
       contactProfile: 'الملف الشخصي لجهة الاتصال',
       viewContactDetails: 'عرض معلومات جهة الاتصال الكاملة',
       overview: 'نظرة عامة',
@@ -1192,7 +1214,29 @@ export const translations = {
       requiredFields: 'الحقول المميزة بعلامة النجمة (*) مطلوبة',
       unauthorized: 'مطلوب مصادقة',
       
-      // النصوص التوضيحية
+      // Actions (Arabic translations)
+      editContactAction: 'تعديل جهة الاتصال',
+      viewProfile: 'عرض الملف الشخصي',
+      deleteContactAction: 'حذف جهة الاتصال',
+      emailContact: 'البريد الإلكتروني',
+      callContact: 'اتصال',
+      restore: 'استعادة',
+      permanentDelete: 'حذف نهائي',
+      
+      // Trash and recovery (Arabic translations)
+      trash: 'سطل المهملات',
+      trashDescription: 'جهات الاتصال المحذوفة القابلة للاستعادة',
+      trashEmpty: 'سطل المهملات فارغ',
+      movedToTrash: 'تم نقل جهة الاتصال إلى سطل المهملات',
+      restoredFromTrash: 'تمت استعادة جهة الاتصال بنجاح',
+      permanentlyDeleted: 'تم حذف جهة الاتصال نهائياً',
+      cannotBeUndone: 'لا يمكن التراجع عن هذا الإجراء',
+      deleteForever: 'حذف نهائي',
+      restoreContact: 'استعادة جهة الاتصال',
+      deletedContacts: 'جهات الاتصال المحذوفة',
+      backToContacts: 'العودة إلى جهات الاتصال',
+      
+      // Placeholders (Arabic translations)
       fullNameEnPlaceholder: 'Ahmed Al Amri',
       fullNameArPlaceholder: 'أحمد العامري',
       emailPlaceholder: 'ahmed.alamri@company.om',

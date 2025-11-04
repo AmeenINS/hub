@@ -11,20 +11,14 @@ import {
   Deal, 
   Activity, 
   Pipeline, 
-  PipelineStage, 
   Campaign, 
   EmailTemplate,
-  Report,
-  ContactType,
   LeadStatus,
-  LeadSource,
   DealStage,
-  ActivityType,
-  ActivityStatus,
-  PaginationParams,
-  PaginatedResponse
+
 } from '@/types/database';
 import { nanoid } from 'nanoid';
+import { softDelete, restore, filterDeleted, getDeletedOnly } from '@/lib/soft-delete';
 
 // ==================== Contact Service ====================
 
@@ -48,7 +42,9 @@ export class ContactService {
   }
 
   async getAllContacts(): Promise<Contact[]> {
-    return lmdb.getAll<Contact>(this.dbName);
+    const allContacts = await lmdb.getAll<Contact>(this.dbName);
+    // Return only non-deleted contacts by default
+    return filterDeleted(allContacts);
   }
 
   async updateContact(id: string, updates: Partial<Contact>): Promise<Contact> {
@@ -60,12 +56,58 @@ export class ContactService {
     return updated;
   }
 
-  async deleteContact(id: string): Promise<boolean> {
+  /**
+   * Soft delete a contact (حذف منطقی - قابل بازیابی)
+   * Contact is marked as deleted but not physically removed from database
+   */
+  async softDeleteContact(id: string, userId: string): Promise<boolean> {
+    const existing = await lmdb.getById<Contact>(this.dbName, id);
+    if (!existing) return false;
+    
+    const deletedContact = softDelete(existing, { userId });
+    await lmdb.update(this.dbName, id, deletedContact);
+    return true;
+  }
+
+  /**
+   * Restore a soft-deleted contact (بازیابی)
+   */
+  async restoreContact(id: string, userId: string): Promise<Contact | null> {
+    const existing = await lmdb.getById<Contact>(this.dbName, id);
+    if (!existing || !existing.isDeleted) return null;
+    
+    const restoredContact = restore(existing, { userId });
+    await lmdb.update(this.dbName, id, restoredContact);
+    return restoredContact;
+  }
+
+  /**
+   * Get all soft-deleted contacts (سطل زباله)
+   */
+  async getDeletedContacts(): Promise<Contact[]> {
+    const allContacts = await lmdb.getAll<Contact>(this.dbName);
+    return getDeletedOnly(allContacts);
+  }
+
+  /**
+   * Permanently delete a contact (حذف دائمی - فقط برای Admin)
+   * WARNING: This cannot be undone!
+   */
+  async permanentDeleteContact(id: string): Promise<boolean> {
     return lmdb.delete(this.dbName, id);
   }
 
+  /**
+   * Legacy delete method - now redirects to soft delete
+   * @deprecated Use softDeleteContact instead
+   */
+  async deleteContact(id: string): Promise<boolean> {
+    console.warn('deleteContact is deprecated. Use softDeleteContact instead.');
+    return this.softDeleteContact(id, 'system');
+  }
+
   async searchContacts(query: string): Promise<Contact[]> {
-    const allContacts = await this.getAllContacts();
+    const allContacts = await this.getAllContacts(); // Already filtered (non-deleted)
     const searchTerm = query.toLowerCase();
     return allContacts.filter((contact: Contact) => 
       contact.fullNameEn?.toLowerCase().includes(searchTerm) ||

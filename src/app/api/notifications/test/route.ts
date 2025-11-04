@@ -18,7 +18,7 @@ interface Notification {
  * Only available in development mode
  */
 export async function POST(request: NextRequest) {
-  // فقط در development
+  // Only in development mode
   if (process.env.NODE_ENV !== 'development') {
     return Response.json({ error: 'Only available in development' }, { status: 403 });
   }

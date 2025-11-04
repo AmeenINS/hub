@@ -373,6 +373,10 @@ export interface Contact {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  // Soft Delete Fields
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
 }
 
 export interface Company {

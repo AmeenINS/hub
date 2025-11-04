@@ -58,7 +58,7 @@ class SchedulerService {
       this.notificationTask = cron.schedule('* * * * *', async () => {
         await this.processNotifications();
       }, {
-        timezone: 'Asia/Muscat' // تنظیم timezone مناسب
+        timezone: 'Asia/Muscat' // Set appropriate timezone for Oman
       });
 
       // Cron job for event cleanup - runs every hour

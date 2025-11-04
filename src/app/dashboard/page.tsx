@@ -45,6 +45,7 @@ import { useAuthStore } from '@/store/auth-store';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
 import * as React from 'react';
 import {
   Dialog,
@@ -130,18 +131,13 @@ export default function DashboardPage() {
       if (!token) return;
       
       try {
-        const response = await fetch('/api/permissions/my-permissions', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await apiClient.get<{ permissions: Record<string, string[]> }>('/api/permissions/my-permissions');
         
-        if (response.ok) {
-          const data = await response.json();
-          setPermissions(data.permissions || {});
+        if (response.success && response.data) {
+          setPermissions(response.data.permissions || {});
         }
       } catch (error) {
-        console.error('Failed to fetch permissions:', error);
+        console.error('Failed to fetch permissions:', getErrorMessage(error));
       }
     };
 

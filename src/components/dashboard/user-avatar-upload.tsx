@@ -5,13 +5,13 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { UploadedFile } from '@/components/ui/file-upload';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { toast } from 'sonner';
 
 interface UserAvatarUploadProps {
   userId: string;
   currentAvatarUrl?: string;
   userFullName?: string;
-  token?: string;
   onAvatarUpdated?: (avatarUrl: string) => void;
   showPreview?: boolean;
   variant?: 'card' | 'avatar';
@@ -21,7 +21,6 @@ export function UserAvatarUpload({
   userId,
   currentAvatarUrl,
   userFullName,
-  token,
   onAvatarUpdated,
   showPreview = true,
   variant = 'card'
@@ -32,23 +31,16 @@ export function UserAvatarUpload({
   const handleUploadComplete = async (file: UploadedFile) => {
     setUploading(true);
     try {
-      // Update user record with new avatar URL
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ avatarUrl: file.fileUrl }),
+      // Update user record with new avatar URL using apiClient
+      const response = await apiClient.patch<{ avatarUrl: string }>(`/api/users/${userId}`, {
+        avatarUrl: file.fileUrl
       });
 
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.error || 'Failed to update avatar');
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Failed to update avatar');
       }
 
-      const { data } = await response.json();
-      const newAvatarUrl = data.avatarUrl || file.fileUrl;
+      const newAvatarUrl = response.data.avatarUrl || file.fileUrl;
       
       // Add cache buster to force reload
       const avatarUrlWithCache = `${newAvatarUrl}?t=${Date.now()}`;
@@ -60,7 +52,7 @@ export function UserAvatarUpload({
       toast.success('Avatar updated successfully');
     } catch (error) {
       console.error('Error updating user avatar:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update avatar');
+      toast.error(getErrorMessage(error, 'Failed to update avatar'));
     } finally {
       setUploading(false);
     }

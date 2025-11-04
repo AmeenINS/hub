@@ -6,6 +6,15 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+## 📚 Documentation
+
+- **[Complete Documentation](docs/README.md)** - Technical documentation index
+- **[Soft Delete System](docs/soft-delete/README.md)** - Logical deletion with recovery
+- **[Development Guide](DEVELOPMENT_GUIDE.md)** - Development guidelines
+- **[Copilot Instructions](.github/copilot-instructions.md)** - AI development rules
+
+---
+
 ## 🌟 Overview
 
 Ameen Hub is a comprehensive enterprise platform featuring advanced permission management, bilingual support (Arabic & English), and a modular architecture designed for scalability and security.
@@ -18,6 +27,13 @@ Ameen Hub is a comprehensive enterprise platform featuring advanced permission m
 - **UI-Level Security**: Permission checks before rendering (optimal UX)
 - **API-Level Security**: Every endpoint protected with authentication and authorization
 - **Dynamic Permissions**: Easy to add new features with automatic permission integration
+
+### 🗑️ Soft Delete System
+- **No Physical Deletion**: All data can be recovered
+- **Audit Trail**: Complete history of who deleted what and when
+- **Trash View**: View and restore deleted items
+- **Auto-Cleanup**: Optional permanent deletion after 30 days
+- **GDPR Compliant**: Meets data retention requirements
 
 ### 🌍 Full Internationalization (i18n)
 - **Bilingual Support**: Complete Arabic and English translations

@@ -3,6 +3,60 @@
 > **🤖 Instructions for GitHub Copilot**  
 > This file specifies the coding rules and standards for this project.
 
+## 🔤 CRITICAL: Language Rules
+
+### ⚠️ MANDATORY - English Only in Code
+
+**ALL code, comments, variable names, function names, and documentation MUST be in English.**
+
+```typescript
+// ✅ Correct - English comments and names
+/**
+ * Soft delete a contact by marking it as deleted
+ * @param contactId - The ID of the contact to delete
+ * @param userId - The ID of the user performing the deletion
+ */
+async function softDeleteContact(contactId: string, userId: string) {
+  // Mark contact as deleted instead of removing from database
+  return await updateContact(contactId, {
+    isDeleted: true,
+    deletedAt: new Date().toISOString(),
+    deletedBy: userId
+  });
+}
+
+// ❌ Wrong - Persian/Arabic in code
+async function حذف_مخاطب(شناسه: string) {
+  // این تابع مخاطب را حذف می‌کند
+  return await حذف(شناسه);
+}
+
+// ❌ Wrong - Mixed languages
+async function deleteContact(contactId: string) {
+  // حذف منطقی
+  return await softDelete(contactId);
+}
+```
+
+### Documentation Language Policy
+
+- **Code files (.ts, .tsx, .js, .jsx)**: English ONLY
+- **Comments in code**: English ONLY  
+- **Variable/Function names**: English ONLY
+- **Git commit messages**: English preferred
+- **Documentation files in `/docs`**: English preferred (bilingual acceptable)
+- **Translation files (`translations.ts`)**: Bilingual (EN/AR) for UI text only
+- **User-facing UI**: Bilingual (EN/AR) via translation system
+
+### Important Notes
+
+1. **If you receive a prompt in Persian/Farsi**: Understand the request, then implement in English
+2. **User-facing text**: Use the translation system (`useI18n` hook) - never hardcode text in any language
+3. **Internal docs**: Create in `/docs` folder in English
+4. **Code reviews**: Reject any code with non-English comments or names
+
+---
+
 ## 🌐 API Requests
 
 ### ⚠️ Core Rule
