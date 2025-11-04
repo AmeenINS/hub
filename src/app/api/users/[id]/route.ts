@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/lib/db/user-service';
 import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { getUserPermissionsContext } from '@/lib/auth/permissions';
+import { hasPermission } from '@/lib/permissions-helper';
 
 const userService = new UserService();
 
@@ -84,9 +85,10 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    // Check permission
-    const hasPermission = await checkPermission(userId, 'users', 'update');
-    if (!hasPermission) {
+    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const canUpdateUsers = hasPermission(permissionMap, 'users', 'update');
+
+    if (!canUpdateUsers && !isSuperAdmin) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -104,11 +106,13 @@ export async function PATCH(
 
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
+    const canManageAllUsers =
+      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
     
     // Check if user can manage this target user
     // Top-level admins (no managerId) can manage anyone
     // Other users can only manage themselves or their subordinates
-    if (userId !== id && currentUser?.managerId) {
+    if (userId !== id && currentUser?.managerId && !canManageAllUsers) {
       const isSubordinate = await userService.isSubordinate(userId, id);
       if (!isSubordinate) {
         return NextResponse.json(
@@ -166,9 +170,10 @@ export async function DELETE(
     const userId = payload.userId;
     const { id } = await params;
 
-    // Check permission
-    const hasPermission = await checkPermission(userId, 'users', 'delete');
-    if (!hasPermission) {
+    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const canDeleteUsers = hasPermission(permissionMap, 'users', 'delete');
+
+    if (!canDeleteUsers && !isSuperAdmin) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -186,11 +191,13 @@ export async function DELETE(
 
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
+    const canManageAllUsers =
+      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
     
     // Check if user can manage this target user
     // Top-level admins (no managerId) can manage anyone
     // Other users can only manage themselves or their subordinates
-    if (userId !== id && currentUser?.managerId) {
+    if (userId !== id && currentUser?.managerId && !canManageAllUsers) {
       const isSubordinate = await userService.isSubordinate(userId, id);
       if (!isSubordinate) {
         return NextResponse.json(

@@ -121,19 +121,16 @@ export default function EditUserPage() {
         // Fetch all data in parallel
         const [rolesResponse, positionsResponse, usersResponse, userResponse, userRolesResponse] = 
           await Promise.all([
-            apiClient.get<{ success: boolean; data: Role[] }>('/api/roles'),
+            apiClient.get<Role[]>('/api/roles'),
             apiClient.get<Position[]>('/api/positions'),
-            apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
-            apiClient.get<{ success: boolean; data: User }>(`/api/users/${userId}`),
+            apiClient.get<User[]>('/api/users'),
+            apiClient.get<User>(`/api/users/${userId}`),
             apiClient.get<UserRole[]>(`/api/users/${userId}/roles`),
           ]);
 
         // Set roles
         if (rolesResponse.success && rolesResponse.data) {
-          const rolesData = rolesResponse.data as unknown as { success: boolean; data: Role[] };
-          if (rolesData.success && rolesData.data) {
-            setRoles(rolesData.data);
-          }
+          setRoles(Array.isArray(rolesResponse.data) ? rolesResponse.data : []);
         }
 
         // Set positions
@@ -143,17 +140,13 @@ export default function EditUserPage() {
 
         // Set users
         if (usersResponse.success && usersResponse.data) {
-          const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
-          if (usersData.success && usersData.data) {
-            setUsers(usersData.data.filter((u: User) => u.id !== userId));
-          }
+          const usersArray = Array.isArray(usersResponse.data) ? usersResponse.data : [];
+          setUsers(usersArray.filter((u: User) => u.id !== userId));
         }
 
         // Set user data
         if (userResponse.success && userResponse.data) {
-          const userData = userResponse.data as unknown as { success: boolean; data: User };
-          const fetchedUser = userData.success ? userData.data : userResponse.data;
-          setUserData(fetchedUser as User);
+          setUserData(userResponse.data as User);
         }
 
         // Set user roles
@@ -219,6 +212,11 @@ export default function EditUserPage() {
     try {
       setLoading(true);
 
+      console.log('=== Submitting User Update ===');
+      console.log('User ID:', userId);
+      console.log('Current Role ID:', userRoles.length > 0 ? userRoles[0].roleId : 'none');
+      console.log('New Role ID:', data.roleId);
+
       // Update user basic info
       const userUpdatePayload = {
         email: data.email,
@@ -237,9 +235,12 @@ export default function EditUserPage() {
         throw new Error(userResponse.message || 'Failed to update user');
       }
 
+      console.log('✅ User info updated');
+
       // Update user role if changed
       const currentRoleId = userRoles.length > 0 ? userRoles[0].roleId : '';
       if (data.roleId !== currentRoleId) {
+        console.log('🔄 Updating role...');
         const roleResponse = await apiClient.put(`/api/users/${userId}/roles`, {
           roleId: data.roleId,
         });
@@ -247,9 +248,22 @@ export default function EditUserPage() {
         if (!roleResponse.success) {
           throw new Error(roleResponse.message || 'Failed to update role');
         }
+        console.log('✅ Role updated');
+      } else {
+        console.log('⏭️  Role unchanged');
       }
 
       toast.success(t('messages.updateSuccess'));
+      
+      // Refetch data to show updated role
+      const [updatedRolesResponse] = await Promise.all([
+        apiClient.get<UserRole[]>(`/api/users/${userId}/roles`),
+      ]);
+      
+      if (updatedRolesResponse.success && updatedRolesResponse.data) {
+        setUserRoles(Array.isArray(updatedRolesResponse.data) ? updatedRolesResponse.data : []);
+      }
+      
       router.push('/dashboard/users');
     } catch (error) {
       console.error('Error updating user:', error);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JWTService } from '@/lib/auth/jwt';
-import { RolePermissionService } from '@/lib/db/user-service';
+import { getUserPermissionsContext } from '@/lib/auth/permissions';
+import { hasPermission } from '@/lib/permissions-helper';
 
 /**
  * Authentication Middleware
@@ -47,33 +48,32 @@ export async function checkPermission(
   requiredModule: string,
   requiredAction: string
 ): Promise<boolean> {
-  const rolePermissionService = new RolePermissionService();
-  
   try {
-    const permissions = await rolePermissionService.getUserPermissions(userId);
-    
+    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+
     console.log('=== Permission Check ===');
     console.log('User ID:', userId);
     console.log('Required:', `${requiredModule}:${requiredAction}`);
-    console.log('User Permissions:', permissions.map(p => `${p.module}:${p.action}`));
-    
-    // Check if user has the required permission
-    const hasPermission = permissions.some(
-      (perm) =>
-        perm.module === requiredModule &&
-        perm.action === requiredAction
+    console.log(
+      'User Permissions:',
+      Object.entries(permissionMap)
+        .flatMap(([module, actions]) => actions.map((action) => `${module}:${action}`))
     );
+    
+    if (isSuperAdmin) {
+      console.log('Has Permission:', true);
+      console.log('Is Admin:', true);
+      console.log('======================');
+      return true;
+    }
 
-    // Also check for admin permission (full access)
-    const isAdmin = permissions.some(
-      (perm) => perm.module === 'system' && perm.action === 'admin'
-    );
-    
-    console.log('Has Permission:', hasPermission);
-    console.log('Is Admin:', isAdmin);
+    const allowed = hasPermission(permissionMap, requiredModule, requiredAction);
+
+    console.log('Has Permission:', allowed);
+    console.log('Is Admin:', isSuperAdmin);
     console.log('======================');
 
-    return hasPermission || isAdmin;
+    return allowed;
   } catch (error) {
     console.error('Permission check failed:', error);
     return false;

@@ -43,7 +43,7 @@ const companies = [
     status: "Active Customer",
     contacts: 15,
     deals: 3,
-    logo: "/logos/techcorp.png",
+    logo: undefined, // Logo files don't exist yet
     website: "www.techcorp.com",
     description: "Leading technology solutions provider"
   },
@@ -57,7 +57,7 @@ const companies = [
     status: "Prospect",
     contacts: 8,
     deals: 1,
-    logo: "/logos/startupxyz.png",
+    logo: undefined, // Logo files don't exist yet
     website: "www.startupxyz.com",
     description: "Innovative SaaS startup disrupting the market"
   },
@@ -71,7 +71,7 @@ const companies = [
     status: "Enterprise Client",
     contacts: 45,
     deals: 8,
-    logo: "/logos/bigcorp.png",
+    logo: undefined, // Logo files don't exist yet
     website: "www.bigcorp.com",
     description: "Global manufacturing and distribution company"
   },
@@ -85,7 +85,7 @@ const companies = [
     status: "Lead",
     contacts: 12,
     deals: 2,
-    logo: "/logos/innovate.png",
+    logo: undefined, // Logo files don't exist yet
     website: "www.innovatesolutions.com",
     description: "Strategic consulting and digital transformation"
   },
@@ -99,7 +99,7 @@ const companies = [
     status: "Active Customer",
     contacts: 20,
     deals: 4,
-    logo: "/logos/futuretech.png",
+    logo: undefined, // Logo files don't exist yet
     website: "www.futuretech.ai",
     description: "Artificial Intelligence and Machine Learning solutions"
   }

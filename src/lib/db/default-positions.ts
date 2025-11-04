@@ -6,7 +6,7 @@ export interface DefaultPositionSeed {
   isActive?: boolean;
 }
 
-export const DEFAULT_POSITIONS: DefaultPositionSeed[] = [
+const BASE_POSITIONS: DefaultPositionSeed[] = [
   { name: 'Chief Executive Officer', nameAr: 'الرئيس التنفيذي' },
   { name: 'Chief Commercial Officer', nameAr: 'الرئيس التنفيذي التجاري' },
   { name: 'Chief Operating Officer', nameAr: 'الرئيس التنفيذي للعمليات' },
@@ -35,7 +35,9 @@ export const DEFAULT_POSITIONS: DefaultPositionSeed[] = [
     nameAr: 'المدير الأول لإدارة الشراكات والعلاقات الاستراتيجية',
   },
   { name: 'Consultant', nameAr: 'مستشار' },
-].map((position, index) => ({
+];
+
+export const DEFAULT_POSITIONS: DefaultPositionSeed[] = BASE_POSITIONS.map((position, index) => ({
   ...position,
   level: index + 1,
   isActive: true,

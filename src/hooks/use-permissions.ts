@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/auth-store';
 import { apiClient } from '@/lib/api-client';
+import { hasPermission as checkPermission } from '@/lib/permissions-helper';
 
 /**
  * Hook to check a single permission
@@ -39,8 +40,8 @@ export function usePermission(module: string, action: string) {
         );
         
         if (response.success && response.data) {
-          const modulePermissions = response.data[module] || [];
-          setHasPermission(modulePermissions.includes(action));
+          // Use helper function that handles super admin check
+          setHasPermission(checkPermission(response.data, module, action));
         } else {
           setHasPermission(false);
         }
@@ -97,12 +98,11 @@ export function useModulePermissions(module: string) {
         );
 
         if (response.success && response.data) {
-          const modulePermissions = response.data[module] || [];
           setPermissions({
-            canView: modulePermissions.includes('view'),
-            canCreate: modulePermissions.includes('create'),
-            canEdit: modulePermissions.includes('edit'),
-            canDelete: modulePermissions.includes('delete'),
+            canView: checkPermission(response.data, module, 'view'),
+            canCreate: checkPermission(response.data, module, 'create'),
+            canEdit: checkPermission(response.data, module, 'edit'),
+            canDelete: checkPermission(response.data, module, 'delete'),
           });
         } else {
           setPermissions({
@@ -166,10 +166,10 @@ export function useCustomPermissions(module: string, actions: string[]) {
         );
 
         if (response.success && response.data) {
-          const modulePermissions = response.data[module] || [];
           const permissionMap: Record<string, boolean> = {};
+          
           actions.forEach((action) => {
-            permissionMap[action] = modulePermissions.includes(action);
+            permissionMap[action] = checkPermission(response.data!, module, action);
           });
           setPermissions(permissionMap);
         } else {

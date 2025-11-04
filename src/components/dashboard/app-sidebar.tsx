@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import '@/app/sidebar-enhanced.css';
+import { apiClient } from '@/lib/api-client';
+import { isSuperAdmin, hasModuleAccess as checkModuleAccess } from '@/lib/permissions-helper';
 import {
   Bot,
   ChevronRight,
@@ -107,10 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Fetch user permissions
   React.useEffect(() => {
     const fetchPermissions = async () => {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+      if (!token) return;
 
       try {
         const modules = [
@@ -119,15 +118,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           'policies', 'claims', 'commission', 'accounting',
           'workflows', 'inventory', 'procurement'
         ];
-        const response = await fetch(`/api/users/me/permissions?modules=${modules.join(',')}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        
+        const response = await apiClient.get<Record<string, string[]>>(
+          `/api/users/me/permissions?modules=${modules.join(',')}`
+        );
 
-        if (response.ok) {
-          const data = await response.json();
-          setPermissions(data);
+        console.log('=== Sidebar Permissions ===');
+        console.log('Response:', response);
+
+        if (response.success && response.data) {
+          // API returns { success: true, data: Record<string, string[]> }
+          setPermissions(response.data);
+        } else {
+          console.error('Failed to get permissions:', response);
         }
       } catch (error) {
         console.error('Failed to fetch permissions:', error);
@@ -150,13 +153,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const hasModuleAccess = (moduleName: string) => {
     if (loading) return true; // Show all while loading
     
+    // Super admin has access to everything
+    if (isSuperAdmin(permissions)) {
+      return true;
+    }
+    
     // For CRM, check if user has access to any CRM module
     if (moduleName === 'crm') {
       return ['crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns']
-        .some(module => permissions[module] && permissions[module].length > 0);
+        .some(module => checkModuleAccess(permissions, module));
     }
     
-    return permissions[moduleName] && permissions[moduleName].length > 0;
+    return checkModuleAccess(permissions, moduleName);
   };
 
   // Navigation data based on user permissions

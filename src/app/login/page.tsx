@@ -14,6 +14,20 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+
+interface LoginResponse {
+  user: {
+    id: string;
+    email: string;
+    fullNameEn: string;
+    fullNameAr?: string;
+    avatarUrl?: string;
+    roles: string[];
+  };
+  token: string;
+  refreshToken: string;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,26 +49,21 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const response = await apiClient.post<LoginResponse>('/api/auth/login', { 
+        email, 
+        password 
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        login(data.data.user, data.data.token);
+      if (response.success && response.data) {
+        login(response.data.user, response.data.token);
         toast.success(t('auth.loginSuccess'));
         router.push('/dashboard');
       } else {
-        toast.error(t('auth.loginError'));
+        toast.error(response.message || t('auth.loginError'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(t('messages.error'));
+      toast.error(getErrorMessage(error, t('messages.error')));
     } finally {
       setIsLoading(false);
     }

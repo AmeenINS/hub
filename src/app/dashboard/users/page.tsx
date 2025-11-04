@@ -45,10 +45,11 @@ export default function UsersPage() {
     
     try {
       setLoading(true);
-      const response = await apiClient.get<User[]>('/api/users');
+      const response = await apiClient.get<{ success: boolean; data: User[] }>('/api/users');
 
       if (response.success && response.data) {
-        setUsers(response.data);
+        // API returns { success: true, data: User[] }
+        setUsers(Array.isArray(response.data) ? response.data : []);
       } else {
         toast.error(response.message || t('messages.errorFetchingData'));
       }
@@ -134,7 +135,18 @@ export default function UsersPage() {
   }
 
   if (!permissions.canView) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">{t('messages.noPermission')}</CardTitle>
+            <CardDescription className="text-center">
+              {t('messages.accessDenied')}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
   }
 
   return (

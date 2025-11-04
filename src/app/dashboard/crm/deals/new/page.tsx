@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ export default function NewDealPage() {
   const stage = form.watch("stage");
 
   // Auto-update probability based on stage
-  React.useEffect(() => {
+  useEffect(() => {
     const stageToProb = {
       "Discovery": 10,
       "Qualification": 25,

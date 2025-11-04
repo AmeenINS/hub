@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, RoleService, UserRoleService } from '@/lib/db/user-service';
 import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { getUserPermissionsContext } from '@/lib/auth/permissions';
+import { hasPermission } from '@/lib/permissions-helper';
 import { logError } from '@/lib/logger';
 
 /**
@@ -32,25 +33,33 @@ export async function GET(request: NextRequest) {
 
     const userId = payload.userId;
 
-    // Check permission
-    const hasPermission = await checkPermission(userId, 'users', 'read');
+    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const canReadUsers = hasPermission(permissionMap, 'users', 'read');
+    
+    console.log('=== Users API Permission Check ===');
+    console.log('User ID:', userId);
+    console.log('Has Permission:', canReadUsers || isSuperAdmin);
 
-    if (!hasPermission) {
+    if (!canReadUsers && !isSuperAdmin) {
+      console.log('❌ Access denied - No permission');
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
       );
     }
 
+    console.log('✅ Access granted');
     const userService = new UserService();
     
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
-    
+    const canManageAllUsers =
+      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+
     let managedUsers;
     
     // If user has no manager (top-level admin), show all users
-    if (!currentUser?.managerId) {
+    if (canManageAllUsers || !currentUser?.managerId) {
       managedUsers = await userService.getAllUsers();
     } else {
       // Otherwise, show only subordinates + self
@@ -104,9 +113,10 @@ export async function POST(request: NextRequest) {
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'users', 'create');
+    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const canCreateUser = hasPermission(permissionMap, 'users', 'create');
 
-    if (!hasPermission) {
+    if (!canCreateUser && !isSuperAdmin) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -158,6 +168,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const canManageAllUsers =
+      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+
     // Validate managerId if provided
     if (managerId) {
       const manager = await userService.getUserById(managerId);
@@ -172,7 +185,7 @@ export async function POST(request: NextRequest) {
       // For now, users with 'users:create' can assign manager if they are ancestor of the manager
       const isAncestor = await userService.isSubordinate(userId, managerId);
       // If requester is not ancestor and not the same as manager, forbid
-      if (!isAncestor && userId !== managerId) {
+      if (!canManageAllUsers && !isAncestor && userId !== managerId) {
         // allow if requester has a 'system' role (super admin) by checking roles
         // We'll keep it simple: if requester lacks users:create for others, forbid
         // (This check can be refined later)

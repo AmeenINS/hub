@@ -410,10 +410,24 @@ export class RolePermissionService {
   async getUserPermissions(userId: string): Promise<Permission[]> {
     const userRoleService = new UserRoleService();
     const permissionService = new PermissionService();
+    const roleService = new RoleService();
 
     // Get user's roles
     const userRoles = await userRoleService.getUserRolesByUser(userId);
     const roleIds = userRoles.map((ur) => ur.roleId);
+
+    // Fetch roles to determine if user is an administrator
+    const roles = await Promise.all(roleIds.map((roleId) => roleService.getRoleById(roleId)));
+    const hasAdminRole = roles.some((role) => {
+      if (!role?.name) return false;
+      const normalized = role.name.trim().toLowerCase();
+      return normalized === 'administrator' || normalized === 'super admin';
+    });
+
+    if (hasAdminRole) {
+      // Administrators get full access to every permission in the system
+      return permissionService.getAllPermissions();
+    }
 
     // Get permissions for each role
     const permissionIds = new Set<string>();

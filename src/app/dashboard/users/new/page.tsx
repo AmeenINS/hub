@@ -37,7 +37,6 @@ import {
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { RTLChevron } from '@/components/ui/rtl-icon';
 import { ImageUpload } from '@/components/ui/image-upload';
-import type { UploadedFile } from '@/components/ui/file-upload';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 
 const formSchema = z.object({
@@ -85,7 +84,6 @@ export default function NewUserPage() {
   const [users, setUsers] = React.useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = React.useState(true);
   const [avatarUrl, setAvatarUrl] = React.useState<string>('');
-  const [uploadedFile, setUploadedFile] = React.useState<UploadedFile | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -109,17 +107,14 @@ export default function NewUserPage() {
       try {
         // Fetch all data in parallel
         const [rolesResponse, positionsResponse, usersResponse] = await Promise.all([
-          apiClient.get<{ success: boolean; data: Role[] }>('/api/roles'),
+          apiClient.get<Role[]>('/api/roles'),
           apiClient.get<Position[]>('/api/positions'),
-          apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
+          apiClient.get<User[]>('/api/users'),
         ]);
 
         // Set roles
         if (rolesResponse.success && rolesResponse.data) {
-          const rolesData = rolesResponse.data as unknown as { success: boolean; data: Role[] };
-          if (rolesData.success && rolesData.data) {
-            setRoles(rolesData.data);
-          }
+          setRoles(Array.isArray(rolesResponse.data) ? rolesResponse.data : []);
         }
         setLoadingRoles(false);
 
@@ -131,10 +126,7 @@ export default function NewUserPage() {
 
         // Set users
         if (usersResponse.success && usersResponse.data) {
-          const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
-          if (usersData.success && usersData.data) {
-            setUsers(usersData.data);
-          }
+          setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
         }
         setLoadingUsers(false);
       } catch (error) {
@@ -218,7 +210,6 @@ export default function NewUserPage() {
                 <CardContent>
                   <ImageUpload
                     onUploadComplete={(file) => {
-                      setUploadedFile(file);
                       setAvatarUrl(file.fileUrl);
                       toast.success('Avatar uploaded successfully');
                     }}

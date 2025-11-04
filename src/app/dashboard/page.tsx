@@ -131,10 +131,16 @@ export default function DashboardPage() {
       if (!token) return;
       
       try {
-        const response = await apiClient.get<{ permissions: Record<string, string[]> }>('/api/permissions/my-permissions');
+        const response = await apiClient.get<Record<string, string[]>>('/api/users/me/all-permissions');
         
         if (response.success && response.data) {
-          setPermissions(response.data.permissions || {});
+          // API returns { success: true, data: Record<string, string[]> }
+          // response.data is already the permissions object
+          setPermissions(
+            typeof response.data === 'object' && !Array.isArray(response.data)
+              ? response.data
+              : {}
+          );
         }
       } catch (error) {
         console.error('Failed to fetch permissions:', getErrorMessage(error));

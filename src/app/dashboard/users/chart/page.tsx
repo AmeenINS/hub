@@ -47,13 +47,13 @@ export default function OrgChartPage() {
       // Fetch users and positions in parallel
       const [usersResponse, positionsResponse] = await Promise.all([
         apiClient.get<{ success: boolean; data: User[] }>('/api/users'),
-        apiClient.get<Position[]>('/api/positions'),
+        apiClient.get<{ success: boolean; data: Position[] }>('/api/positions'),
       ]);
 
       let fetchedUsers: User[] = [];
       if (usersResponse.success && usersResponse.data) {
-        const usersData = usersResponse.data as unknown as { success: boolean; data: User[] };
-        fetchedUsers = usersData.success && usersData.data ? usersData.data : [];
+        // API returns { success: true, data: User[] } - data is already the array
+        fetchedUsers = Array.isArray(usersResponse.data) ? usersResponse.data : [];
       }
 
       // Process positions if available

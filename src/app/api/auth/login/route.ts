@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/db/user-service';
+import { UserService, UserRoleService, RoleService } from '@/lib/db/user-service';
 import { JWTService } from '@/lib/auth/jwt';
 import { AuditService } from '@/lib/db/audit-service';
 import { AuditAction } from '@/types/database';
@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     const userService = new UserService();
+    const userRoleService = new UserRoleService();
+    const roleService = new RoleService();
     const auditService = new AuditService();
 
     // Verify credentials
@@ -45,8 +47,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate JWT tokens
-    const token = JWTService.generateToken(user);
+    // Resolve user roles
+    const userRoles = await userRoleService.getUserRolesByUser(user.id);
+    const roleNames = (
+      await Promise.all(
+        userRoles.map(async (userRole) => {
+          const role = await roleService.getRoleById(userRole.roleId);
+          return role?.name ?? null;
+        })
+      )
+    ).filter((roleName): roleName is string => Boolean(roleName));
+
+    // Generate JWT tokens (include roles)
+    const token = JWTService.generateToken(user, roleNames);
     const refreshToken = JWTService.generateRefreshToken(user);
 
     // Update last login
@@ -72,7 +85,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        user: userWithoutPassword,
+        user: {
+          ...userWithoutPassword,
+          roles: roleNames,
+        },
         token,
         refreshToken,
       },

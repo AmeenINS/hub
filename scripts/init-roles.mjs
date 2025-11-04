@@ -161,6 +161,7 @@ const allRoles = [
     description: 'System administrator with most permissions',
     descriptionAr: 'مدير النظام مع معظم الصلاحيات',
     permissions: [
+      'system:admin',
       'users:read', 'users:create', 'users:update', 'users:assign-role',
       'roles:read', 'roles:create', 'roles:update',
       'permissions:read', 'permissions:assign',

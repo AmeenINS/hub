@@ -21,6 +21,19 @@ import { OverlayScrollbar } from '@/components/ui/overlay-scrollbar';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+
+interface UserData {
+  id: string;
+  fullNameEn: string;
+  fullNameAr: string;
+  email: string;
+  phoneNumber?: string;
+  avatarUrl?: string;
+  emailNotifications?: boolean;
+  pushNotifications?: boolean;
+  taskNotifications?: boolean;
+}
 
 interface UserSettings {
   fullNameEn: string;
@@ -88,20 +101,18 @@ const [positionForm, setPositionForm] = useState({
         return;
       }
 
-      const response = await fetch('/api/users/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get<UserData>('/api/users/me');
 
-      if (response.status === 401) {
-        toast.error('Session expired. Please login again');
-        router.push('/login');
+      if (!response.success) {
+        if (response.message?.includes('Unauthorized') || response.message?.includes('token')) {
+          toast.error('Session expired. Please login again');
+          router.push('/login');
+        }
         return;
       }
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
+        const data = response.data;
         setUserId(data.id);
         setSettings({
           fullNameEn: data.fullNameEn || '',
@@ -116,6 +127,7 @@ const [positionForm, setPositionForm] = useState({
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
+      toast.error(getErrorMessage(error, 'Failed to load settings'));
     } finally {
       setLoading(false);
     }
@@ -137,27 +149,20 @@ const [positionForm, setPositionForm] = useState({
     
     try {
       setSaving(true);
-      const response = await fetch('/api/users/me', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullNameEn: settings.fullNameEn,
-          fullNameAr: settings.fullNameAr,
-          phoneNumber: settings.phoneNumber,
-        }),
+      const response = await apiClient.put('/api/users/me', {
+        fullNameEn: settings.fullNameEn,
+        fullNameAr: settings.fullNameAr,
+        phoneNumber: settings.phoneNumber,
       });
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('messages.updateSuccess'));
       } else {
-        toast.error(t('messages.updateError'));
+        toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
       console.error('Failed to update profile:', error);
-      toast.error(t('messages.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
       setSaving(false);
     }
@@ -168,27 +173,20 @@ const [positionForm, setPositionForm] = useState({
     
     try {
       setSaving(true);
-      const response = await fetch('/api/users/me/settings', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          emailNotifications: settings.emailNotifications,
-          pushNotifications: settings.pushNotifications,
-          taskNotifications: settings.taskNotifications,
-        }),
+      const response = await apiClient.put('/api/users/me/settings', {
+        emailNotifications: settings.emailNotifications,
+        pushNotifications: settings.pushNotifications,
+        taskNotifications: settings.taskNotifications,
       });
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('messages.updateSuccess'));
       } else {
-        toast.error(t('messages.updateError'));
+        toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
       console.error('Failed to update notifications:', error);
-      toast.error(t('messages.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
       setSaving(false);
     }
@@ -204,19 +202,12 @@ const [positionForm, setPositionForm] = useState({
 
     try {
       setSaving(true);
-      const response = await fetch('/api/users/me/password', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
+      const response = await apiClient.put('/api/users/me/password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
       });
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('settings.passwordChanged'));
         setPasswordData({
           currentPassword: '',
@@ -224,12 +215,11 @@ const [positionForm, setPositionForm] = useState({
           confirmPassword: '',
         });
       } else {
-        const error = await response.json();
-        toast.error(error.message || t('messages.updateError'));
+        toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
       console.error('Failed to change password:', error);
-      toast.error(t('messages.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
       setSaving(false);
     }
@@ -239,13 +229,10 @@ const [positionForm, setPositionForm] = useState({
   const fetchPositions = async () => {
     try {
       setLoadingPositions(true);
-      const response = await fetch('/api/positions', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.get<Position[]>('/api/positions');
 
-      if (response.ok) {
-        const data = await response.json();
-        setPositions(data.sort((a: Position, b: Position) => a.level - b.level));
+      if (response.success && response.data) {
+        setPositions(response.data.sort((a, b) => a.level - b.level));
       }
     } catch (error) {
       console.error('Failed to fetch positions:', error);
@@ -309,27 +296,20 @@ const [positionForm, setPositionForm] = useState({
         ? `/api/positions/${editingPosition.id}`
         : '/api/positions';
       
-      const method = editingPosition ? 'PUT' : 'POST';
+      const response = editingPosition
+        ? await apiClient.put(url, positionForm)
+        : await apiClient.post(url, positionForm);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(positionForm),
-      });
-
-      if (response.ok) {
+      if (response.success) {
         toast.success(editingPosition ? t('settings.positionUpdated') : t('settings.positionCreated'));
         handleClosePositionDialog();
         fetchPositions();
       } else {
-        toast.error(t('messages.updateError'));
+        toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
       console.error('Failed to save position:', error);
-      toast.error(t('messages.updateError'));
+      toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
       setSaving(false);
     }
@@ -344,22 +324,17 @@ const [positionForm, setPositionForm] = useState({
 
     try {
       setSaving(true);
-      const response = await fetch(`/api/positions/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.delete(`/api/positions/${id}`);
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('settings.positionDeleted'));
         fetchPositions();
       } else {
-        toast.error(t('messages.deleteError'));
+        toast.error(response.message || t('messages.deleteError'));
       }
     } catch (error) {
       console.error('Failed to delete position:', error);
-      toast.error(t('messages.deleteError'));
+      toast.error(getErrorMessage(error, t('messages.deleteError')));
     } finally {
       setSaving(false);
     }
@@ -421,7 +396,6 @@ const [positionForm, setPositionForm] = useState({
                 userId={userId}
                 currentAvatarUrl={settings.avatarUrl}
                 userFullName={settings.fullNameEn}
-                token={token || undefined}
                 onAvatarUpdated={(avatarUrl) => setSettings({ ...settings, avatarUrl })}
                 variant="card"
               />
