@@ -21,16 +21,16 @@ import { useI18n } from '@/lib/i18n/i18n-context';
 import type { Note } from '@/lib/db/notes-service';
 
 const NOTE_COLORS = [
-  { name: 'White', value: '#ffffff', bgClass: 'bg-white' },
-  { name: 'Red', value: '#f28b82', bgClass: 'bg-red-200' },
-  { name: 'Orange', value: '#fbbc04', bgClass: 'bg-orange-200' },
-  { name: 'Yellow', value: '#fff475', bgClass: 'bg-yellow-200' },
-  { name: 'Green', value: '#ccff90', bgClass: 'bg-green-200' },
-  { name: 'Teal', value: '#a7ffeb', bgClass: 'bg-teal-200' },
-  { name: 'Blue', value: '#cbf0f8', bgClass: 'bg-blue-200' },
-  { name: 'Purple', value: '#d7aefb', bgClass: 'bg-purple-200' },
-  { name: 'Pink', value: '#fdcfe8', bgClass: 'bg-pink-200' },
-  { name: 'Gray', value: '#e8eaed', bgClass: 'bg-gray-200' },
+  { name: 'Default', value: 'default', bgClass: 'bg-card', textClass: 'text-card-foreground' },
+  { name: 'Red', value: '#f28b82', bgClass: 'bg-red-200', textClass: 'text-gray-900' },
+  { name: 'Orange', value: '#fbbc04', bgClass: 'bg-orange-200', textClass: 'text-gray-900' },
+  { name: 'Yellow', value: '#fff475', bgClass: 'bg-yellow-200', textClass: 'text-gray-900' },
+  { name: 'Green', value: '#ccff90', bgClass: 'bg-green-200', textClass: 'text-gray-900' },
+  { name: 'Teal', value: '#a7ffeb', bgClass: 'bg-teal-200', textClass: 'text-gray-900' },
+  { name: 'Blue', value: '#cbf0f8', bgClass: 'bg-blue-200', textClass: 'text-gray-900' },
+  { name: 'Purple', value: '#d7aefb', bgClass: 'bg-purple-200', textClass: 'text-gray-900' },
+  { name: 'Pink', value: '#fdcfe8', bgClass: 'bg-pink-200', textClass: 'text-gray-900' },
+  { name: 'Gray', value: '#e8eaed', bgClass: 'bg-gray-200', textClass: 'text-gray-900' },
 ];
 
 interface NoteCardProps {
@@ -76,19 +76,27 @@ export function NoteCard({
   };
 
   const getBackgroundColor = (color: string) => {
+    if (color === 'default') return undefined;
     return color;
   };
 
+  const getTextColor = (color: string) => {
+    if (color === 'default') return 'text-card-foreground';
+    return 'text-gray-900';
+  };
+
+  const isColoredNote = note.color !== 'default' && note.color !== '#ffffff';
+
   return (
     <Card
-      className="group relative cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden"
-      style={{ backgroundColor: getBackgroundColor(note.color) }}
+      className={`group relative cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden ${!isColoredNote ? '' : ''}`}
+      style={isColoredNote ? { backgroundColor: getBackgroundColor(note.color) } : undefined}
       draggable={!isEditing}
       onDragStart={() => onDragStart(note)}
       onDragEnd={onDragEnd}
       onClick={() => !isEditing && onEdit(note)}
     >
-      <div className="p-4 space-y-2">
+      <div className={`p-4 space-y-2 ${getTextColor(note.color)}`}>
         {/* Pin indicator */}
         {note.pinned && (
           <div className="absolute top-2 right-2">
@@ -102,13 +110,21 @@ export function NoteCard({
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
               placeholder={t('notes.noteTitle')}
-              className="border-none bg-transparent focus-visible:ring-0 text-lg font-semibold p-0"
+              className={`focus-visible:ring-0 text-lg font-semibold px-2 py-1 rounded-md ${
+                isColoredNote 
+                  ? 'bg-white/50 dark:bg-black/20 border border-gray-300/50 dark:border-gray-600/50 placeholder:text-gray-600' 
+                  : 'bg-muted/50 border border-border placeholder:text-muted-foreground'
+              }`}
             />
             <Textarea
               value={editedContent}
               onChange={(e) => setEditedContent(e.target.value)}
               placeholder={t('notes.noteContent')}
-              className="border-none bg-transparent focus-visible:ring-0 resize-none min-h-[100px] p-0"
+              className={`focus-visible:ring-0 resize-none min-h-[100px] px-2 py-1 rounded-md ${
+                isColoredNote 
+                  ? 'bg-white/50 dark:bg-black/20 border border-gray-300/50 dark:border-gray-600/50 placeholder:text-gray-600' 
+                  : 'bg-muted/50 border border-border placeholder:text-muted-foreground'
+              }`}
             />
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-center gap-1">
@@ -127,11 +143,10 @@ export function NoteCard({
                           onClick={() => onColorChange(note.id, color.value)}
                           className={`h-8 w-8 rounded-full border-2 ${
                             note.color === color.value
-                              ? 'border-black'
+                              ? 'border-primary'
                               : 'border-transparent'
-                          } hover:border-gray-400 transition-colors`}
-                          style={{ backgroundColor: color.value }}
-                          title={color.name}
+                          } hover:border-muted-foreground transition-colors ${color.bgClass}`}
+                          aria-label={color.name}
                         />
                       ))}
                     </div>

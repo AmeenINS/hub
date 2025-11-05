@@ -100,7 +100,7 @@ export class NotesService {
       userId,
       title: input.title || '',
       content: input.content,
-      color: input.color || '#ffffff',
+      color: input.color || 'default',
       position: maxPosition + 1,
       archived: false,
       pinned: false,
