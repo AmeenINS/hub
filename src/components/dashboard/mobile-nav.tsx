@@ -8,6 +8,7 @@ import {
   ClipboardList, 
   Settings,
   Lightbulb,
+  Users2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/lib/i18n/i18n-context';
@@ -21,6 +22,11 @@ export function MobileNav() {
       title: t('dashboard.dashboard'),
       href: '/dashboard',
       icon: Home,
+    },
+    {
+      title: t('modules.crm'),
+      href: '/dashboard/crm/contacts',
+      icon: Users2,
     },
     {
       title: t('nav.notes'),

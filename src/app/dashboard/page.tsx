@@ -192,7 +192,20 @@ export default function DashboardPage() {
   }, [token]);
 
   const hasModuleAccess = (module: string) => {
+    // If permissions are not loaded yet, show all modules
     if (!permissions || Object.keys(permissions).length === 0) return true;
+    
+    // Check if user is super admin (has system:admin permission)
+    const isSuperAdmin = permissions['system']?.includes('admin');
+    if (isSuperAdmin) return true;
+    
+    // For CRM module, check if user has access to any CRM sub-module
+    if (module === 'crm') {
+      return ['crm', 'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns']
+        .some(subModule => permissions[subModule] && permissions[subModule].length > 0);
+    }
+    
+    // Check specific module permission
     return permissions[module] && permissions[module].length > 0;
   };
 

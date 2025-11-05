@@ -20,8 +20,15 @@ export async function GET(request: NextRequest) {
 
     // Get all module permissions
     const modules = [
+      'system',
       'dashboard',
       'crm',
+      'crm_contacts',
+      'crm_companies',
+      'crm_leads',
+      'crm_deals',
+      'crm_activities',
+      'crm_campaigns',
       'contacts',
       'companies',
       'deals',
@@ -42,6 +49,7 @@ export async function GET(request: NextRequest) {
       'notifications',
       'settings',
       'support',
+      'permissions',
     ];
 
     const permissions = await getUserModulePermissions(payload.userId, modules);
