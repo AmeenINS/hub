@@ -9,7 +9,20 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { Settings as SettingsIcon, User, Bell, Shield, Globe, Briefcase, Plus, Pencil, Trash2 } from 'lucide-react';
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Shield,
+  Globe,
+  Briefcase,
+  Plus,
+  Pencil,
+  Trash2,
+  DatabaseBackup,
+  Download,
+  RotateCcw,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,6 +35,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { Progress } from '@/components/ui/progress';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface UserData {
   id: string;
@@ -54,6 +69,24 @@ interface Position {
   level: number;
   isActive: boolean;
 }
+
+interface BackupFileInfo {
+  fileName: string;
+  size: number;
+  sizeLabel: string;
+  createdAt: string;
+  downloadUrl: string;
+}
+
+const formatBytes = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const value = bytes / Math.pow(k, i);
+  const rounded = value > 10 || i === 0 ? Math.round(value) : Math.round(value * 10) / 10;
+  return `${rounded} ${sizes[i]}`;
+};
 
 export default function SettingsPage() {
   const { t, dir } = useI18n();
@@ -90,6 +123,17 @@ const [positionForm, setPositionForm] = useState({
   level: 1,
   isActive: true,
 });
+
+  // Backup & Restore States
+  const [backups, setBackups] = useState<BackupFileInfo[]>([]);
+  const [loadingBackups, setLoadingBackups] = useState(false);
+  const [backupConfirmOpen, setBackupConfirmOpen] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
+  const [backupInProgress, setBackupInProgress] = useState(false);
+  const [backupProgress, setBackupProgress] = useState(0);
+  const [restoreInProgress, setRestoreInProgress] = useState(false);
+  const [restoreProgress, setRestoreProgress] = useState(0);
+  const [selectedRestoreFile, setSelectedRestoreFile] = useState<File | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -224,6 +268,146 @@ const [positionForm, setPositionForm] = useState({
       setSaving(false);
     }
   };
+
+  const fetchBackups = useCallback(async () => {
+    try {
+      setLoadingBackups(true);
+      const response = await apiClient.get<{ backups: BackupFileInfo[] }>('/api/settings/backup');
+      const backupList = response.data?.backups;
+
+      if (response.success && backupList) {
+        setBackups(backupList);
+      }
+    } catch (error) {
+      console.error('Failed to fetch backups:', error);
+      toast.error(getErrorMessage(error, t('settings.loadBackupsError')));
+    } finally {
+      setLoadingBackups(false);
+    }
+  }, [t]);
+
+  const runBackup = useCallback(async () => {
+    setBackupInProgress(true);
+    setBackupProgress(10);
+
+    const progressTimer = window.setInterval(() => {
+      setBackupProgress((prev) => (prev < 90 ? prev + 5 : prev));
+    }, 400);
+
+    try {
+      const response = await apiClient.post<{ backup: BackupFileInfo }>('/api/settings/backup');
+      const createdBackup = response.data?.backup;
+
+      if (response.success && createdBackup) {
+        setBackups((prev) => [createdBackup, ...prev]);
+        toast.success(t('settings.backupCreated'));
+      } else {
+        toast.error(response.message || t('settings.backupFailed'));
+      }
+    } catch (error) {
+      console.error('Backup creation failed:', error);
+      toast.error(getErrorMessage(error, t('settings.backupFailed')));
+    } finally {
+      window.clearInterval(progressTimer);
+      setBackupProgress(100);
+      setTimeout(() => {
+        setBackupInProgress(false);
+        setBackupProgress(0);
+      }, 500);
+    }
+  }, [t]);
+
+  const handleDownloadBackup = async (backup: BackupFileInfo) => {
+    if (!token) {
+      toast.error(t('settings.loginRequired'));
+      return;
+    }
+
+    try {
+      const response = await fetch(backup.downloadUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = backup.fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(t('settings.backupDownloadStarted'));
+    } catch (error) {
+      console.error('Backup download failed:', error);
+      toast.error(getErrorMessage(error, t('settings.backupDownloadFailed')));
+    }
+  };
+
+  const runRestore = useCallback(async () => {
+    if (!selectedRestoreFile) {
+      toast.error(t('settings.restoreFileRequired'));
+      return;
+    }
+
+    setRestoreInProgress(true);
+    setRestoreProgress(10);
+
+    const progressTimer = window.setInterval(() => {
+      setRestoreProgress((prev) => (prev < 85 ? prev + 7 : prev));
+    }, 400);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedRestoreFile);
+
+      const response = await apiClient.upload<{ success: boolean }>(
+        '/api/settings/backup/restore',
+        formData
+      );
+
+      if (response.success) {
+        toast.success(t('settings.restoreCompleted'));
+        setSelectedRestoreFile(null);
+        await fetchBackups();
+      } else {
+        toast.error(response.message || t('settings.restoreFailed'));
+      }
+    } catch (error) {
+      console.error('Restore failed:', error);
+      toast.error(getErrorMessage(error, t('settings.restoreFailed')));
+    } finally {
+      window.clearInterval(progressTimer);
+      setRestoreProgress(100);
+      setTimeout(() => {
+        setRestoreInProgress(false);
+        setRestoreProgress(0);
+      }, 500);
+    }
+  }, [fetchBackups, selectedRestoreFile, t]);
+
+  const handleConfirmBackup = async () => {
+    setBackupConfirmOpen(false);
+    void runBackup();
+  };
+
+  const handleConfirmRestore = async () => {
+    setRestoreConfirmOpen(false);
+    void runRestore();
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchBackups();
+    }
+  }, [token, fetchBackups]);
 
   // Position Management Functions
   const fetchPositions = async () => {
@@ -362,8 +546,8 @@ const [positionForm, setPositionForm] = useState({
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4" dir={dir}>
-        <OverlayScrollbar className="border-b">
-          <TabsList className="w-full md:w-auto inline-flex h-12">
+        <OverlayScrollbar>
+          <TabsList className="w-full md:w-auto flex h-12 flex-wrap md:flex-nowrap">
             <TabsTrigger value="profile" className="gap-2 whitespace-nowrap px-4">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">{t('settings.profile')}</span>
@@ -383,6 +567,10 @@ const [positionForm, setPositionForm] = useState({
             <TabsTrigger value="positions" className="gap-2 whitespace-nowrap px-4">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">{t('settings.positions')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="backup" className="gap-2 whitespace-nowrap px-4">
+              <DatabaseBackup className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.backupTabLabel')}</span>
             </TabsTrigger>
           </TabsList>
         </OverlayScrollbar>
@@ -690,6 +878,147 @@ const [positionForm, setPositionForm] = useState({
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Backup & Restore Tab */}
+        <TabsContent value="backup">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('settings.createBackup')}</CardTitle>
+                <CardDescription>{t('settings.createBackupDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                  <p>{t('settings.backupIncludes')}</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5">
+                    <li>{t('settings.backupDatabase')}</li>
+                    <li>{t('settings.backupUploads')}</li>
+                  </ul>
+                </div>
+                <Button
+                  onClick={() => setBackupConfirmOpen(true)}
+                  disabled={backupInProgress}
+                  className="w-full justify-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  {backupInProgress ? t('settings.backupInProgress') : t('settings.startBackup')}
+                </Button>
+                {backupInProgress && (
+                  <div className="space-y-2">
+                    <Progress value={backupProgress} />
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.backupProgressLabel')} ({backupProgress}%)
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('settings.restoreSystem')}</CardTitle>
+                <CardDescription>{t('settings.restoreSystemDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="restore-file">{t('settings.selectBackupFile')}</Label>
+                  <Input
+                    id="restore-file"
+                    type="file"
+                    accept=".tar.gz,.tgz"
+                    disabled={restoreInProgress}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      setSelectedRestoreFile(file || null);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('settings.restoreFileHint')}
+                  </p>
+                </div>
+                {selectedRestoreFile && (
+                  <div className="rounded-md border bg-muted p-3 text-xs">
+                    <p className="font-medium">{selectedRestoreFile.name}</p>
+                    <p className="text-muted-foreground">
+                      {formatBytes(selectedRestoreFile.size)}
+                    </p>
+                  </div>
+                )}
+                <Button
+                  onClick={() => setRestoreConfirmOpen(true)}
+                  disabled={!selectedRestoreFile || restoreInProgress}
+                  variant="secondary"
+                  className="w-full justify-center gap-2"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  {restoreInProgress ? t('settings.restoreInProgress') : t('settings.startRestore')}
+                </Button>
+                {restoreInProgress && (
+                  <div className="space-y-2">
+                    <Progress value={restoreProgress} />
+                    <p className="text-xs text-muted-foreground">
+                      {t('settings.restoreProgressLabel')} ({restoreProgress}%)
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>{t('settings.backupHistory')}</CardTitle>
+              <CardDescription>{t('settings.backupHistoryDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingBackups ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                  </div>
+                </div>
+              ) : backups.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 py-12 text-center text-sm text-muted-foreground">
+                  <DatabaseBackup className="h-12 w-12" />
+                  <p>{t('settings.noBackups')}</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('common.fileName')}</TableHead>
+                      <TableHead>{t('common.size')}</TableHead>
+                      <TableHead>{t('common.createdAt')}</TableHead>
+                      <TableHead className="text-right">{t('common.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {backups.map((backup) => (
+                      <TableRow key={backup.fileName}>
+                        <TableCell className="font-medium">{backup.fileName}</TableCell>
+                        <TableCell>{backup.sizeLabel}</TableCell>
+                        <TableCell>
+                          {new Date(backup.createdAt).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadBackup(backup)}
+                          >
+                            <Download className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
+                            {t('common.download')}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Position Dialog */}
@@ -760,8 +1089,32 @@ const [positionForm, setPositionForm] = useState({
               {saving ? t('common.saving') : t('common.save')}
             </Button>
           </DialogFooter>
-        </DialogContent>
+      </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={backupConfirmOpen}
+        onOpenChange={setBackupConfirmOpen}
+        onConfirm={handleConfirmBackup}
+        title={t('settings.confirmBackupTitle')}
+        description={t('settings.confirmBackupDescription')}
+        confirmText={t('settings.startBackup')}
+        cancelText={t('common.cancel')}
+        variant="info"
+        isLoading={backupInProgress}
+      />
+
+      <ConfirmDialog
+        open={restoreConfirmOpen}
+        onOpenChange={setRestoreConfirmOpen}
+        onConfirm={handleConfirmRestore}
+        title={t('settings.confirmRestoreTitle')}
+        description={t('settings.confirmRestoreDescription')}
+        confirmText={t('settings.startRestore')}
+        cancelText={t('common.cancel')}
+        variant="warning"
+        isLoading={restoreInProgress}
+      />
     </div>
   );
 }
