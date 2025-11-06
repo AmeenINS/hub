@@ -4,8 +4,21 @@ import { NextResponse } from 'next/server';
  * Health check endpoint for Docker and monitoring
  * GET /api/health
  */
+export const revalidate = 0;
+
 export async function GET() {
   try {
+    if (process.env.NEXT_OUTPUT === 'export') {
+      return NextResponse.json(
+        {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          message: 'Health check is static during `output: export` builds.',
+        },
+        { status: 200 }
+      );
+    }
+
     // Basic health check
     const health = {
       status: 'healthy',

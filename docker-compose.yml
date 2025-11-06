@@ -35,6 +35,8 @@ services:
       # File Upload
       MAX_FILE_SIZE: 10485760
       UPLOAD_DIR: /app/data/uploads
+    ports:
+      - "4000:4000"
     volumes:
       # Persist database
       - ./data:/app/data

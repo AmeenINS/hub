@@ -8,7 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "db:init": "tsx scripts/init-db.ts",
-    "build:mobile": "next build && next export",
     "cap:sync": "npx cap sync",
     "cap:add:android": "npx cap add android",
     "cap:add:ios": "npx cap add ios",
