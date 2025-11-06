@@ -50,13 +50,21 @@ check_env_file() {
 }
 
 # Functions
-check_requirements() {
-    print_info "Checking requirements..."
+check_docker() {
+    print_info "Checking Docker..."
     
     if ! command -v docker &> /dev/null; then
         print_error "Docker is not installed"
         exit 1
     fi
+    
+    if ! docker info &> /dev/null; then
+        print_error "Docker daemon is not running"
+        exit 1
+    fi
+    
+    print_success "Docker is available"
+}
 
 # Create necessary directories
 create_directories() {
