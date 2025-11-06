@@ -123,10 +123,39 @@ export class FileStorageManager {
    * Get file by ID
    */
   async getFile(fileId: string, fileData: UploadedFile): Promise<Buffer> {
-    const filePath = fileData.filePath;
+    let filePath = fileData.filePath;
     
+    // Check if file exists at the stored path
     if (!fs.existsSync(filePath)) {
-      throw new Error('File not found on disk');
+      // Try alternative paths if the file was moved or the structure changed
+      const fileName = path.basename(filePath);
+      const category = this.getFileCategory(fileData.mimeType);
+      
+      // Try paths in order of likelihood:
+      // 1. New structure: /app/data/uploads/{userId}/{category}/{filename}
+      // 2. Old structure: /app/data/uploads/{category}/{filename}
+      // 3. Direct in uploads: /app/data/uploads/{filename}
+      
+      const alternatePaths = [
+        path.join(this.uploadDir, fileData.uploadedBy, category, fileName),
+        path.join(this.uploadDir, category, fileName),
+        path.join(this.uploadDir, fileName)
+      ];
+      
+      for (const altPath of alternatePaths) {
+        if (fs.existsSync(altPath)) {
+          filePath = altPath;
+          console.log(`✅ Found file at alternative path: ${altPath}`);
+          break;
+        }
+      }
+      
+      // If still not found, throw error
+      if (!fs.existsSync(filePath)) {
+        console.error(`❌ File not found: ${fileData.filePath}`);
+        console.error(`   Tried paths:`, [fileData.filePath, ...alternatePaths]);
+        throw new Error('File not found on disk');
+      }
     }
 
     return await fsPromises.readFile(filePath);

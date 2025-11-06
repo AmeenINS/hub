@@ -74,16 +74,62 @@ export async function POST(request: NextRequest) {
     try {
       await fs.mkdir(BACKUP_DIR, { recursive: true });
 
+      // Helper function to remove directory with retry logic for EBUSY errors
+      const removeWithRetry = async (dirPath: string, maxRetries = 5, delayMs = 200): Promise<void> => {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            await fs.rm(dirPath, { recursive: true, force: true });
+            return;
+          } catch (err) {
+            const error = err as NodeJS.ErrnoException;
+            if (error.code === 'EBUSY' && attempt < maxRetries) {
+              console.log(`⏳ Directory busy, waiting ${delayMs}ms before retry ${attempt}/${maxRetries}...`);
+              await new Promise(resolve => setTimeout(resolve, delayMs));
+              continue;
+            }
+            throw err;
+          }
+        }
+      };
+
+      // Backup LMDB database
       if (await pathExists(lmdbPath)) {
         const backupPath = `${lmdbPath}.bak-${timestamp}`;
-        await fs.rename(lmdbPath, backupPath);
-        backups.push({ original: lmdbPath, backup: backupPath });
+        try {
+          await fs.rename(lmdbPath, backupPath);
+          backups.push({ original: lmdbPath, backup: backupPath });
+        } catch (err) {
+          const error = err as NodeJS.ErrnoException;
+          if (error.code === 'EBUSY') {
+            // If busy, copy instead of rename
+            console.log('📋 LMDB directory busy, using copy method...');
+            await fs.cp(lmdbPath, backupPath, { recursive: true });
+            backups.push({ original: lmdbPath, backup: backupPath });
+            await removeWithRetry(lmdbPath);
+          } else {
+            throw err;
+          }
+        }
       }
 
+      // Backup uploads directory
       if (await pathExists(uploadsPath)) {
         const backupPath = `${uploadsPath}.bak-${timestamp}`;
-        await fs.rename(uploadsPath, backupPath);
-        backups.push({ original: uploadsPath, backup: backupPath });
+        try {
+          await fs.rename(uploadsPath, backupPath);
+          backups.push({ original: uploadsPath, backup: backupPath });
+        } catch (err) {
+          const error = err as NodeJS.ErrnoException;
+          if (error.code === 'EBUSY') {
+            // If busy, copy instead of rename
+            console.log('📋 Uploads directory busy, using copy method...');
+            await fs.cp(uploadsPath, backupPath, { recursive: true });
+            backups.push({ original: uploadsPath, backup: backupPath });
+            await removeWithRetry(uploadsPath);
+          } else {
+            throw err;
+          }
+        }
       }
 
       await execFileAsync('tar', ['-xzf', tempFilePath, '-C', process.cwd()]);
