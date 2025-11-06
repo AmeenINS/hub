@@ -226,16 +226,7 @@ export default function TaskDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl">{task.title}</DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onOpenChange(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-2xl">{task.title}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -433,24 +424,32 @@ export default function TaskDetailDialog({
                     {t('tasks.noComments')}
                   </p>
                 ) : (
-                  comments.map((comment) => (
-                    <div key={comment.id} className="border rounded-lg p-3 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarFallback className="text-xs">
-                            {comment.userId?.slice(0, 2).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">
-                          {comment.userId || t('common.unknown')}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.createdAt), 'MMM dd, yyyy HH:mm')}
-                        </span>
+                  comments.map((comment) => {
+                    // Get user name from users list
+                    const commentUser = users.find(u => u.id === comment.userId);
+                    const userName = commentUser 
+                      ? getCombinedUserName(commentUser)
+                      : comment.userId || t('common.unknown');
+
+                    return (
+                      <div key={comment.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs">
+                              {commentUser ? getUserInitials(commentUser) : 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium">
+                            {userName}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(comment.createdAt), 'MMM dd, yyyy HH:mm')}
+                          </span>
+                        </div>
+                        <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
                       </div>
-                      <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </TabsContent>
@@ -462,21 +461,76 @@ export default function TaskDetailDialog({
                   {t('tasks.noActivity')}
                 </p>
               ) : (
-                activities.map((activity) => (
-                  <div key={activity.id} className="border-l-2 border-primary pl-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">
-                        {activity.userId || t('common.system')}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(activity.createdAt), 'MMM dd, yyyy HH:mm')}
-                      </span>
+                activities.map((activity) => {
+                  // Get user name from users list
+                  const activityUser = users.find(u => u.id === activity.userId);
+                  const userName = activityUser 
+                    ? getCombinedUserName(activityUser)
+                    : activity.userId || t('common.system');
+
+                  // Get activity type translation
+                  const getActivityText = () => {
+                    const typeMap: Record<string, string> = {
+                      'CREATED': t('tasks.activityType.created'),
+                      'UPDATED': t('tasks.activityType.updated'),
+                      'STATUS_CHANGED': t('tasks.activityType.statusChanged'),
+                      'PRIORITY_CHANGED': t('tasks.activityType.priorityChanged'),
+                      'ASSIGNED': t('tasks.activityType.assigned'),
+                      'UNASSIGNED': t('tasks.activityType.unassigned'),
+                      'COMMENTED': t('tasks.activityType.commented'),
+                      'COMMENT_ADDED': t('tasks.activityType.commented'),
+                      'DUE_DATE_CHANGED': t('tasks.activityType.dueDateChanged'),
+                    };
+                    return typeMap[activity.type] || activity.type.toLowerCase().replace(/_/g, ' ');
+                  };
+
+                  // Get activity icon
+                  const getActivityIcon = () => {
+                    const iconMap: Record<string, string> = {
+                      'CREATED': '✨',
+                      'UPDATED': '📝',
+                      'STATUS_CHANGED': '🔄',
+                      'PRIORITY_CHANGED': '⚡',
+                      'ASSIGNED': '👤',
+                      'UNASSIGNED': '👤',
+                      'COMMENTED': '💬',
+                      'COMMENT_ADDED': '💬',
+                      'DUE_DATE_CHANGED': '📅',
+                    };
+                    return iconMap[activity.type] || '📌';
+                  };
+
+                  return (
+                    <div key={activity.id} className="border-l-2 border-primary pl-3 py-2 hover:bg-accent/50 rounded-r transition-colors">
+                      <div className="flex items-start gap-2">
+                        <span className="text-lg mt-0.5">{getActivityIcon()}</span>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Avatar className="h-5 w-5">
+                              <AvatarFallback className="text-xs">
+                                {activityUser ? getUserInitials(activityUser) : 'SYS'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">
+                              {userName}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {getActivityText()}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(activity.createdAt), 'MMM dd, yyyy HH:mm')}
+                            </span>
+                          </div>
+                          {activity.comment && (
+                            <p className="text-sm text-muted-foreground pl-7">
+                              {activity.comment}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {activity.type} {activity.comment && `- ${activity.comment}`}
-                    </p>
-                  </div>
-                ))
+                  );
+                })
               )}
             </TabsContent>
           </Tabs>
