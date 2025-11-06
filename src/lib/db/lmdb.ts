@@ -118,6 +118,9 @@ class LMDBManager {
 
     // Notes
     this.databases.set('notes', this.db.openDB({ name: 'notes', encoding: 'json' }));
+
+    // Geolocation / Tracking
+    this.databases.set('userLocations', this.db.openDB({ name: 'userLocations', encoding: 'json' }));
   }
 
   /**

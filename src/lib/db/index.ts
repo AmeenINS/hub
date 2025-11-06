@@ -7,3 +7,4 @@ export * from './notification-service';
 export * from './audit-service';
 export * from './support-service';
 export * from './crm-service';
+export * from './location-service';

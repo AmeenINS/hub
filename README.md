@@ -12,6 +12,7 @@
 - **[Soft Delete System](docs/soft-delete/README.md)** - Logical deletion with recovery
 - **[Development Guide](DEVELOPMENT_GUIDE.md)** - Development guidelines
 - **[Copilot Instructions](.github/copilot-instructions.md)** - AI development rules
+- **[Mobile Setup](docs/MOBILE_SETUP.md)** - Build Capacitor Android and iOS shells
 
 ---
 

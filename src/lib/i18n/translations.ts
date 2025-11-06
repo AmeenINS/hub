@@ -94,6 +94,7 @@ export const translations = {
       mainMenu: 'Main Menu',
       profile: 'Profile',
       settings: 'Settings',
+      liveTracking: 'Live Tracking',
     },
     
     // Modules - Sidebar Menu
@@ -142,6 +143,9 @@ export const translations = {
       workflowsDesc: 'Automation & Workflows',
       automations: 'Automations',
       templates: 'Templates',
+
+      liveTracking: 'Live Tracking',
+      liveTrackingDesc: 'Real-time Locations',
       
       orgChart: 'Org Chart',
       orgChartDesc: 'Organization Structure',
@@ -783,6 +787,31 @@ export const translations = {
       selectMethod: 'Select method',
     },
     
+    // Live Tracking
+    tracking: {
+      title: 'Live Tracking',
+      description: 'Monitor every active device on the live map in real time.',
+      trackingActive: 'Tracking active',
+      trackingInactive: 'Tracking paused',
+      errorTitle: 'Location Error',
+      genericError: 'Unable to read the current device position.',
+      permissionDenied: 'Location permission is required to keep tracking enabled.',
+      awaitingPermission: 'Waiting for permission',
+      permissionPrompt: 'Please allow location access from the system dialog to start tracking.',
+      mapTitle: 'Live Map',
+      mapDescription: 'Your team’s latest locations update automatically when devices move.',
+      activityTitle: 'Latest Updates',
+      activityDescription: 'Recent device updates with coordinates, platform, and accuracy.',
+      refresh: 'Refresh',
+      noDevices: 'No active devices reported yet.',
+      unknownUser: 'Unknown user',
+      lastUpdated: 'Last updated at {{time}}',
+      platformLabel: 'Platform: {{platform}}',
+      accuracyLabel: 'Accuracy: ±{{meters}} m',
+      fetchError: 'Unable to fetch locations from the server.',
+      syncError: 'Your device location could not be synced.',
+    },
+    
     // Support
     support: {
       title: 'Support',
@@ -933,6 +962,7 @@ export const translations = {
       mainMenu: 'القائمة الرئيسية',
       profile: 'الملف الشخصي',
       settings: 'الإعدادات',
+      liveTracking: 'التتبع المباشر',
     },
     
     // Modules - Sidebar Menu
@@ -981,6 +1011,9 @@ export const translations = {
       workflowsDesc: 'الأتمتة وسير العمل',
       automations: 'الأتمتة',
       templates: 'القوالب',
+
+      liveTracking: 'التتبع المباشر',
+      liveTrackingDesc: 'عرض المواقع في الوقت الحقيقي',
       
       orgChart: 'المخطط التنظيمي',
       orgChartDesc: 'الهيكل التنظيمي',
@@ -1620,6 +1653,31 @@ export const translations = {
       historyDescription: 'أحدث العمليات الحسابية. اضغط على أي عنصر لاستعادته.',
       noHistory: 'لا توجد عمليات حسابية بعد.',
       errorMessage: 'تعذر تقييم العملية.',
+    },
+    
+    // Live Tracking
+    tracking: {
+      title: 'التتبع المباشر',
+      description: 'راقب مواقع الأجهزة النشطة على الخريطة اللحظية في الوقت الحقيقي.',
+      trackingActive: 'التتبع مفعل',
+      trackingInactive: 'التتبع متوقف',
+      errorTitle: 'خطأ في الموقع',
+      genericError: 'تعذر قراءة موقع الجهاز الحالي.',
+      permissionDenied: 'يتطلب التتبع تمكين صلاحية الموقع.',
+      awaitingPermission: 'بانتظار الإذن',
+      permissionPrompt: 'يرجى السماح بالوصول إلى الموقع من النافذة المنبثقة لبدء التتبع.',
+      mapTitle: 'الخريطة الحية',
+      mapDescription: 'يتم تحديث مواقع الفريق تلقائياً عند تحرك الأجهزة.',
+      activityTitle: 'أحدث التحديثات',
+      activityDescription: 'أحدث تحديثات الأجهزة مع الإحداثيات والمنصة والدقة.',
+      refresh: 'تحديث',
+      noDevices: 'لا توجد أجهزة نشطة حتى الآن.',
+      unknownUser: 'مستخدم غير معروف',
+      lastUpdated: 'آخر تحديث عند {{time}}',
+      platformLabel: 'المنصة: {{platform}}',
+      accuracyLabel: 'الدقة: ±{{meters}} م',
+      fetchError: 'تعذر جلب المواقع من الخادم.',
+      syncError: 'تعذر مزامنة موقع جهازك.',
     },
     
     // Support

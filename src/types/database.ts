@@ -628,3 +628,21 @@ export interface ScheduledNotification {
   
   createdAt: string;
 }
+
+// ==================== Location Tracking ====================
+
+export interface UserLocation {
+  id: string;
+  userId: string;
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+  altitude?: number;
+  speed?: number;
+  heading?: number;
+  timestamp: string;
+  platform?: string;
+  isBackground?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

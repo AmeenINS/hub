@@ -1,0 +1,473 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation, type PermissionStatus } from '@capacitor/geolocation';
+import { Loader2, Radar, MapPin, RefreshCw, Target } from 'lucide-react';
+import { useI18n } from '@/lib/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthStore } from '@/store/auth-store';
+import { apiClient, getErrorMessage } from '@/lib/api-client';
+import type { UserLocation } from '@/types/database';
+import type { DisplayLocation } from '@/components/tracking/live-location-map';
+import { getLocalizedUserName, getUserInitials } from '@/lib/utils';
+
+const LiveLocationMap = dynamic(
+  () =>
+    import('@/components/tracking/live-location-map').then((mod) => ({
+      default: mod.LiveLocationMap,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[320px] w-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
+
+interface LocationUserMeta {
+  id: string;
+  fullNameEn?: string;
+  fullNameAr?: string;
+  email: string;
+  avatarUrl?: string;
+}
+
+interface ApiLocation extends UserLocation {
+  user: LocationUserMeta | null;
+}
+
+const SYNC_INTERVAL_MS = 7000;
+const SERVER_SYNC_COOLDOWN_MS = 4000;
+
+export default function LiveTrackingPage() {
+  const { t, locale } = useI18n();
+  const { user } = useAuthStore();
+  const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
+  const [teamLocations, setTeamLocations] = useState<ApiLocation[]>([]);
+  const [trackingError, setTrackingError] = useState<string | null>(null);
+  const [isTracking, setIsTracking] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<PermissionStatus['location']>('prompt');
+  const [isFetchingLocations, setIsFetchingLocations] = useState(false);
+
+  const watchIdRef = useRef<string | null>(null);
+  const fallbackWatchIdRef = useRef<number | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastSyncRef = useRef<number>(0);
+
+  const syncLocationWithServer = useCallback(
+    async (payload: {
+      latitude: number;
+      longitude: number;
+      accuracy?: number | null;
+      altitude?: number | null;
+      speed?: number | null;
+      heading?: number | null;
+      timestamp?: number;
+    }) => {
+      if (!user) return;
+
+      try {
+        await apiClient.post('/api/locations', {
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          accuracy: payload.accuracy ?? undefined,
+          altitude: payload.altitude ?? undefined,
+          speed: payload.speed ?? undefined,
+          heading: payload.heading ?? undefined,
+          timestamp: payload.timestamp,
+          platform: Capacitor.getPlatform(),
+          isBackground: false,
+        });
+      } catch (error) {
+        console.error('Failed to sync location with server:', error);
+        setTrackingError((prev) =>
+          prev || getErrorMessage(error, t('tracking.syncError'))
+        );
+      }
+    },
+    [t, user]
+  );
+
+  const handlePositionUpdate = useCallback(
+    (position: GeolocationPosition) => {
+      if (!user) return;
+      const { latitude, longitude, accuracy, altitude, speed, heading } = position.coords;
+      const timestampIso = new Date(position.timestamp ?? Date.now()).toISOString();
+      const updatedAt = new Date().toISOString();
+
+      setCurrentLocation((previous) => ({
+        id: user.id,
+        userId: user.id,
+        latitude,
+        longitude,
+        accuracy: accuracy ?? previous?.accuracy,
+        altitude: altitude ?? previous?.altitude,
+        speed: speed ?? previous?.speed,
+        heading: heading ?? previous?.heading,
+        timestamp: timestampIso,
+        platform: Capacitor.getPlatform(),
+        isBackground: false,
+        createdAt: previous?.createdAt ?? timestampIso,
+        updatedAt,
+      }));
+
+      const now = Date.now();
+      if (now - lastSyncRef.current >= SERVER_SYNC_COOLDOWN_MS) {
+        lastSyncRef.current = now;
+        void syncLocationWithServer({
+          latitude,
+          longitude,
+          accuracy,
+          altitude,
+          speed,
+          heading,
+          timestamp: position.timestamp,
+        });
+      }
+    },
+    [syncLocationWithServer, user]
+  );
+
+  const startTracking = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setTrackingError(null);
+      const permission = await Geolocation.requestPermissions();
+      const status =
+        permission.location ?? permission.coarseLocation ?? permission.position;
+
+      setPermissionStatus(status);
+
+      const granted = status === 'granted' || status === 'always' || status === 'limited';
+
+      if (!granted) {
+        setTrackingError(t('tracking.permissionDenied'));
+        return;
+      }
+
+      setIsTracking(true);
+
+      const watchId = await Geolocation.watchPosition(
+        {
+          enableHighAccuracy: true,
+        },
+        (position, err) => {
+          if (err) {
+            console.error('Geolocation watch error:', err);
+            setTrackingError(t('tracking.genericError'));
+            return;
+          }
+
+          if (position) {
+            handlePositionUpdate(position);
+          }
+        }
+      );
+
+      watchIdRef.current = watchId;
+
+      if (!watchId && typeof navigator !== 'undefined' && navigator.geolocation) {
+        fallbackWatchIdRef.current = navigator.geolocation.watchPosition(
+          handlePositionUpdate,
+          (error) => {
+            console.error('Browser geolocation error:', error);
+            setTrackingError(t('tracking.genericError'));
+          },
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+        );
+      }
+    } catch (error) {
+      console.error('Failed to start geolocation tracking:', error);
+      setTrackingError(getErrorMessage(error, t('tracking.genericError')));
+      setIsTracking(false);
+    }
+  }, [handlePositionUpdate, t, user]);
+
+  const stopTracking = useCallback(async () => {
+    if (watchIdRef.current) {
+      try {
+        await Geolocation.clearWatch({ id: watchIdRef.current });
+      } catch (error) {
+        console.error('Failed to clear geolocation watch:', error);
+      }
+      watchIdRef.current = null;
+    }
+
+    if (fallbackWatchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(fallbackWatchIdRef.current);
+      fallbackWatchIdRef.current = null;
+    }
+
+    setIsTracking(false);
+  }, []);
+
+  const fetchLocations = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsFetchingLocations(true);
+      const response = await apiClient.get<ApiLocation[]>('/api/locations', {
+        params: { maxAgeMinutes: 60 },
+      });
+
+      if (response.success && response.data) {
+        setTrackingError(null);
+        setTeamLocations(response.data);
+
+        const selfLocation = response.data.find((loc) => loc.userId === user.id);
+        if (selfLocation) {
+          setCurrentLocation((existing) =>
+            existing ? existing : selfLocation
+          );
+        }
+      } else if (!response.success) {
+        setTrackingError(response.error || t('tracking.fetchError'));
+      }
+    } catch (error) {
+      console.error('Failed to fetch locations:', error);
+      setTrackingError(getErrorMessage(error, t('tracking.fetchError')));
+    } finally {
+      setIsFetchingLocations(false);
+    }
+  }, [t, user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    void startTracking();
+    void fetchLocations();
+
+    pollingIntervalRef.current = setInterval(() => {
+      void fetchLocations();
+    }, SYNC_INTERVAL_MS);
+
+    return () => {
+      void stopTracking();
+
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [fetchLocations, startTracking, stopTracking, user]);
+
+  const currentDisplayLocation = useMemo<DisplayLocation | null>(() => {
+    if (!currentLocation || !user) return null;
+    return {
+      userId: currentLocation.userId,
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      accuracy: currentLocation.accuracy ?? undefined,
+      updatedAt: currentLocation.updatedAt,
+      timestamp: currentLocation.timestamp,
+      platform: currentLocation.platform,
+      label: getLocalizedUserName(
+        {
+          fullNameEn: user.fullNameEn,
+          fullNameAr: user.fullNameAr,
+          email: user.email,
+        },
+        locale
+      ),
+      email: user.email,
+      isCurrentUser: true,
+    };
+  }, [currentLocation, locale, user]);
+
+  const otherDisplayLocations = useMemo<DisplayLocation[]>(() => {
+    if (!user) return [];
+
+    return teamLocations
+      .filter((location) => location.userId !== user.id)
+      .map((location) => ({
+        userId: location.userId,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy ?? undefined,
+        updatedAt: location.updatedAt,
+        timestamp: location.timestamp,
+        platform: location.platform,
+        label: location.user
+          ? getLocalizedUserName(location.user, locale)
+          : location.userId,
+        email: location.user?.email,
+        isCurrentUser: false,
+      }));
+  }, [locale, teamLocations, user]);
+
+  const sortedVisibleLocations = useMemo(() => {
+    const entries = new Map<string, { location: DisplayLocation; avatar?: string }>();
+
+    teamLocations.forEach((loc) => {
+      entries.set(loc.userId, {
+        location: {
+          userId: loc.userId,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          accuracy: loc.accuracy ?? undefined,
+          updatedAt: loc.updatedAt,
+          timestamp: loc.timestamp,
+          platform: loc.platform,
+          label: loc.user ? getLocalizedUserName(loc.user, locale) : loc.userId,
+          email: loc.user?.email,
+          isCurrentUser: loc.userId === user?.id,
+        },
+        avatar: loc.user?.avatarUrl,
+      });
+    });
+
+    if (currentDisplayLocation) {
+      entries.set(currentDisplayLocation.userId, {
+        location: currentDisplayLocation,
+        avatar: user?.avatarUrl,
+      });
+    }
+
+    return Array.from(entries.values()).sort((a, b) => {
+      const aTime = a.location.updatedAt ? Date.parse(a.location.updatedAt) : 0;
+      const bTime = b.location.updatedAt ? Date.parse(b.location.updatedAt) : 0;
+      return bTime - aTime;
+    });
+  }, [currentDisplayLocation, locale, teamLocations, user]);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold leading-tight">{t('tracking.title')}</h1>
+          <p className="text-muted-foreground">{t('tracking.description')}</p>
+        </div>
+        <Badge
+          variant={isTracking ? 'default' : 'secondary'}
+          className="flex items-center gap-1"
+        >
+          <Radar className="h-4 w-4" />
+          {isTracking ? t('tracking.trackingActive') : t('tracking.trackingInactive')}
+        </Badge>
+      </div>
+
+      {trackingError ? (
+        <Alert variant="destructive">
+          <MapPin className="h-4 w-4" />
+          <AlertTitle>{t('tracking.errorTitle')}</AlertTitle>
+          <AlertDescription>
+            <p>{trackingError}</p>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {permissionStatus !== 'granted' && !currentLocation ? (
+        <Alert>
+          <Target className="h-4 w-4" />
+          <AlertTitle>{t('tracking.awaitingPermission')}</AlertTitle>
+          <AlertDescription>
+            <p>{t('tracking.permissionPrompt')}</p>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            {t('tracking.mapTitle')}
+          </CardTitle>
+          <CardDescription>{t('tracking.mapDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LiveLocationMap
+            currentLocation={currentDisplayLocation}
+            otherLocations={otherDisplayLocations}
+            mapHeight={480}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>{t('tracking.activityTitle')}</CardTitle>
+            <CardDescription>{t('tracking.activityDescription')}</CardDescription>
+          </div>
+          <button
+            type="button"
+            onClick={() => void fetchLocations()}
+            className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
+          >
+            <RefreshCw className={`h-4 w-4 ${isFetchingLocations ? 'animate-spin' : ''}`} />
+            {t('tracking.refresh')}
+          </button>
+        </CardHeader>
+        <CardContent>
+          {isFetchingLocations && sortedVisibleLocations.length === 0 ? (
+            <div className="flex h-40 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : null}
+
+          {!isFetchingLocations && sortedVisibleLocations.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t('tracking.noDevices')}</p>
+          ) : null}
+
+          <div className="grid gap-3">
+            {sortedVisibleLocations.map(({ location, avatar }) => (
+              <div
+                key={location.userId}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-3 py-2"
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    {avatar ? (
+                      <AvatarImage src={avatar} alt={location.label} />
+                    ) : (
+                      <AvatarFallback>
+                        {getUserInitials({
+                          fullNameEn: location.label,
+                          email: location.email,
+                        })}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div>
+                    <p className="font-medium leading-tight">
+                      {location.label ?? t('tracking.unknownUser')}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {location.email ? <span>{location.email}</span> : null}
+                      {location.updatedAt ? (
+                        <span>
+                          {t('tracking.lastUpdated', {
+                            time: new Date(location.updatedAt).toLocaleTimeString(),
+                          })}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+                  <span>
+                    {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
+                  </span>
+                  {location.platform ? (
+                    <span>{t('tracking.platformLabel', { platform: location.platform })}</span>
+                  ) : null}
+                  {location.accuracy ? (
+                    <span>{t('tracking.accuracyLabel', { meters: Math.round(location.accuracy) })}</span>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

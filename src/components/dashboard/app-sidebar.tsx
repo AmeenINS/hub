@@ -52,6 +52,7 @@ import {
   Layers,
   Settings,
   Lightbulb,
+  Radar,
 } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -160,7 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
     
     // Public modules accessible to all users
-    const publicModules = ['dashboard', 'notes', 'notifications'];
+    const publicModules = ['dashboard', 'notes', 'notifications', 'liveTracking'];
     if (publicModules.includes(moduleName)) {
       return true;
     }
@@ -183,6 +184,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       iconColor: 'text-blue-600 dark:text-blue-400',
       isActive: pathname === '/dashboard',
       module: 'dashboard',
+    },
+    {
+      title: t('nav.liveTracking'),
+      url: '/dashboard/live-tracking',
+      icon: Radar,
+      iconColor: 'text-sky-600 dark:text-sky-400',
+      isActive: pathname?.startsWith('/dashboard/live-tracking'),
+      module: 'liveTracking',
     },
     // CRM Module
     {
