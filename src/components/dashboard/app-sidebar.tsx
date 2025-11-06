@@ -115,10 +115,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       try {
         const modules = [
-          'users', 'tasks', 'roles', 'reports', 'notifications', 'support', 'scheduler',
-          'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns',
-          'policies', 'claims', 'commission', 'accounting',
-          'workflows', 'inventory', 'procurement'
+          'users',
+          'tasks',
+          'roles',
+          'reports',
+          'notifications',
+          'support',
+          'scheduler',
+          'crm_contacts',
+          'crm_companies',
+          'crm_leads',
+          'crm_deals',
+          'crm_activities',
+          'crm_campaigns',
+          'policies',
+          'claims',
+          'commission',
+          'accounting',
+          'workflows',
+          'inventory',
+          'procurement',
+          'liveTracking',
         ];
         
         const response = await apiClient.get<Record<string, string[]>>(
@@ -161,7 +178,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
     
     // Public modules accessible to all users
-    const publicModules = ['dashboard', 'notes', 'notifications', 'liveTracking'];
+    const publicModules = ['dashboard', 'notes', 'notifications'];
     if (publicModules.includes(moduleName)) {
       return true;
     }

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Capacitor } from '@capacitor/core';
-import { Geolocation, type PermissionStatus } from '@capacitor/geolocation';
+import { Geolocation, type PermissionStatus, type Position as CapacitorPosition } from '@capacitor/geolocation';
 import { Loader2, Radar, MapPin, RefreshCw, Target } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { apiClient, getErrorMessage } from '@/lib/api-client';
 import type { UserLocation } from '@/types/database';
 import type { DisplayLocation } from '@/components/tracking/live-location-map';
 import { getLocalizedUserName, getUserInitials } from '@/lib/utils';
+import { useModulePermissions } from '@/hooks/use-permissions';
 
 const LiveLocationMap = dynamic(
   () =>
@@ -49,6 +50,7 @@ const SERVER_SYNC_COOLDOWN_MS = 4000;
 export default function LiveTrackingPage() {
   const { t, locale } = useI18n();
   const { user } = useAuthStore();
+  const { permissions, isLoading: permissionsLoading } = useModulePermissions('liveTracking');
   const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
   const [teamLocations, setTeamLocations] = useState<ApiLocation[]>([]);
   const [trackingError, setTrackingError] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export default function LiveTrackingPage() {
   );
 
   const handlePositionUpdate = useCallback(
-    (position: GeolocationPosition) => {
+    (position: GeolocationPosition | CapacitorPosition) => {
       if (!user) return;
       const { latitude, longitude, accuracy, altitude, speed, heading } = position.coords;
       const timestampIso = new Date(position.timestamp ?? Date.now()).toISOString();
@@ -141,12 +143,11 @@ export default function LiveTrackingPage() {
     try {
       setTrackingError(null);
       const permission = await Geolocation.requestPermissions();
-      const status =
-        permission.location ?? permission.coarseLocation ?? permission.position;
+      const status = permission.location;
 
       setPermissionStatus(status);
 
-      const granted = status === 'granted' || status === 'always' || status === 'limited';
+      const granted = status === 'granted';
 
       if (!granted) {
         setTrackingError(t('tracking.permissionDenied'));
@@ -210,7 +211,10 @@ export default function LiveTrackingPage() {
   }, []);
 
   const fetchLocations = useCallback(async () => {
-    if (!user) return;
+    if (!user || !permissions.canView) {
+      setIsFetchingLocations(false);
+      return;
+    }
 
     try {
       setIsFetchingLocations(true);
@@ -237,10 +241,16 @@ export default function LiveTrackingPage() {
     } finally {
       setIsFetchingLocations(false);
     }
-  }, [t, user]);
+  }, [permissions.canView, t, user]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !permissions.canView) {
+      setIsTracking(false);
+      setTrackingError(null);
+      setTeamLocations([]);
+      setCurrentLocation(null);
+      return;
+    }
 
     void startTracking();
     void fetchLocations();
@@ -257,7 +267,7 @@ export default function LiveTrackingPage() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [fetchLocations, startTracking, stopTracking, user]);
+  }, [fetchLocations, permissions.canView, startTracking, stopTracking, user]);
 
   const currentDisplayLocation = useMemo<DisplayLocation | null>(() => {
     if (!currentLocation || !user) return null;
@@ -337,6 +347,25 @@ export default function LiveTrackingPage() {
       return bTime - aTime;
     });
   }, [currentDisplayLocation, locale, teamLocations, user]);
+
+  if (permissionsLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!permissions.canView) {
+    return (
+      <div className="space-y-4">
+        <Alert variant="destructive">
+          <AlertTitle>{t('accessDenied.title')}</AlertTitle>
+          <AlertDescription>{t('messages.noPermission')}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -444,9 +473,7 @@ export default function LiveTrackingPage() {
                       {location.email ? <span>{location.email}</span> : null}
                       {location.updatedAt ? (
                         <span>
-                          {t('tracking.lastUpdated', {
-                            time: new Date(location.updatedAt).toLocaleTimeString(),
-                          })}
+                          {t('tracking.lastUpdated')}: {new Date(location.updatedAt).toLocaleTimeString()}
                         </span>
                       ) : null}
                     </div>
@@ -457,10 +484,10 @@ export default function LiveTrackingPage() {
                     {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
                   </span>
                   {location.platform ? (
-                    <span>{t('tracking.platformLabel', { platform: location.platform })}</span>
+                    <span>{t('tracking.platform')}: {location.platform}</span>
                   ) : null}
                   {location.accuracy ? (
-                    <span>{t('tracking.accuracyLabel', { meters: Math.round(location.accuracy) })}</span>
+                    <span>{t('tracking.accuracy')}: {Math.round(location.accuracy)}m</span>
                   ) : null}
                 </div>
               </div>

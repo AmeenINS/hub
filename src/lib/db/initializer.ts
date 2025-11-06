@@ -72,7 +72,17 @@ export class DatabaseInitializer {
    * Create default permissions
    */
   private async createDefaultPermissions() {
-    const modules = ['users', 'roles', 'permissions', 'tasks', 'departments', 'reports', 'notifications', 'support'];
+    const modules = [
+      'users',
+      'roles',
+      'permissions',
+      'tasks',
+      'departments',
+      'reports',
+      'notifications',
+      'support',
+      'liveTracking',
+    ];
     const actions = ['create', 'read', 'update', 'delete'];
 
     const permissions = [];
@@ -145,12 +155,13 @@ export class DatabaseInitializer {
     }
 
     // Manager gets task and user management permissions
-    const managerPermissions = allPermissions.filter(
-      (p) =>
-        (p.module === 'tasks') ||
-        (p.module === 'users' && p.action === 'read') ||
-        (p.module === 'reports')
-    );
+    const managerPermissions = allPermissions.filter((p) => {
+      if (p.module === 'tasks') return true;
+      if (p.module === 'users' && p.action === 'read') return true;
+      if (p.module === 'reports') return true;
+      if (p.module === 'liveTracking' && ['read', 'view'].includes(p.action)) return true;
+      return false;
+    });
 
     for (const permission of managerPermissions) {
       await this.rolePermissionService.assignPermissionToRole(

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { JWTService } from '@/lib/auth/jwt';
 import { UserLocationService } from '@/lib/db/location-service';
 import { UserService } from '@/lib/db/user-service';
+import { checkPermission } from '@/lib/auth/middleware';
 
 const locationSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -84,6 +85,11 @@ export async function GET(request: NextRequest) {
     const payload = JWTService.verifyToken(token);
     if (!payload) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    }
+
+    const canViewLocations = await checkPermission(payload.userId, 'liveTracking', 'read');
+    if (!canViewLocations) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

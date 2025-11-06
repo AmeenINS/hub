@@ -15,7 +15,8 @@ async function addNewModulesPermissions() {
       'accounting',
       'inventory',
       'procurement',
-      'workflows'
+      'workflows',
+      'liveTracking',
     ];
 
     const actions = ['create', 'read', 'update', 'delete', 'view'];
