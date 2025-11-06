@@ -46,9 +46,21 @@ export async function GET(request: NextRequest) {
 
     const permissions = await permissionService.getAllPermissions();
 
+    // Map database structure to UI format
+    const mappedPermissions = permissions.map(p => ({
+      id: p.id,
+      name: `${p.module}:${p.action}`,
+      description: p.description,
+      category: p.module,
+      module: p.module,
+      action: p.action,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt
+    }));
+
     return NextResponse.json({
       success: true,
-      data: permissions,
+      data: mappedPermissions,
     });
   } catch (error) {
     logError('GET /api/permissions', error);

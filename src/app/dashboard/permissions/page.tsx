@@ -106,6 +106,20 @@ export default function PermissionsPage() {
     }
   };
 
+  // Helper function to get category name with fallback
+  const getCategoryName = (module: string): string => {
+    const translated = t(`permissions.categories.${module}`);
+    // If translation key is returned as-is, it means translation doesn't exist
+    if (translated.startsWith('permissions.categories.')) {
+      // Fallback: capitalize first letter and replace underscores with spaces
+      return module
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    return translated;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -183,7 +197,7 @@ export default function PermissionsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={getCategoryBadgeVariant(permission.category)}>
-                          {permission.category}
+                          {getCategoryName(permission.category)}
                         </Badge>
                       </TableCell>
                       <TableCell>

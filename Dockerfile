@@ -32,6 +32,10 @@ COPY --from=builder /app/public ./public
 COPY next.config.ts ./
 COPY tsconfig.json ./
 
+# Copy scripts and src for runtime database operations
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/src ./src
+
 # Create directories for uploads and logs
 RUN mkdir -p /app/data/uploads/images /app/data/uploads/documents /app/data/uploads/videos /app/data/uploads/others /app/logs /app/data/lmdb
 

@@ -39,12 +39,40 @@ export default function EditRolePage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState<Role>({
     id: '',
     name: '',
     description: '',
     permissionIds: [],
   });
+
+  // Filter permissions based on search and category
+  const filteredPermissions = allPermissions.filter(perm => {
+    const matchesSearch = searchTerm === '' || 
+      perm.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      perm.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      perm.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === '' || perm.module === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Helper function to get category name with fallback
+  const getCategoryName = (module: string): string => {
+    const translated = t(`permissions.categories.${module}`);
+    // If translation key is returned as-is, it means translation doesn't exist
+    if (translated.startsWith('permissions.categories.')) {
+      // Fallback: capitalize first letter and replace underscores with spaces
+      return module
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+    return translated;
+  };
 
   const fetchRole = async () => {
     try {
@@ -192,15 +220,18 @@ export default function EditRolePage() {
 
   if (fetchLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <Card className="max-w-2xl animate-pulse">
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <Card className="animate-pulse">
           <CardHeader>
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mt-2"></div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </CardContent>
         </Card>
       </div>
@@ -208,9 +239,9 @@ export default function EditRolePage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/roles">
             <Button variant="ghost" size="sm" className="gap-2">
@@ -221,10 +252,10 @@ export default function EditRolePage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-3xl font-bold tracking-tight">
               {t('roles.edit')}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            </h2>
+            <p className="text-muted-foreground">
               {t('roles.editDescription')}
             </p>
           </div>
@@ -241,93 +272,199 @@ export default function EditRolePage() {
       </div>
 
       {/* Form */}
-      <Card className="max-w-4xl">
+      <Card>
         <CardHeader>
           <CardTitle>{t('roles.details')}</CardTitle>
           <CardDescription>{t('roles.formDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('roles.name')}</Label>
-              <Input
-                id="name"
-                placeholder={t('roles.namePlaceholder')}
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
+            {/* Name and Description */}
+            <div className="grid gap-4">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('roles.name')}</Label>
+                <Input
+                  id="name"
+                  placeholder={t('roles.namePlaceholder')}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">{t('roles.description')}</Label>
+                <Textarea
+                  id="description"
+                  placeholder={t('roles.descriptionPlaceholder')}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">{t('roles.description')}</Label>
-              <Textarea
-                id="description"
-                placeholder={t('roles.descriptionPlaceholder')}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-              />
-            </div>
+            {/* Permissions - Enhanced UI */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <Label className="flex items-center gap-2 text-lg">
+                  <Shield className="h-5 w-5" />
+                  {t('roles.permissions')}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({formData.permissionIds.length} {t('permissions.selected')})
+                  </span>
+                </Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData({
+                      ...formData,
+                      permissionIds: allPermissions.map(p => p.id)
+                    })}
+                  >
+                    {t('permissions.selectAll')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData({
+                      ...formData,
+                      permissionIds: []
+                    })}
+                  >
+                    {t('permissions.deselectAll')}
+                  </Button>
+                </div>
+              </div>
 
-            {/* Permissions */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                {t('roles.permissions')}
-              </Label>
-              <div className="border rounded-lg p-4 space-y-4 max-h-96 overflow-y-auto">
-                {Object.entries(
-                  allPermissions.reduce((acc, perm) => {
-                    const moduleName = perm.module || 'other';
-                    if (!acc[moduleName]) acc[moduleName] = [];
-                    acc[moduleName].push(perm);
-                    return acc;
-                  }, {} as Record<string, Permission[]>)
-                ).map(([moduleName, perms]) => (
-                  <div key={moduleName} className="space-y-2">
-                    <h4 className="font-semibold text-sm capitalize flex items-center gap-2">
-                      <Shield className="h-3 w-3 text-blue-600" />
-                      {moduleName}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-5">
-                      {perms.map((permission) => (
-                        <div key={permission.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={permission.id}
-                            checked={formData.permissionIds.includes(permission.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: [...formData.permissionIds, permission.id],
-                                });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: formData.permissionIds.filter((id) => id !== permission.id),
-                                });
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={permission.id}
-                            className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {permission.action}
-                            {permission.description && (
-                              <span className="text-xs text-gray-500 ml-1">
-                                ({permission.description})
-                              </span>
-                            )}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
+              {/* Search and Filter */}
+              <div className="flex flex-col md:flex-row gap-3">
+                <Input
+                  placeholder={t('permissions.searchPermissions')}
+                  className="md:flex-1"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select
+                  className="px-3 py-2 border rounded-md bg-background text-sm"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  aria-label={t('permissions.filterByCategory')}
+                >
+                  <option value="">{t('permissions.allCategories')}</option>
+                  {Array.from(new Set(allPermissions.map(p => p.module))).sort().map(module => (
+                    <option key={module} value={module}>
+                      {getCategoryName(module)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Permissions Grid */}
+              <div className="border rounded-lg">
+                {filteredPermissions.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <Shield className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>{t('permissions.noResults')}</p>
                   </div>
-                ))}
+                ) : (
+                  <div className="divide-y">
+                    {Object.entries(
+                      filteredPermissions.reduce((acc, perm) => {
+                        const moduleName = perm.module || 'other';
+                        if (!acc[moduleName]) acc[moduleName] = [];
+                        acc[moduleName].push(perm);
+                        return acc;
+                      }, {} as Record<string, Permission[]>)
+                    ).map(([moduleName, perms]) => (
+                      <div key={moduleName} className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                          <h4 className="font-semibold text-base capitalize flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-primary" />
+                            {getCategoryName(moduleName)}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              ({perms.filter(p => formData.permissionIds.includes(p.id)).length}/{perms.length})
+                            </span>
+                          </h4>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                const modulePermIds = perms.map(p => p.id);
+                                setFormData({
+                                  ...formData,
+                                  permissionIds: Array.from(new Set([...formData.permissionIds, ...modulePermIds]))
+                                });
+                              }}
+                            >
+                              {t('permissions.selectAll')}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                const modulePermIds = perms.map(p => p.id);
+                                setFormData({
+                                  ...formData,
+                                  permissionIds: formData.permissionIds.filter(id => !modulePermIds.includes(id))
+                                });
+                              }}
+                            >
+                              {t('permissions.deselectAll')}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                          {perms.map((permission) => (
+                            <div
+                              key={permission.id}
+                              className="flex items-start space-x-2 rtl:space-x-reverse p-2 rounded-md hover:bg-accent/50 transition-colors"
+                            >
+                              <Checkbox
+                                id={permission.id}
+                                checked={formData.permissionIds.includes(permission.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFormData({
+                                      ...formData,
+                                      permissionIds: [...formData.permissionIds, permission.id],
+                                    });
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      permissionIds: formData.permissionIds.filter((id) => id !== permission.id),
+                                    });
+                                  }
+                                }}
+                              />
+                              <label
+                                htmlFor={permission.id}
+                                className="text-sm leading-tight cursor-pointer flex-1"
+                              >
+                                <span className="font-medium">{permission.action}</span>
+                                {permission.description && (
+                                  <span className="block text-xs text-muted-foreground mt-0.5">
+                                    {permission.description}
+                                  </span>
+                                )}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
