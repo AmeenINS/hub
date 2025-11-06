@@ -29,11 +29,16 @@ print_warning() {
     echo -e "${YELLOW}⚠ $1${NC}"
 }
 
-# Check if running with docker-compose or docker compose
-if command -v docker-compose &> /dev/null; then
-    DOCKER_COMPOSE="docker-compose"
-else
+# Check which docker compose version is available
+# Prefer "docker compose" (modern) over "docker-compose" (legacy)
+if docker compose version &> /dev/null; then
     DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose &> /dev/null; then
+    DOCKER_COMPOSE="docker-compose"
+    print_warning "Using legacy docker-compose. Consider upgrading to 'docker compose'"
+else
+    print_error "Neither 'docker compose' nor 'docker-compose' found"
+    exit 1
 fi
 
 # Check for .env file
@@ -81,7 +86,7 @@ create_directories() {
 build() {
     check_env_file
     print_info "Building Docker image..."
-    docker-compose build --no-cache
+    $DOCKER_COMPOSE build --no-cache
     print_success "Docker image built successfully"
 }
 
@@ -89,7 +94,7 @@ build() {
 start() {
     check_env_file
     print_info "Starting containers..."
-    docker-compose up -d
+    $DOCKER_COMPOSE up -d
     print_success "Containers started successfully"
     
     # Show URL based on .env file
@@ -104,40 +109,38 @@ start() {
 # Stop containers
 stop() {
     print_info "Stopping containers..."
-    docker-compose down
+    $DOCKER_COMPOSE down
     print_success "Containers stopped successfully"
 }
 
 # Restart containers
 restart() {
     print_info "Restarting containers..."
-    docker-compose restart
+    $DOCKER_COMPOSE restart
     print_success "Containers restarted successfully"
 }
 
 # View logs
 logs() {
-    print_info "Showing logs (Press Ctrl+C to exit)..."
-    docker-compose logs -f
+    print_info "Viewing logs (Press Ctrl+C to exit)..."
+    $DOCKER_COMPOSE logs -f
 }
 
 # Update application
 update() {
     print_info "Updating application..."
     
-    # Pull latest code (if using git)
-    if [ -d ".git" ]; then
-        print_info "Pulling latest code from git..."
-        git pull
-    fi
+    # Pull latest code
+    print_info "Pulling latest code..."
+    git pull
     
-    # Rebuild and restart
+    # Rebuild image
     print_info "Rebuilding Docker image..."
-    docker-compose build --no-cache
+    $DOCKER_COMPOSE build --no-cache
     
-    print_info "Restarting containers..."
-    docker-compose down
-    docker-compose up -d
+    # Restart containers
+    $DOCKER_COMPOSE down
+    $DOCKER_COMPOSE up -d
     
     print_success "Application updated successfully"
 }
@@ -145,16 +148,17 @@ update() {
 # Show status
 status() {
     print_info "Container status:"
-    docker-compose ps
+    $DOCKER_COMPOSE ps
 }
 
-# Clean up
+# Cleanup containers
 cleanup() {
-    print_warning "This will remove all containers, images, and volumes. Are you sure? (y/N)"
-    read -r response
-    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    print_warning "This will remove all containers, volumes, and images"
+    read -p "Are you sure? (y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_info "Cleaning up..."
-        docker-compose down -v --rmi all
+        $DOCKER_COMPOSE down -v --rmi all
         print_success "Cleanup completed"
     else
         print_info "Cleanup cancelled"
@@ -164,14 +168,14 @@ cleanup() {
 # Initialize database
 init() {
     print_info "Initializing database..."
-    docker-compose exec app npm run db:init
+    $DOCKER_COMPOSE exec app npm run db:init
     print_success "Database initialized"
 }
 
 # Access shell
 shell() {
     print_info "Accessing container shell..."
-    docker-compose exec app sh
+    $DOCKER_COMPOSE exec app sh
 }
 
 # Show help
