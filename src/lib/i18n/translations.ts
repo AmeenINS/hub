@@ -598,6 +598,7 @@ export const translations = {
       confirmBackupDescription: 'A full system backup will be created including the database and uploads.',
       confirmRestoreTitle: 'Restore system from backup?',
       confirmRestoreDescription: 'Current data will be replaced with the contents of the selected backup.',
+      permissionDenied: 'You do not have permission to perform this action.',
       // Positions management
       positions: 'Positions',
       positionsDescription: 'Manage organizational positions for the org chart',
@@ -624,6 +625,23 @@ export const translations = {
       editPositionDescription: 'Update position details',
       deletePositionConfirm: 'Are you sure you want to delete this position?',
       level: 'Level',
+    },
+
+    // Calculator
+    calculator: {
+      title: 'Scientific Calculator',
+      description: 'Perform quick calculations with advanced scientific functions.',
+      angleMode: 'Angle mode',
+      degrees: 'Degrees',
+      radians: 'Radians',
+      calculator: 'Calculator',
+      calculatorDescription: 'Comprehensive scientific calculator with history and advanced operators.',
+      hint: 'Enter an expression...',
+      equals: 'Calculate',
+      history: 'History',
+      historyDescription: 'Recent calculations. Tap any item to restore it.',
+      noHistory: 'No calculations yet.',
+      errorMessage: 'Unable to evaluate expression.',
     },
     
     // CRM
@@ -1558,6 +1576,7 @@ export const translations = {
       confirmBackupDescription: 'سيتم إنشاء نسخة احتياطية كاملة تشمل قاعدة البيانات والملفات.',
       confirmRestoreTitle: 'استعادة النظام من نسخة احتياطية؟',
       confirmRestoreDescription: 'سيتم استبدال البيانات الحالية بمحتوى النسخة الاحتياطية المحددة.',
+      permissionDenied: 'ليست لديك صلاحية لتنفيذ هذا الإجراء.',
       // Positions management
       positions: 'المناصب',
       positionsDescription: 'إدارة المناصب التنظيمية للمخطط التنظيمي',
@@ -1584,6 +1603,23 @@ export const translations = {
       editPositionDescription: 'تحديث تفاصيل المنصب',
       deletePositionConfirm: 'هل أنت متأكد من حذف هذا المنصب؟',
       level: 'المستوى',
+    },
+
+    // Calculator
+    calculator: {
+      title: 'آلة حاسبة علمية',
+      description: 'إجراء الحسابات السريعة مع وظائف علمية متقدمة.',
+      angleMode: 'وضع الزاوية',
+      degrees: 'الدرجات',
+      radians: 'الراديان',
+      calculator: 'الآلة الحاسبة',
+      calculatorDescription: 'آلة حاسبة علمية متكاملة مع سجل وعمليات متقدمة.',
+      hint: 'أدخل عملية حسابية...',
+      equals: 'احسب',
+      history: 'السجل',
+      historyDescription: 'أحدث العمليات الحسابية. اضغط على أي عنصر لاستعادته.',
+      noHistory: 'لا توجد عمليات حسابية بعد.',
+      errorMessage: 'تعذر تقييم العملية.',
     },
     
     // Support

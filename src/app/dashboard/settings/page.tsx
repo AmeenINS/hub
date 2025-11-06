@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useI18n } from '@/lib/i18n/i18n-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 import { Progress } from '@/components/ui/progress';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useModulePermissions } from '@/hooks/use-permissions';
 
 interface UserData {
   id: string;
@@ -135,8 +136,41 @@ const [positionForm, setPositionForm] = useState({
   const [restoreProgress, setRestoreProgress] = useState(0);
   const [selectedRestoreFile, setSelectedRestoreFile] = useState<File | null>(null);
 
+  const { permissions: settingsModulePermissions, isLoading: settingsPermissionsLoading } =
+    useModulePermissions('settings');
+
+  const canViewSettings = useMemo(
+    () =>
+      settingsModulePermissions.canView ||
+      settingsModulePermissions.canCreate ||
+      settingsModulePermissions.canEdit ||
+      settingsModulePermissions.canDelete,
+    [settingsModulePermissions]
+  );
+
+  const canManageSettings = useMemo(
+    () =>
+      settingsModulePermissions.canCreate ||
+      settingsModulePermissions.canEdit ||
+      settingsModulePermissions.canDelete,
+    [settingsModulePermissions]
+  );
+
+  const canManageBackups = useMemo(
+    () =>
+      settingsModulePermissions.canEdit ||
+      settingsModulePermissions.canCreate ||
+      settingsModulePermissions.canDelete,
+    [settingsModulePermissions]
+  );
+
   const fetchSettings = useCallback(async () => {
     try {
+      if (!canViewSettings) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       
       if (!token || !isAuthenticated) {
@@ -175,20 +209,25 @@ const [positionForm, setPositionForm] = useState({
     } finally {
       setLoading(false);
     }
-  }, [router, token, isAuthenticated]);
+  }, [router, token, isAuthenticated, canViewSettings]);
 
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
   useEffect(() => {
-    if (token) {
+    if (token && canViewSettings) {
       fetchPositions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, canViewSettings]);
 
   const handleUpdateProfile = async () => {
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     if (!token) return;
     
     try {
@@ -213,6 +252,11 @@ const [positionForm, setPositionForm] = useState({
   };
 
   const handleUpdateNotifications = async () => {
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     if (!token) return;
     
     try {
@@ -237,6 +281,11 @@ const [positionForm, setPositionForm] = useState({
   };
 
   const handleChangePassword = async () => {
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error(t('settings.passwordMismatch'));
       return;
@@ -271,6 +320,11 @@ const [positionForm, setPositionForm] = useState({
 
   const fetchBackups = useCallback(async () => {
     try {
+      if (!canViewSettings) {
+        setBackups([]);
+        return;
+      }
+
       setLoadingBackups(true);
       const response = await apiClient.get<{ backups: BackupFileInfo[] }>('/api/settings/backup');
       const backupList = response.data?.backups;
@@ -284,9 +338,14 @@ const [positionForm, setPositionForm] = useState({
     } finally {
       setLoadingBackups(false);
     }
-  }, [t]);
+  }, [t, canViewSettings]);
 
   const runBackup = useCallback(async () => {
+    if (!canManageBackups) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     setBackupInProgress(true);
     setBackupProgress(10);
 
@@ -315,9 +374,14 @@ const [positionForm, setPositionForm] = useState({
         setBackupProgress(0);
       }, 500);
     }
-  }, [t]);
+  }, [t, canManageBackups]);
 
   const handleDownloadBackup = async (backup: BackupFileInfo) => {
+    if (!canViewSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     if (!token) {
       toast.error(t('settings.loginRequired'));
       return;
@@ -352,6 +416,11 @@ const [positionForm, setPositionForm] = useState({
   };
 
   const runRestore = useCallback(async () => {
+    if (!canManageBackups) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     if (!selectedRestoreFile) {
       toast.error(t('settings.restoreFileRequired'));
       return;
@@ -391,7 +460,7 @@ const [positionForm, setPositionForm] = useState({
         setRestoreProgress(0);
       }, 500);
     }
-  }, [fetchBackups, selectedRestoreFile, t]);
+  }, [fetchBackups, selectedRestoreFile, t, canManageBackups]);
 
   const handleConfirmBackup = async () => {
     setBackupConfirmOpen(false);
@@ -404,14 +473,19 @@ const [positionForm, setPositionForm] = useState({
   };
 
   useEffect(() => {
-    if (token) {
+    if (token && canViewSettings) {
       fetchBackups();
     }
-  }, [token, fetchBackups]);
+  }, [token, fetchBackups, canViewSettings]);
 
   // Position Management Functions
   const fetchPositions = async () => {
     try {
+      if (!canViewSettings) {
+        setPositions([]);
+        return;
+      }
+
       setLoadingPositions(true);
       const response = await apiClient.get<Position[]>('/api/positions');
 

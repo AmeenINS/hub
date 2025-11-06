@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Calculator } from 'lucide-react';
 import { useAuthStore } from '@/store/auth-store';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
@@ -62,6 +62,13 @@ export default function DashboardLayout({
               {/* Spacer to push buttons to the right */}
               <div className="flex-1" />
               
+              {/* Calculator quick access button */}
+              <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
+                <Link href="/dashboard/calculator">
+                  <Calculator className="h-5 w-5" />
+                </Link>
+              </Button>
+
               {/* Notes quick access button */}
               <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
                 <Link href="/dashboard/notes">
