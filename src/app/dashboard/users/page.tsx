@@ -27,7 +27,7 @@ import { UsersDataTable, User } from '@/features/dashboard/components/users-data
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { getCombinedUserName } from '@/core/utils';
 import { apiClient, getErrorMessage } from '@/core/api/client';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permission-level';
 
 export default function UsersPage() {
   const router = useRouter();

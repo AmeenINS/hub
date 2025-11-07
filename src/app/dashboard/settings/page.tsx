@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Settings as SettingsIcon,
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui
 import { OverlayScrollbar } from '@/shared/components/ui/overlay-scrollbar';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { useAuthStore } from '@/shared/state/auth-store';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useSettingsPermissions } from '@/shared/hooks/use-permission-level';
 import { Spinner } from '@/shared/components/ui/spinner';
 import {
   AppearanceSettingsCard,
@@ -50,9 +50,11 @@ export default function SettingsPage() {
   const router = useRouter();
   const { token, isAuthenticated } = useAuthStore();
   const {
-    permissions: settingsPermissions,
+    canEditAppearance,
+    canEditCompany,
+    canManageIntegrations,
     isLoading: permissionsLoading,
-  } = useModulePermissions('settings');
+  } = useSettingsPermissions();
 
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [userId, setUserId] = useState<string>('');
@@ -61,22 +63,8 @@ export default function SettingsPage() {
   const [notificationSaving, setNotificationSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
 
-  const canViewSettings = useMemo(
-    () =>
-      settingsPermissions.canView ||
-      settingsPermissions.canCreate ||
-      settingsPermissions.canEdit ||
-      settingsPermissions.canDelete,
-    [settingsPermissions]
-  );
-
-  const canManageSettings = useMemo(
-    () =>
-      settingsPermissions.canCreate ||
-      settingsPermissions.canEdit ||
-      settingsPermissions.canDelete,
-    [settingsPermissions]
-  );
+  const canViewSettings = canEditAppearance; // Anyone with WRITE or higher can view
+  const canManageSettings = canEditCompany; // FULL level or higher
 
   const canManageBackups = canManageSettings;
 

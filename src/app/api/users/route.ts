@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService, RoleService, UserRoleService } from '@/core/data/user-service';
 import { JWTService } from '@/core/auth/jwt';
-import { getUserPermissionsContext } from '@/core/auth/permissions';
-import { hasPermission } from '@/core/security/permission-utils';
+import { getUserPermissionsContext, hasPermission } from '@/core/auth/permissions-compat';
 import { logError } from '@/core/logging/logger';
 
 /**

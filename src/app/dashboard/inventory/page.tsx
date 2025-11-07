@@ -7,7 +7,7 @@ import { Plus, Package, AlertTriangle } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permission-level';
 
 export default function InventoryPage() {
   const router = useRouter();

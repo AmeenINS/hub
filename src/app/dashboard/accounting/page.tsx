@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DollarSign, TrendingUp, TrendingDown, FileText } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permission-level';
 
 export default function AccountingPage() {
   const router = useRouter();

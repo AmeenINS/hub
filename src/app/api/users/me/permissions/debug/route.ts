@@ -1,56 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JWTService } from '@/core/auth/jwt';
-import { RolePermissionService } from '@/core/data/user-service';
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
 
 /**
- * Debug endpoint to see ALL user permissions
+ * Debug route to inspect user's raw permissions/profile
+ * GET /api/users/me/permissions/debug
  */
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const payload = JWTService.verifyToken(token);
     if (!payload) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'Invalid token' }, { status: 401 });
     }
 
-    const rolePermissionService = new RolePermissionService();
-    const permissions = await rolePermissionService.getUserPermissions(payload.userId);
-    
-    // Check if user is admin
-    const isAdmin = permissions.some(
-      (perm) => perm.module === 'system' && perm.action === 'admin'
-    );
+    const profile = await AdvancedPermissionService.getUserPermissionProfile(payload.userId);
 
-    // Group permissions by module
-    const groupedPermissions: Record<string, string[]> = {};
-    permissions.forEach(perm => {
-      if (!groupedPermissions[perm.module]) {
-        groupedPermissions[perm.module] = [];
-      }
-      groupedPermissions[perm.module].push(perm.action);
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        userId: payload.userId,
-        isAdmin,
-        totalPermissions: permissions.length,
-        modules: Object.keys(groupedPermissions).length,
-        permissions: groupedPermissions,
-        rawPermissions: permissions.map(p => ({
-          module: p.module,
-          action: p.action,
-          description: p.description
-        }))
-      }
-    });
+    return NextResponse.json({ success: true, data: profile });
   } catch (error) {
-    console.error('Error fetching debug permissions:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch permissions' }, { status: 500 });
+    console.error('permissions debug error', error);
+    return NextResponse.json({ success: false, message: 'Internal error' }, { status: 500 });
   }
 }

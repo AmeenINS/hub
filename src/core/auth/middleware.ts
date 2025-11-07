@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { JWTService } from '@/core/auth/jwt';
-import { getUserPermissionsContext } from '@/core/auth/permissions';
-import { hasPermission } from '@/core/security/permission-utils';
+import { getUserPermissionsContext, hasPermission } from '@/core/auth/permissions-compat';
 
 /**
  * Authentication Middleware

@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { apiClient, getErrorMessage } from '@/core/api/client';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permission-level';
 
 interface Notification {
   id: string;

@@ -15,7 +15,8 @@ import { apiClient, getErrorMessage } from '@/core/api/client';
 import type { UserLocation } from '@/shared/types/database';
 import type { DisplayLocation } from '@/features/tracking/components/live-location-map';
 import { getLocalizedUserName, getUserInitials } from '@/core/utils';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 
 const LiveLocationMap = dynamic(
   () =>
@@ -50,7 +51,7 @@ const SERVER_SYNC_COOLDOWN_MS = 4000;
 export default function LiveTrackingPage() {
   const { t, locale } = useI18n();
   const { user } = useAuthStore();
-  const { permissions, isLoading: permissionsLoading } = useModulePermissions('liveTracking');
+  const { level, canView, isLoading: permissionsLoading } = usePermissionLevel('tracking');
   const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
   const [teamLocations, setTeamLocations] = useState<ApiLocation[]>([]);
   const [trackingError, setTrackingError] = useState<string | null>(null);
@@ -142,47 +143,97 @@ export default function LiveTrackingPage() {
 
     try {
       setTrackingError(null);
-      const permission = await Geolocation.requestPermissions();
-      const status = permission.location;
+      
+      // Check if we're on mobile with Capacitor
+      const isNative = Capacitor.isNativePlatform();
+      
+      if (isNative) {
+        // Use Capacitor for mobile
+        const permission = await Geolocation.requestPermissions();
+        const status = permission.location;
+        setPermissionStatus(status);
 
-      setPermissionStatus(status);
-
-      const granted = status === 'granted';
-
-      if (!granted) {
-        setTrackingError(t('tracking.permissionDenied'));
-        return;
-      }
-
-      setIsTracking(true);
-
-      const watchId = await Geolocation.watchPosition(
-        {
-          enableHighAccuracy: true,
-        },
-        (position, err) => {
-          if (err) {
-            console.error('Geolocation watch error:', err);
-            setTrackingError(t('tracking.genericError'));
-            return;
-          }
-
-          if (position) {
-            handlePositionUpdate(position);
-          }
+        const granted = status === 'granted';
+        if (!granted) {
+          setTrackingError(t('tracking.permissionDenied'));
+          return;
         }
-      );
 
-      watchIdRef.current = watchId;
+        setIsTracking(true);
 
-      if (!watchId && typeof navigator !== 'undefined' && navigator.geolocation) {
+        const watchId = await Geolocation.watchPosition(
+          {
+            enableHighAccuracy: true,
+          },
+          (position, err) => {
+            if (err) {
+              console.error('Geolocation watch error:', err);
+              setTrackingError(t('tracking.genericError'));
+              return;
+            }
+            if (position) {
+              handlePositionUpdate(position);
+            }
+          }
+        );
+        watchIdRef.current = watchId;
+      } else {
+        // Use browser geolocation for web
+        if (!navigator.geolocation) {
+          setTrackingError(t('tracking.notSupported'));
+          return;
+        }
+
+        // Check permission first
+        if ('permissions' in navigator) {
+          const permission = await (navigator as any).permissions.query({ name: 'geolocation' });
+          setPermissionStatus(permission.state === 'granted' ? 'granted' : 'prompt');
+        }
+
+        setIsTracking(true);
+
         fallbackWatchIdRef.current = navigator.geolocation.watchPosition(
-          handlePositionUpdate,
+          (position) => {
+            // Convert browser position to Capacitor format
+            const capacitorPosition: CapacitorPosition = {
+              timestamp: position.timestamp,
+              coords: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                altitude: position.coords.altitude,
+                altitudeAccuracy: position.coords.altitudeAccuracy,
+                heading: position.coords.heading,
+                speed: position.coords.speed,
+              },
+            };
+            handlePositionUpdate(capacitorPosition);
+          },
           (error) => {
             console.error('Browser geolocation error:', error);
-            setTrackingError(t('tracking.genericError'));
+            let errorMessage = t('tracking.genericError');
+            
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                errorMessage = t('tracking.permissionDenied');
+                setPermissionStatus('denied');
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMessage = t('tracking.positionUnavailable');
+                break;
+              case error.TIMEOUT:
+                errorMessage = t('tracking.timeout');
+                break;
+            }
+            
+            setTrackingError(errorMessage);
+            setIsTracking(false);
           },
-          { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+          { 
+            enableHighAccuracy: true, 
+            maximumAge: 5000, 
+            timeout: 10000 
+          }
         );
       }
     } catch (error) {
@@ -193,7 +244,9 @@ export default function LiveTrackingPage() {
   }, [handlePositionUpdate, t, user]);
 
   const stopTracking = useCallback(async () => {
-    if (watchIdRef.current) {
+    const isNative = Capacitor.isNativePlatform();
+    
+    if (isNative && watchIdRef.current) {
       try {
         await Geolocation.clearWatch({ id: watchIdRef.current });
       } catch (error) {
@@ -202,7 +255,7 @@ export default function LiveTrackingPage() {
       watchIdRef.current = null;
     }
 
-    if (fallbackWatchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+    if (!isNative && fallbackWatchIdRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.clearWatch(fallbackWatchIdRef.current);
       fallbackWatchIdRef.current = null;
     }
@@ -211,7 +264,7 @@ export default function LiveTrackingPage() {
   }, []);
 
   const fetchLocations = useCallback(async () => {
-    if (!user || !permissions.canView) {
+    if (!user || !canView) {
       setIsFetchingLocations(false);
       return;
     }
@@ -241,10 +294,10 @@ export default function LiveTrackingPage() {
     } finally {
       setIsFetchingLocations(false);
     }
-  }, [permissions.canView, t, user]);
+  }, [canView, t, user]);
 
   useEffect(() => {
-    if (!user || !permissions.canView) {
+    if (!user || !canView) {
       setIsTracking(false);
       setTrackingError(null);
       setTeamLocations([]);
@@ -267,7 +320,7 @@ export default function LiveTrackingPage() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [fetchLocations, permissions.canView, startTracking, stopTracking, user]);
+  }, [fetchLocations, canView, startTracking, stopTracking, user]);
 
   const currentDisplayLocation = useMemo<DisplayLocation | null>(() => {
     if (!currentLocation || !user) return null;
@@ -356,7 +409,7 @@ export default function LiveTrackingPage() {
     );
   }
 
-  if (!permissions.canView) {
+  if (!canView) {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">

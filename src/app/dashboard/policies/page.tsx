@@ -15,7 +15,7 @@ import {
 } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { useI18n } from '@/shared/i18n/i18n-context';
-import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permission-level';
 
 export default function PoliciesPage() {
   const router = useRouter();

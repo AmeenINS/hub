@@ -1,103 +1,68 @@
 /**
- * Privileges that we treat as "full admin" access.
- * Having all of these means the user can administer the entire system.
+ * Permission Utils Compatibility
+ * Provides backward compatible utility functions
+ * 
+ * @deprecated Use AdvancedPermissionService directly
  */
-const ADMIN_PRIVILEGE_REQUIREMENTS: Array<{ module: string; action: string }> = [
-  { module: 'users', action: 'assign-role' },
-  { module: 'permissions', action: 'assign' },
-  { module: 'roles', action: 'create' },
-  { module: 'settings', action: 'update' },
-];
 
 /**
- * Check if user is super admin
- * Super admin has system:admin permission
- * or the equivalent full administrator privilege set.
+ * Check if user is super admin from permission map
  */
-export function isSuperAdmin(permissions: Record<string, string[]>): boolean {
-  if (permissions['system']?.includes('admin')) {
+export function isSuperAdmin(permissionMap: Record<string, string[]>): boolean {
+  // Check if has super admin marker
+  return permissionMap['*']?.includes('*') || false;
+}
+
+/**
+ * Check if user has access to a module
+ */
+export function hasModuleAccess(
+  permissionMap: Record<string, string[]>,
+  moduleName: string
+): boolean {
+  // Super admin has access to everything
+  if (isSuperAdmin(permissionMap)) {
     return true;
   }
-
-  const hasFullAdminPrivileges = ADMIN_PRIVILEGE_REQUIREMENTS.every(({ module, action }) =>
-    permissions[module]?.includes(action)
-  );
-
-  return hasFullAdminPrivileges;
+  
+  // Check if module has any permissions
+  const modulePerms = permissionMap[moduleName];
+  return modulePerms !== undefined && modulePerms.length > 0;
 }
 
 /**
- * Get effective permissions for a module
- * If user is super admin, return all permissions
+ * Check if user has specific permission
  */
-export function getModulePermissions(
-  permissions: Record<string, string[]>,
-  module: string
-): string[] {
-  if (isSuperAdmin(permissions)) {
-    // Super admin has all permissions
-    return ['create', 'read', 'update', 'delete', 'view', 'edit'];
+export function hasPermission(
+  permissionMap: Record<string, string[]>,
+  moduleName: string,
+  action: string
+): boolean {
+  // Super admin has all permissions
+  if (isSuperAdmin(permissionMap)) {
+    return true;
   }
   
-  return permissions[module] || [];
+  const moduleActions = permissionMap[moduleName] || [];
+  return moduleActions.includes(action) || moduleActions.includes('*');
 }
 
 /**
- * Convert a flat permission list into a module -> actions map
+ * Map permissions by module
  */
 export function mapPermissionsByModule(
   permissions: Array<{ module: string; action: string }>
 ): Record<string, string[]> {
-  return permissions.reduce<Record<string, string[]>>((acc, permission) => {
-    const { module, action } = permission;
-    if (!acc[module]) {
-      acc[module] = [];
+  const map: Record<string, string[]> = {};
+  
+  for (const perm of permissions) {
+    if (!map[perm.module]) {
+      map[perm.module] = [];
     }
-
-    if (!acc[module].includes(action)) {
-      acc[module].push(action);
+    if (!map[perm.module].includes(perm.action)) {
+      map[perm.module].push(perm.action);
     }
-
-    return acc;
-  }, {});
-}
-
-/**
- * Check if user has a specific permission
- */
-export function hasPermission(
-  permissions: Record<string, string[]>,
-  module: string,
-  action: string
-): boolean {
-  if (isSuperAdmin(permissions)) {
-    return true; // Super admin has all permissions
   }
   
-  const modulePermissions = permissions[module] || [];
-  
-  // Map action aliases
-  const actionMap: Record<string, string[]> = {
-    'view': ['read', 'view'],
-    'read': ['read', 'view'],
-    'edit': ['update', 'edit'],
-    'update': ['update', 'edit'],
-  };
-  
-  const allowedActions = actionMap[action] || [action];
-  return allowedActions.some(a => modulePermissions.includes(a));
-}
-
-/**
- * Check if user has access to a module (has any permission)
- */
-export function hasModuleAccess(
-  permissions: Record<string, string[]>,
-  module: string
-): boolean {
-  if (isSuperAdmin(permissions)) {
-    return true; // Super admin has access to all modules
-  }
-  
-  return (permissions[module] || []).length > 0;
+  return map;
 }

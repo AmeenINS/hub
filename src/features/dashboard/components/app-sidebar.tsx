@@ -108,51 +108,53 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
 
-  // Fetch user permissions
+  // Fetch user permissions using new permission level system
   React.useEffect(() => {
     const fetchPermissions = async () => {
       if (!token) return;
 
       try {
-        const modules = [
-          'users',
-          'tasks',
-          'roles',
-          'reports',
-          'notifications',
-          'support',
-          'scheduler',
-          'crm_contacts',
-          'crm_companies',
-          'crm_leads',
-          'crm_deals',
-          'crm_activities',
-          'crm_campaigns',
-          'policies',
-          'claims',
-          'commission',
-          'accounting',
-          'workflows',
-          'inventory',
-          'procurement',
-          'liveTracking',
-        ];
-        
-        const response = await apiClient.get<Record<string, string[]>>(
-          `/api/users/me/permissions?modules=${modules.join(',')}`
-        );
+        // Get complete permission profile from new API
+        const response = await apiClient.get('/api/permissions/profile');
 
-        console.log('=== Sidebar Permissions ===');
+        console.log('=== New Permission System ===');
         console.log('Response:', response);
 
         if (response.success && response.data) {
-          // API returns { success: true, data: Record<string, string[]> }
-          setPermissions(response.data);
+          // Convert module levels to permission format for backward compatibility
+          const { moduleLevels, isSuperAdmin } = response.data;
+          const permissionMap: Record<string, string[]> = {};
+          
+          // If super admin, grant all permissions
+          if (isSuperAdmin) {
+            Object.keys(moduleLevels).forEach(module => {
+              permissionMap[module] = ['*']; // Super admin wildcard
+            });
+          } else {
+            // Convert levels to action arrays for compatibility
+            Object.entries(moduleLevels).forEach(([module, level]) => {
+              const levelNum = level as number;
+              if (levelNum >= 1) { // READ or higher
+                permissionMap[module] = ['view', 'read'];
+                if (levelNum >= 2) { // WRITE or higher
+                  permissionMap[module].push('create', 'edit');
+                  if (levelNum >= 3) { // FULL or higher
+                    permissionMap[module].push('delete', 'manage');
+                    if (levelNum >= 4) { // ADMIN or higher
+                      permissionMap[module].push('admin', 'configure');
+                    }
+                  }
+                }
+              }
+            });
+          }
+          
+          setPermissions(permissionMap);
         } else {
-          console.error('Failed to get permissions:', response);
+          console.error('Failed to get permission profile:', response);
         }
       } catch (error) {
-        console.error('Failed to fetch permissions:', error);
+        console.error('Failed to fetch permission profile:', error);
       } finally {
         setLoading(false);
       }
@@ -189,7 +191,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .some(module => checkModuleAccess(permissions, module));
     }
     
-    return checkModuleAccess(permissions, moduleName);
+    // Map legacy module names to new ones
+    const moduleMapping: Record<string, string> = {
+      'liveTracking': 'tracking',
+      'commission': 'accounting',
+    };
+    
+    const actualModule = moduleMapping[moduleName] || moduleName;
+    
+    return checkModuleAccess(permissions, actualModule);
   };
 
   // Navigation data based on user permissions
@@ -589,12 +599,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/roles',
           icon: Shield,
           iconColor: 'text-fuchsia-500',
-        },
-        {
-          title: t('roles.permissions'),
-          url: '/dashboard/roles/permissions',
-          icon: Settings,
-          iconColor: 'text-fuchsia-600',
         },
       ],
     },

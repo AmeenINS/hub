@@ -260,3 +260,33 @@ export function useSettingsPermissions(): UseSettingsPermissionsResult {
     canAccessDangerZone: level >= PermissionLevel.SUPER_ADMIN,
   };
 }
+
+/**
+ * Backward compatible hook for old code using useModulePermissions
+ * Maps permission levels to old boolean permission flags
+ * 
+ * @deprecated Use usePermissionLevel instead
+ */
+export interface ModulePermissions {
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export function useModulePermissions(module: string): {
+  permissions: ModulePermissions;
+  isLoading: boolean;
+} {
+  const { level, isLoading } = usePermissionLevel(module);
+
+  return {
+    isLoading,
+    permissions: {
+      canView: level >= PermissionLevel.READ,
+      canCreate: level >= PermissionLevel.WRITE,
+      canEdit: level >= PermissionLevel.WRITE,
+      canDelete: level >= PermissionLevel.FULL,
+    },
+  };
+}

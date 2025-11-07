@@ -11,9 +11,12 @@ import { PermissionLevelNames } from '@/core/auth/permission-levels';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { module: string } }
+  { params }: { params: Promise<{ module: string }> }
 ) {
   try {
+    // Await params (Next.js 15+ requirement)
+    const { module: moduleName } = await params;
+    
     // Get auth token
     const token = request.cookies.get('auth-token')?.value;
     if (!token) {
@@ -32,9 +35,8 @@ export async function GET(
       );
     }
 
-    // Get module from params
-    const { module } = params;
-    if (!module) {
+    // Validate module parameter
+    if (!moduleName) {
       return NextResponse.json(
         { success: false, message: 'Module parameter is required' },
         { status: 400 }
@@ -44,14 +46,14 @@ export async function GET(
     // Get user's permission level for this module
     const level = await AdvancedPermissionService.getUserModuleLevel(
       decoded.userId,
-      module
+      moduleName
     );
 
     return NextResponse.json({
       success: true,
       data: {
         level,
-        module,
+        module: moduleName,
         levelName: PermissionLevelNames[level],
       },
     });

@@ -1,4 +1,4 @@
-import { lmdb } from '../db/lmdb';
+import { lmdb } from '@/core/data/lmdb';
 import { 
   ScheduledEvent, 
   ScheduledNotification, 
@@ -6,7 +6,7 @@ import {
   SchedulerStatus,
   NotificationType,
   Notification 
-} from '../../types/database';
+} from '@/shared/types/database';
 
 // Notification Checker Service - for running in background
 class NotificationChecker {

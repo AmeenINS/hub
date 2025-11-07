@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import OrgChart from '@/features/dashboard/components/org-chart-reactflow';
+import OrgChart from '@/features/dashboard/components/org-chart';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { RTLChevron } from '@/shared/components/ui/rtl-icon';
 import { apiClient, getErrorMessage } from '@/core/api/client';

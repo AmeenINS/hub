@@ -1,17 +1,15 @@
 import * as cron from 'node-cron';
-import { lmdb } from '../db/lmdb';
-import { 
-  ScheduledEvent, 
-  ScheduledNotification, 
-  NotificationMethod,
+import { lmdb } from '@/core/data/lmdb';
+import {
+  ScheduledEvent,
   SchedulerStatus,
+  RecurrenceType,
+  NotificationMethod,
+  ScheduledNotification,
   NotificationType,
-  Notification,
-  RecurrenceType
-} from '../../types/database';
-import { SSEBroadcast } from '../sse-broadcast';
-
-/**
+  Notification
+} from '@/shared/types/database';
+import { SSEBroadcast } from '@/core/sse/broadcast';/**
  * Professional Scheduler Service with Cron Jobs
  * 
  * Features:

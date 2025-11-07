@@ -6,29 +6,59 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Checkbox } from '@/shared/components/ui/checkbox';
-import { ArrowLeft, Trash2, Save, Shield } from 'lucide-react';
+import { ArrowLeft, Trash2, Save, Shield, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/shared/state/auth-store';
 import { toast } from 'sonner';
 import { RTLChevron } from '@/shared/components/ui/rtl-icon';
+import { PermissionLevel, PermissionLevelNames } from '@/core/auth/permission-levels';
+import { apiClient } from '@/core/api/client';
 
 interface Role {
   id: string;
   name: string;
   description: string;
-  permissionIds: string[];
+  isSystemRole: boolean;
+  moduleLevels?: Record<string, number>;
 }
 
-interface Permission {
-  id: string;
-  module: string;
-  action: string;
-  resource?: string;
-  description?: string;
-}
+// Module definitions for permission configuration - Complete list from sidebar
+const MODULES = [
+  // Core System
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'users', label: 'Users Management' },
+  { id: 'roles', label: 'Roles & Permissions' },
+  { id: 'settings', label: 'System Settings' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'support', label: 'Support' },
+  
+  // Business Core
+  { id: 'tracking', label: 'Live Tracking' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'scheduler', label: 'Scheduler' },
+  { id: 'reports', label: 'Reports' },
+  
+  // CRM Module
+  { id: 'crm_contacts', label: 'CRM - Contacts' },
+  { id: 'crm_companies', label: 'CRM - Companies' },
+  { id: 'crm_leads', label: 'CRM - Leads' },
+  { id: 'crm_deals', label: 'CRM - Deals' },
+  { id: 'crm_activities', label: 'CRM - Activities' },
+  { id: 'crm_campaigns', label: 'CRM - Campaigns' },
+  
+  // Insurance Modules
+  { id: 'policies', label: 'Policy Management' },
+  { id: 'claims', label: 'Claims Management' },
+  
+  // Business Operations
+  { id: 'accounting', label: 'Finance & Accounting' },
+  { id: 'workflows', label: 'Workflow & Automation' },
+  { id: 'inventory', label: 'Inventory Management' },
+  { id: 'procurement', label: 'Procurement' },
+];
 
 export default function EditRolePage() {
   const { t } = useI18n();
@@ -38,85 +68,21 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [formData, setFormData] = useState<Role>({
     id: '',
     name: '',
     description: '',
-    permissionIds: [],
+    isSystemRole: false,
+    moduleLevels: {},
   });
-
-  // Filter permissions based on search and category
-  const filteredPermissions = allPermissions.filter(perm => {
-    const matchesSearch = searchTerm === '' || 
-      perm.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      perm.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      perm.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === '' || perm.module === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
-
-  // Helper function to get category name with fallback
-  const getCategoryName = (module: string): string => {
-    const translated = t(`permissions.categories.${module}`);
-    // If translation key is returned as-is, it means translation doesn't exist
-    if (translated.startsWith('permissions.categories.')) {
-      // Fallback: capitalize first letter and replace underscores with spaces
-      return module
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    }
-    return translated;
-  };
 
   const fetchRole = async () => {
     try {
       setFetchLoading(true);
+      const response = await apiClient.get<Role>(`/api/roles/${params.id}`);
       
-      // Fetch role and permissions in parallel
-      const [roleResponse, permissionsResponse] = await Promise.all([
-        fetch(`/api/roles/${params.id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }),
-        fetch('/api/permissions', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }),
-      ]);
-
-      if (roleResponse.ok && permissionsResponse.ok) {
-        const roleData = await roleResponse.json();
-        const permissionsData = await permissionsResponse.json();
-        
-        if (roleData.success && roleData.data) {
-          // Fetch role permissions
-          const rolePermsResponse = await fetch(`/api/roles/${params.id}/permissions`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          
-          let permissionIds: string[] = [];
-          if (rolePermsResponse.ok) {
-            const rolePermsData = await rolePermsResponse.json();
-            if (rolePermsData.success) {
-              permissionIds = rolePermsData.data.map((rp: { permissionId: string }) => rp.permissionId);
-            }
-          }
-          
-          setFormData({
-            id: roleData.data.id,
-            name: roleData.data.name,
-            description: roleData.data.description || '',
-            permissionIds,
-          });
-        }
-        
-        if (permissionsData.success) {
-          setAllPermissions(permissionsData.data || []);
-        }
+      if (response.success && response.data) {
+        setFormData(response.data);
       } else {
         toast.error(t('roles.fetchError'));
         router.push('/dashboard/roles');
@@ -139,43 +105,25 @@ export default function EditRolePage() {
     setLoading(true);
 
     try {
-      // Update role basic info
-      const roleResponse = await fetch(`/api/roles/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-        }),
+      const response = await apiClient.put(`/api/roles/${params.id}`, {
+        name: formData.name,
+        description: formData.description,
+        moduleLevels: formData.moduleLevels,
       });
 
-      // Update role permissions
-      const permsResponse = await fetch(`/api/roles/${params.id}/permissions`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          permissionIds: formData.permissionIds,
-        }),
-      });
-
-      if (roleResponse.ok && permsResponse.ok) {
+      if (response.success) {
         toast.success(t('roles.updateSuccess'));
-        router.push('/dashboard/roles');
+        
+        // Refresh the form data to show updated values
+        await fetchRole();
+        
+        // Show a temporary success indicator
+        setTimeout(() => {
+          toast.success(t('roles.dataRefreshed'));
+        }, 500);
+        
       } else {
-        let errorMessage = t('roles.updateError');
-        try {
-          const data = await roleResponse.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
+        toast.error(response.message || t('roles.updateError'));
       }
     } catch (error) {
       console.error('Failed to update role:', error);
@@ -186,29 +134,24 @@ export default function EditRolePage() {
   };
 
   const handleDelete = async () => {
+    if (formData.isSystemRole) {
+      toast.error('Cannot delete system roles');
+      return;
+    }
+
     if (!confirm(t('messages.deleteConfirm') + ' ' + formData.name + '?')) {
       return;
     }
 
     setDeleting(true);
     try {
-      const response = await fetch(`/api/roles/${params.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.delete(`/api/roles/${params.id}`);
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('messages.deleteSuccess'));
         router.push('/dashboard/roles');
       } else {
-        let errorMessage = t('messages.deleteError');
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
+        toast.error(response.message || t('messages.deleteError'));
       }
     } catch (error) {
       console.error('Failed to delete role:', error);
@@ -231,7 +174,7 @@ export default function EditRolePage() {
               <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
               <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
-            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </CardContent>
         </Card>
       </div>
@@ -260,16 +203,42 @@ export default function EditRolePage() {
             </p>
           </div>
         </div>
-        <Button
-          variant="destructive"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="gap-2"
-        >
-          <Trash2 className="h-4 w-4" />
-          {deleting ? t('common.loading') : t('common.delete')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={fetchRole}
+            disabled={fetchLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${fetchLoading ? 'animate-spin' : ''}`} />
+            {fetchLoading ? t('common.loading') : t('common.refresh')}
+          </Button>
+          {!formData.isSystemRole && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? t('common.loading') : t('common.delete')}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* System Role Warning */}
+      {formData.isSystemRole && (
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+          <CardContent className="pt-6 flex gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-900 dark:text-blue-100">
+              <p className="font-semibold">{t('roles.systemRole')}</p>
+              <p className="text-xs mt-1">{t('roles.systemRoleWarning')}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Form */}
       <Card>
@@ -306,166 +275,77 @@ export default function EditRolePage() {
               </div>
             </div>
 
-            {/* Permissions - Enhanced UI */}
+            {/* Permission Levels */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <Label className="flex items-center gap-2 text-lg">
-                  <Shield className="h-5 w-5" />
-                  {t('roles.permissions')}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    ({formData.permissionIds.length} {t('permissions.selected')})
-                  </span>
-                </Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFormData({
-                      ...formData,
-                      permissionIds: allPermissions.map(p => p.id)
-                    })}
-                  >
-                    {t('permissions.selectAll')}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFormData({
-                      ...formData,
-                      permissionIds: []
-                    })}
-                  >
-                    {t('permissions.deselectAll')}
-                  </Button>
-                </div>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                <Label className="text-lg">{t('roles.permissionLevels')}</Label>
               </div>
 
-              {/* Search and Filter */}
-              <div className="flex flex-col md:flex-row gap-3">
-                <Input
-                  placeholder={t('permissions.searchPermissions')}
-                  className="md:flex-1"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <select
-                  className="px-3 py-2 border rounded-md bg-background text-sm"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  aria-label={t('permissions.filterByCategory')}
-                >
-                  <option value="">{t('permissions.allCategories')}</option>
-                  {Array.from(new Set(allPermissions.map(p => p.module))).sort().map(module => (
-                    <option key={module} value={module}>
-                      {getCategoryName(module)}
-                    </option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {MODULES.map((module) => (
+                  <div key={module.id} className="space-y-2">
+                    <Label htmlFor={`level-${module.id}`} className="font-medium">
+                      {module.label}
+                    </Label>
+                    <select
+                      id={`level-${module.id}`}
+                      value={formData.moduleLevels?.[module.id] ?? PermissionLevel.NONE}
+                      onChange={(e) => {
+                        const level = parseInt(e.target.value);
+                        setFormData({
+                          ...formData,
+                          moduleLevels: {
+                            ...(formData.moduleLevels || {}),
+                            [module.id]: level,
+                          },
+                        });
+                      }}
+                      aria-label={module.label}
+                      className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                    >
+                      {Object.entries(PermissionLevelNames).map(([levelValue, levelName]) => (
+                        <option key={levelValue} value={levelValue}>
+                          {levelName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
 
-              {/* Permissions Grid */}
-              <div className="border rounded-lg">
-                {filteredPermissions.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <Shield className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t('permissions.noResults')}</p>
+              {/* Permission Level Guide */}
+              <Card className="bg-muted/50 border-dashed">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">{t('roles.permissionLevelGuide')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-xs">
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.NONE]}</span>
+                    <p className="text-muted-foreground">No access to this module</p>
                   </div>
-                ) : (
-                  <div className="divide-y">
-                    {Object.entries(
-                      filteredPermissions.reduce((acc, perm) => {
-                        const moduleName = perm.module || 'other';
-                        if (!acc[moduleName]) acc[moduleName] = [];
-                        acc[moduleName].push(perm);
-                        return acc;
-                      }, {} as Record<string, Permission[]>)
-                    ).map(([moduleName, perms]) => (
-                      <div key={moduleName} className="p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                          <h4 className="font-semibold text-base capitalize flex items-center gap-2">
-                            <Shield className="h-4 w-4 text-primary" />
-                            {getCategoryName(moduleName)}
-                            <span className="text-xs font-normal text-muted-foreground">
-                              ({perms.filter(p => formData.permissionIds.includes(p.id)).length}/{perms.length})
-                            </span>
-                          </h4>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 text-xs"
-                              onClick={() => {
-                                const modulePermIds = perms.map(p => p.id);
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: Array.from(new Set([...formData.permissionIds, ...modulePermIds]))
-                                });
-                              }}
-                            >
-                              {t('permissions.selectAll')}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 text-xs"
-                              onClick={() => {
-                                const modulePermIds = perms.map(p => p.id);
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: formData.permissionIds.filter(id => !modulePermIds.includes(id))
-                                });
-                              }}
-                            >
-                              {t('permissions.deselectAll')}
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                          {perms.map((permission) => (
-                            <div
-                              key={permission.id}
-                              className="flex items-start space-x-2 rtl:space-x-reverse p-2 rounded-md hover:bg-accent/50 transition-colors"
-                            >
-                              <Checkbox
-                                id={permission.id}
-                                checked={formData.permissionIds.includes(permission.id)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setFormData({
-                                      ...formData,
-                                      permissionIds: [...formData.permissionIds, permission.id],
-                                    });
-                                  } else {
-                                    setFormData({
-                                      ...formData,
-                                      permissionIds: formData.permissionIds.filter((id) => id !== permission.id),
-                                    });
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor={permission.id}
-                                className="text-sm leading-tight cursor-pointer flex-1"
-                              >
-                                <span className="font-medium">{permission.action}</span>
-                                {permission.description && (
-                                  <span className="block text-xs text-muted-foreground mt-0.5">
-                                    {permission.description}
-                                  </span>
-                                )}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.READ]}</span>
+                    <p className="text-muted-foreground">View and list data only</p>
                   </div>
-                )}
-              </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.WRITE]}</span>
+                    <p className="text-muted-foreground">Create and edit records</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.FULL]}</span>
+                    <p className="text-muted-foreground">Full module access including delete</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.ADMIN]}</span>
+                    <p className="text-muted-foreground">Module administration and configuration</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.SUPER_ADMIN]}</span>
+                    <p className="text-muted-foreground">Complete control and critical operations</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Actions */}

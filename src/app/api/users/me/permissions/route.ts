@@ -2,40 +2,63 @@ import { NextRequest, NextResponse } from 'next/server';
 import { JWTService } from '@/core/auth/jwt';
 import { getUserModulePermissions } from '@/core/auth/permissions';
 
+/**
+ * GET /api/users/me/permissions
+ * Returns the current user's permissions for the requested modules.
+ * Accepts a comma-separated `modules` query parameter.
+ */
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    // Accept both Authorization header and auth-token cookie to stay compatible
+    const headerToken = request.headers.get('authorization');
+    const token =
+      headerToken?.replace('Bearer ', '') ||
+      request.cookies.get('auth-token')?.value;
+
     if (!token) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     const payload = JWTService.verifyToken(token);
     if (!payload) {
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: 'Invalid token' },
+        { status: 401 }
+      );
     }
 
-    // Get modules from query params
     const { searchParams } = new URL(request.url);
-    const modulesParam = searchParams.get('modules');
-    
-    if (!modulesParam) {
-      return NextResponse.json({ success: false, error: 'Modules parameter required' }, { status: 400 });
+    const modulesParam = searchParams.get('modules') ?? '';
+    const modules = modulesParam
+      .split(',')
+      .map(module => module.trim())
+      .filter(Boolean);
+
+    if (modules.length === 0) {
+      return NextResponse.json({
+        success: true,
+        data: {},
+        message: 'No modules requested',
+      });
     }
 
-    const modules = modulesParam.split(',');
     const permissions = await getUserModulePermissions(payload.userId, modules);
-
-    console.log(`=== Permissions API ===`);
-    console.log(`User ID: ${payload.userId}`);
-    console.log(`Modules: ${modules.join(', ')}`);
-    console.log(`Permissions:`, permissions);
 
     return NextResponse.json({
       success: true,
       data: permissions,
     });
   } catch (error) {
-    console.error('Error checking permissions:', error);
-    return NextResponse.json({ success: false, error: 'Failed to check permissions' }, { status: 500 });
+    console.error('Failed to fetch user permissions:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to fetch permissions',
+      },
+      { status: 500 }
+    );
   }
 }
