@@ -10,7 +10,7 @@
  * Run: docker exec ameen-hub npx tsx scripts/add-system-permissions.ts
  */
 
-import { PermissionService, RoleService, RolePermissionService } from '../src/lib/db/user-service';
+import { PermissionService, RoleService, RolePermissionService } from '../src/core/data/user-service';
 import type { Permission } from '../src/types/database';
 
 async function main() {

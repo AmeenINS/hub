@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
-import { lmdb } from '@/lib/db/lmdb';
-import { User } from '@/types/database';
-import { SSEBroadcast } from '@/lib/sse-broadcast';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
+import { lmdb } from '@/core/data/lmdb';
+import { User } from '@/shared/types/database';
+import { SSEBroadcast } from '@/core/sse/broadcast';
 
 // Helper function to verify token and get user
 async function verifyToken(token: string): Promise<User | null> {

@@ -66,11 +66,11 @@ try {
 
 #### ⏳ Pending Files
 
-2. **`src/components/tasks/kanban-board.tsx`**
+2. **`src/features/tasks/components/kanban-board.tsx`**
    - Status: Needs review for hardcoded text
    - Action: Check for English-only labels
 
-3. **`src/components/tasks/task-detail-dialog.tsx`**
+3. **`src/features/tasks/components/task-detail-dialog.tsx`**
    - Status: Not reviewed
    - Action: Full audit needed
 
@@ -131,7 +131,7 @@ try {
 3. **`src/app/dashboard/users/[id]/edit/page.tsx`**
    - Action: Full audit needed
 
-4. **`src/components/dashboard/users-data-table.tsx`**
+4. **`src/features/dashboard/components/users-data-table.tsx`**
    - Action: Review if exists
 
 ---
@@ -163,16 +163,16 @@ import { Icon1, Icon2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 // Components - UI
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
 
 // Types
-import { MyType } from '@/types/database';
+import { MyType } from '@/shared/types/database';
 
 // Types & Interfaces
 interface MyInterface {
@@ -351,8 +351,8 @@ if (!permissions.canView) return null;
 ### Session 1: Language Policy & Soft Delete
 - `.github/copilot-instructions.md` - Added language policy
 - `src/app/api/notifications/test/route.ts` - Fixed Persian comment
-- `src/lib/scheduler/scheduler-service.ts` - Fixed Persian comment
-- `src/lib/i18n/translations.ts` - Fixed Arabic section comments
+- `src/core/scheduler/scheduler-service.ts` - Fixed Persian comment
+- `src/shared/i18n/translations.ts` - Fixed Arabic section comments
 - Created `/docs` folder structure
 - Moved soft delete documentation
 

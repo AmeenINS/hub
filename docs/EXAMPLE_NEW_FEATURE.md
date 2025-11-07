@@ -5,7 +5,7 @@
 ## Step 1: Add Translations
 
 ```typescript
-// src/lib/i18n/translations.ts
+// src/shared/i18n/translations.ts
 
 export const translations = {
   en: {
@@ -171,9 +171,9 @@ addProjectsPermissions();
 // app/api/projects/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
-import { prisma } from '@/lib/db/prisma';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
+import { prisma } from '@/core/data/prisma';
 
 // GET - List all projects
 export async function GET(request: NextRequest) {
@@ -296,9 +296,9 @@ export async function POST(request: NextRequest) {
 // app/api/projects/[id]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
-import { prisma } from '@/lib/db/prisma';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
+import { prisma } from '@/core/data/prisma';
 
 // PUT - Update project
 export async function PUT(
@@ -423,10 +423,10 @@ export async function DELETE(
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from '@/hooks/use-translation';
-import { useModulePermissions } from '@/hooks/use-permissions';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/shared/hooks/use-translation';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Button } from '@/shared/components/ui/button';
 import { toast } from 'sonner';
 
 interface Project {

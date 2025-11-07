@@ -3,7 +3,7 @@
  * Keeps existing users and adds new ones with their positions
  */
 
-import { UserService, PositionService } from '@/lib/db/user-service';
+import { UserService, PositionService } from '@/core/data/user-service';
 
 interface TeamMember {
   fullNameEn: string;

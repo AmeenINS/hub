@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
+import { JWTService } from '@/core/auth/jwt';
 
 export async function PUT(request: NextRequest) {
   try {

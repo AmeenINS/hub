@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { getUserPermissionsContext } from '@/lib/auth/permissions';
-import { hasPermission } from '@/lib/permissions-helper';
+import { UserService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { getUserPermissionsContext } from '@/core/auth/permissions';
+import { hasPermission } from '@/core/security/permission-utils';
 
 const userService = new UserService();
 

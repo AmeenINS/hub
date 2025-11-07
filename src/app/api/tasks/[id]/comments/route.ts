@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { TaskCommentService, TaskActivityService } from '@/lib/db/task-service';
-import { TaskActivityType } from '@/types/database';
+import { JWTService } from '@/core/auth/jwt';
+import { TaskCommentService, TaskActivityService } from '@/core/data/task-service';
+import { TaskActivityType } from '@/shared/types/database';
 
 const commentService = new TaskCommentService();
 const activityService = new TaskActivityService();

@@ -4,10 +4,10 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, ShoppingCart, Clock, CheckCircle, XCircle } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 export default function ProcurementPage() {
   const router = useRouter();

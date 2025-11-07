@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import { Separator } from '@/shared/components/ui/separator';
+import { cn } from '@/core/utils';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 type AngleMode = 'deg' | 'rad';
 

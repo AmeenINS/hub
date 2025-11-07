@@ -3,13 +3,13 @@
  * Reusable form field components for contact forms
  */
 
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
 import { User, Building2, MapPin, Tag as TagIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ContactFormData, typeOptions, sourceOptions, preferredContactMethodOptions } from "./contact-schema";

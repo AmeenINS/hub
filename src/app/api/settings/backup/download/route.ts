@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { promises as fs } from 'fs';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
 
 const BACKUP_DIR = path.join(process.cwd(), 'data', 'backups');
 

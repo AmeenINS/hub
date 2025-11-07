@@ -80,7 +80,7 @@ try {
 
 **تمام متن‌های UI به سیستم ترجمه منتقل شده:**
 ```typescript
-// src/lib/i18n/translations.ts
+// src/shared/i18n/translations.ts
 export const translations = {
   en: {
     crm: {
@@ -115,12 +115,12 @@ export const translations = {
 ```typescript
 "use client";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 import { Search, Plus } from "lucide-react";
 import Link from "next/link";
-import { Contact } from "@/types/database";
-import { useToast } from "@/hooks/use-toast";
+import { Contact } from "@/shared/types/database";
+import { useToast } from "@/shared/hooks/use-toast";
 ```
 
 #### **بعد (✅ Good - Organized by Category):**
@@ -132,18 +132,18 @@ import { useState } from "react";
 import Link from "next/link";
 
 // Internal utilities
-import { apiClient, getErrorMessage } from "@/lib/api-client";
-import { useI18n } from "@/lib/i18n/i18n-context";
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { useI18n } from "@/shared/i18n/i18n-context";
 
 // Components - UI
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { useToast } from "@/shared/hooks/use-toast";
 
 // Types
-import { Contact, ContactType } from "@/types/database";
+import { Contact, ContactType } from "@/shared/types/database";
 
 // Icons
 import { Search, Plus, Edit, Trash2 } from "lucide-react";
@@ -194,9 +194,9 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
 | File | Status | Changes |
 |------|--------|---------|
 | `src/app/dashboard/page.tsx` | ✅ Complete | apiClient, translations, organized imports |
-| `src/components/dashboard/user-avatar-upload.tsx` | ✅ Complete | apiClient, removed token prop, getErrorMessage |
+| `src/features/dashboard/components/user-avatar-upload.tsx` | ✅ Complete | apiClient, removed token prop, getErrorMessage |
 | `src/app/dashboard/crm/contacts/contacts-client.tsx` | ✅ Complete | Full refactoring: apiClient, translations, structure |
-| `src/lib/i18n/translations.ts` | ✅ Enhanced | Added missing translations for contacts module |
+| `src/shared/i18n/translations.ts` | ✅ Enhanced | Added missing translations for contacts module |
 
 ---
 
@@ -231,7 +231,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
 ### ✅ 1. API Client Pattern
 ```typescript
 // ✅ Always use apiClient
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 // GET
 const response = await apiClient.get<Type>('/api/endpoint');
@@ -252,7 +252,7 @@ const response = await apiClient.delete('/api/endpoint');
 ### ✅ 2. Translation Pattern
 ```typescript
 // ✅ Always use translation function
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 const { t } = useI18n();
 
@@ -317,9 +317,9 @@ export function MyComponent() {
 ### Phase 1: Continue Refactoring (In Progress)
 - [ ] Refactor remaining files with direct fetch()
   - `/src/app/dashboard/crm/contacts/[id]/contact-profile-client.tsx`
-  - `/src/components/tasks/task-detail-dialog.tsx`
-  - `/src/components/scheduler/*.tsx`
-  - `/src/components/ui/file-upload.tsx`
+  - `/src/features/tasks/components/task-detail-dialog.tsx`
+  - `/src/features/scheduler/components/*.tsx`
+  - `/src/shared/components/ui/file-upload.tsx`
 
 ### Phase 2: Permission System (Not Started)
 - [ ] Add permission checks to all pages

@@ -1,5 +1,5 @@
 // Test UserRoleService directly
-import { UserRoleService } from '../src/lib/db/user-service.js';
+import { UserRoleService } from '../src/core/data/user-service.js';
 
 const service = new UserRoleService();
 

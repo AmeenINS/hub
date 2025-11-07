@@ -33,7 +33,7 @@ interface Contact {
 ### 2. Core Functions
 
 ```typescript
-// In /src/lib/soft-delete.ts
+// In /src/core/data/soft-delete.ts
 
 // Soft delete
 softDelete<T>(entity: T, options: { userId: string }): T
@@ -115,8 +115,8 @@ X-Admin-Action: true
 ```typescript
 'use client';
 
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
 import { toast } from 'sonner';
 
 export function ContactActions({ contactId }: { contactId: string }) {
@@ -167,7 +167,7 @@ export function ContactActions({ contactId }: { contactId: string }) {
 ### In Service Layer
 
 ```typescript
-import { ContactService } from '@/lib/db/crm-service';
+import { ContactService } from '@/core/data/crm-service';
 
 const contactService = new ContactService();
 
@@ -225,11 +225,11 @@ async getDeletedContacts(): Promise<Contact[]> {
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Contact } from '@/types/database';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { apiClient } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Contact } from '@/shared/types/database';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
 
 export default function ContactsTrashPage() {
   const { t } = useI18n();
@@ -342,7 +342,7 @@ export default function ContactsTrashPage() {
 ### After 30 Days in Trash
 
 ```typescript
-import { autoCleanup } from '@/lib/soft-delete';
+import { autoCleanup } from '@/core/data/soft-delete';
 
 // In a cron job
 async function cleanupOldTrash() {
@@ -412,7 +412,7 @@ async function cleanupOldTrash() {
 ## Testing
 
 ```typescript
-import { softDelete, restore, isDeleted } from '@/lib/soft-delete';
+import { softDelete, restore, isDeleted } from '@/core/data/soft-delete';
 
 describe('Soft Delete System', () => {
   it('should mark entity as deleted', () => {

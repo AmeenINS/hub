@@ -1,4 +1,4 @@
-import { PermissionService, RoleService, RolePermissionService } from '../src/lib/db/user-service.js';
+import { PermissionService, RoleService, RolePermissionService } from '../src/core/data/user-service.js';
 
 async function addSchedulerPermissions() {
   console.log('🚀 Adding new permissions for scheduler system...');

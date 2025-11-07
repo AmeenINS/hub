@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService, RoleService, UserRoleService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { getUserPermissionsContext } from '@/lib/auth/permissions';
-import { hasPermission } from '@/lib/permissions-helper';
-import { logError } from '@/lib/logger';
+import { UserService, RoleService, UserRoleService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { getUserPermissionsContext } from '@/core/auth/permissions';
+import { hasPermission } from '@/core/security/permission-utils';
+import { logError } from '@/core/logging/logger';
 
 /**
  * GET /api/users

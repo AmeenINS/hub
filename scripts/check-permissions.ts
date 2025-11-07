@@ -1,4 +1,4 @@
-import { PermissionService, RoleService, RolePermissionService } from '../src/lib/db/user-service';
+import { PermissionService, RoleService, RolePermissionService } from '../src/core/data/user-service';
 
 async function checkPermissions() {
   console.log('🔍 Checking permissions setup...\n');

@@ -1,4 +1,4 @@
-import { PermissionService, RoleService, RolePermissionService } from '../src/lib/db/user-service';
+import { PermissionService, RoleService, RolePermissionService } from '../src/core/data/user-service';
 
 async function addNewPermissions() {
   console.log('🚀 Adding new permissions for notifications and support...');

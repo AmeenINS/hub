@@ -3,7 +3,7 @@
  * Run: npx tsx scripts/add-location-permissions.ts
  */
 
-import { PermissionService, RoleService, RolePermissionService } from '../src/lib/db/user-service';
+import { PermissionService, RoleService, RolePermissionService } from '../src/core/data/user-service';
 
 async function addLocationPermissions() {
   console.log('🗺️  Adding location tracking permissions...');

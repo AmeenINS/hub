@@ -1,15 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { useI18n } from '@/shared/i18n/i18n-context';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+} from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/shared/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -26,14 +26,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+} from '@/shared/components/ui/dialog';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { Badge } from '@/shared/components/ui/badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Position } from '@/types/database';
+import type { Position } from '@/shared/types/database';
 
 export default function PositionsPage() {
   const { t } = useI18n();

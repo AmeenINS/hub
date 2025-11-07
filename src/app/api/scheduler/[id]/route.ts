@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { lmdb } from '@/lib/db/lmdb';
-import { ScheduledEvent, ScheduledNotification, User } from '@/types/database';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
+import { lmdb } from '@/core/data/lmdb';
+import { ScheduledEvent, ScheduledNotification, User } from '@/shared/types/database';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
 
 // Helper function to verify token and get user
 async function verifyToken(token: string): Promise<User | null> {

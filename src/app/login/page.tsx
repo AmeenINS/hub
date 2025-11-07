@@ -3,18 +3,18 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { useAuthStore } from '@/store/auth-store';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageToggle } from '@/components/language-toggle';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { ThemeToggle } from '@/shared/components/theme/theme-toggle';
+import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 interface LoginResponse {
   user: {

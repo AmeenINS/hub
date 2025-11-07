@@ -3,26 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Calendar, Clock, Bell, Search, Edit2, Trash2, Timer, Users, ClipboardList, Phone, RotateCcw, FileText } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Input } from '@/shared/components/ui/input';
+import { Badge } from '@/shared/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/shared/components/ui/select';
 
 import { toast } from 'sonner';
 
-import { ScheduledEvent, SchedulerType, SchedulerStatus } from '@/types/database';
-// import CreateSchedulerDialog from '@/components/scheduler/create-scheduler-dialog';
-// import SchedulerEventCard from '@/components/scheduler/scheduler-event-card';  
-import SchedulerCalendarView from '@/components/scheduler/scheduler-calendar-view';
-import { SchedulerEventDetailDialog } from '@/components/scheduler/scheduler-event-detail-dialog';
+import { ScheduledEvent, SchedulerType, SchedulerStatus } from '@/shared/types/database';
+// import CreateSchedulerDialog from '@/features/scheduler/components/create-scheduler-dialog';
+// import SchedulerEventCard from '@/features/scheduler/components/scheduler-event-card';  
+import SchedulerCalendarView from '@/features/scheduler/components/scheduler-calendar-view';
+import { SchedulerEventDetailDialog } from '@/features/scheduler/components/scheduler-event-detail-dialog';
 
 export default function SchedulerPage() {
   const router = useRouter();

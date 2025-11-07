@@ -5,21 +5,21 @@ import dynamic from 'next/dynamic';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation, type PermissionStatus, type Position as CapacitorPosition } from '@capacitor/geolocation';
 import { Loader2, Radar, MapPin, RefreshCw, Target } from 'lucide-react';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuthStore } from '@/store/auth-store';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import type { UserLocation } from '@/types/database';
-import type { DisplayLocation } from '@/components/tracking/live-location-map';
-import { getLocalizedUserName, getUserInitials } from '@/lib/utils';
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
+import { Badge } from '@/shared/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import type { UserLocation } from '@/shared/types/database';
+import type { DisplayLocation } from '@/features/tracking/components/live-location-map';
+import { getLocalizedUserName, getUserInitials } from '@/core/utils';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 const LiveLocationMap = dynamic(
   () =>
-    import('@/components/tracking/live-location-map').then((mod) => ({
+    import('@/features/tracking/components/live-location-map').then((mod) => ({
       default: mod.LiveLocationMap,
     })),
   {

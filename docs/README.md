@@ -85,7 +85,7 @@ async function حذف_مخاطب(شناسه: string) {
 Centralized HTTP client for all API requests.
 
 ```typescript
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 // Always use apiClient, never fetch directly
 const response = await apiClient.get('/api/users');
@@ -96,7 +96,7 @@ const response = await apiClient.post('/api/users', data);
 Role-based access control on all features.
 
 ```typescript
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 const { permissions, isLoading } = useModulePermissions('crm_contacts');
 
@@ -107,7 +107,7 @@ if (!permissions.canView) return null;
 Bilingual support (English/Arabic) for all UI text.
 
 ```typescript
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 const { t } = useI18n();
 
@@ -118,7 +118,7 @@ const { t } = useI18n();
 Logical deletion with full recovery capabilities.
 
 ```typescript
-import { ContactService } from '@/lib/db/crm-service';
+import { ContactService } from '@/core/data/crm-service';
 
 // Soft delete (recommended)
 await contactService.softDeleteContact(id, userId);

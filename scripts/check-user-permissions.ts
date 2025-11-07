@@ -3,8 +3,8 @@
  * Run this to verify admin user has correct permissions
  */
 
-import { UserService } from '@/lib/db/user-service';
-import { RolePermissionService } from '@/lib/db/user-service';
+import { UserService } from '@/core/data/user-service';
+import { RolePermissionService } from '@/core/data/user-service';
 
 async function checkUserPermissions() {
   const userService = new UserService();

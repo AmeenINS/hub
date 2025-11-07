@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
 
 export async function GET(request: NextRequest) {
   try {

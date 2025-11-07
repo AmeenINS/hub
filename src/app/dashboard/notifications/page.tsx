@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import { Bell, CheckCheck, Trash2, ExternalLink, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ar, enUS } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 interface Notification {
   id: string;

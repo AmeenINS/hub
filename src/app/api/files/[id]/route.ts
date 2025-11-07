@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { fileStorage, UploadedFile } from '@/lib/file-storage';
-import { lmdb } from '@/lib/db/lmdb';
+import { JWTService } from '@/core/auth/jwt';
+import { fileStorage, UploadedFile } from '@/core/storage/file-storage';
+import { lmdb } from '@/core/data/lmdb';
 
 /**
  * Serve uploaded files

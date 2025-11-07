@@ -6,8 +6,8 @@
 - **Updated**: `.github/copilot-instructions.md` - Added English-only policy at top with examples
 - **Fixed Files**:
   - `src/app/api/notifications/test/route.ts` - Persian comment removed
-  - `src/lib/scheduler/scheduler-service.ts` - Persian comment removed  
-  - `src/lib/i18n/translations.ts` - 7 Arabic section comments fixed
+  - `src/core/scheduler/scheduler-service.ts` - Persian comment removed  
+  - `src/shared/i18n/translations.ts` - 7 Arabic section comments fixed
 - **Documentation**: Created `/docs/LANGUAGE_POLICY.md` with enforcement guidelines
 
 ### 2. Tasks Module Refactoring (4/6 files completed)
@@ -34,7 +34,7 @@
 - Simplified data fetching logic
 - Professional error handling with toast notifications
 
-**src/components/tasks/kanban-board.tsx**
+**src/features/tasks/components/kanban-board.tsx**
 - Fixed hardcoded text: "To Do", "In Progress", "Done", "Overdue", "No tasks"
 - Converted to use translation system with `useI18n` hook
 - Added professional import organization
@@ -50,7 +50,7 @@
   - GET `/api/users`
   - PUT `/api/tasks/${taskId}`
 
-**src/components/tasks/task-detail-dialog.tsx** (551 lines)
+**src/features/tasks/components/task-detail-dialog.tsx** (551 lines)
 - Issues: 6+ fetch() calls to replace
 - Has getAuthToken() helper function (line 22)
 - Manual auth token handling throughout
@@ -122,14 +122,14 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 // Components
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 
 // Types
-import { Task } from '@/types/database';
+import { Task } from '@/shared/types/database';
 ```
 
 ### API Calls:

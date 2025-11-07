@@ -5,12 +5,12 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Button } from "@/shared/components/ui/button";
+import { Form } from "@/shared/components/ui/form";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useContactForm } from "./use-contact-form";
-import { ContactAvatarUpload } from "@/components/crm/contact-avatar-upload";
+import { ContactAvatarUpload } from "@/features/crm/components/contact-avatar-upload";
 import {
   BasicInformationSection,
   CompanyInformationSection,

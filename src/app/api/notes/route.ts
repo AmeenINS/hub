@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { NotesService } from '@/lib/db/notes-service';
-import { getErrorMessage } from '@/lib/api-client';
+import { JWTService } from '@/core/auth/jwt';
+import { NotesService } from '@/core/data/notes-service';
+import { getErrorMessage } from '@/core/api/client';
 
 /**
  * GET /api/notes - Get all notes for the authenticated user

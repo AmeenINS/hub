@@ -2,7 +2,7 @@
  * Quick check for milad user
  */
 
-import { UserService } from '@/lib/db/user-service';
+import { UserService } from '@/core/data/user-service';
 
 async function checkMilad() {
   const userService = new UserService();

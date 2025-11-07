@@ -1,4 +1,4 @@
-import { lmdb } from '../src/lib/db/lmdb';
+import { lmdb } from '../src/core/data/lmdb';
 import { ScheduledEvent, SchedulerType, SchedulerStatus, NotificationMethod } from '../src/types/database';
 
 async function testSchedulerSystem() {

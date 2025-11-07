@@ -5,8 +5,8 @@ import crypto from 'crypto';
 import { promises as fs } from 'fs';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
 
 const execFileAsync = promisify(execFile);
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { schedulerService } from '@/scheduler-init';
+import { schedulerService } from '@/core/scheduler/init';
 
 /**
  * Global Scheduler Service Status API

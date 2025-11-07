@@ -1,8 +1,8 @@
 'use client';
 
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent } from '@/components/ui/card';
-import type { Note } from '@/lib/db/notes-service';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import type { Note } from '@/core/data/notes-service';
 import { 
   Users, 
   ListTodo, 
@@ -43,18 +43,18 @@ import {
   Folder,
   Lightbulb
 } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuthStore } from '@/shared/state/auth-store';
 import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
-import { useRealTimeNotifications } from '@/hooks/use-real-time-notifications';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { Badge } from '@/shared/components/ui/badge';
+import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 import * as React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/shared/components/ui/dialog';
 
 interface SubMenuItem {
   title: string;

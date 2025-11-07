@@ -1,12 +1,12 @@
 'use client';
 
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
 import { Plus, Shield, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuthStore } from '@/shared/state/auth-store';
 import { toast } from 'sonner';
 
 interface Permission {

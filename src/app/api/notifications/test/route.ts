@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { lmdb } from '@/lib/db/lmdb';
-import { SSEBroadcast } from '@/lib/sse-broadcast';
+import { JWTService } from '@/core/auth/jwt';
+import { lmdb } from '@/core/data/lmdb';
+import { SSEBroadcast } from '@/core/sse/broadcast';
 
 interface Notification {
   id: string;

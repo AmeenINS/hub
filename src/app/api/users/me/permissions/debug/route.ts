@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { RolePermissionService } from '@/lib/db/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { RolePermissionService } from '@/core/data/user-service';
 
 /**
  * Debug endpoint to see ALL user permissions

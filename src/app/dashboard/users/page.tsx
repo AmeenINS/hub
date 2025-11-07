@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { UserPlus, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,12 +22,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { UsersDataTable, User } from '@/components/dashboard/users-data-table';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { getCombinedUserName } from '@/lib/utils';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useModulePermissions } from '@/hooks/use-permissions';
+} from '@/shared/components/ui/alert-dialog';
+import { UsersDataTable, User } from '@/features/dashboard/components/users-data-table';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { getCombinedUserName } from '@/core/utils';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 export default function UsersPage() {
   const router = useRouter();

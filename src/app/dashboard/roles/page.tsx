@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Shield, RefreshCw, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   Table,
   TableBody,
@@ -20,10 +20,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { useAuthStore } from '@/store/auth-store';
-import { useI18n } from '@/lib/i18n/i18n-context';
+} from '@/shared/components/ui/table';
+import { Badge } from '@/shared/components/ui/badge';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 interface Role {
   id: string;

@@ -2,19 +2,19 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Label } from '@/shared/components/ui/label';
+import { Checkbox } from '@/shared/components/ui/checkbox';
 import { CalendarIcon, ArrowLeft } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/shared/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { format } from 'date-fns';
-import { cn, getLocalizedUserName } from '@/lib/utils';
-import { useAuthStore } from '@/store/auth-store';
+import { cn, getLocalizedUserName } from '@/core/utils';
+import { useAuthStore } from '@/shared/state/auth-store';
 import { toast } from 'sonner';
 
 interface CreateEventFormData {

@@ -3,11 +3,11 @@
 ## Files Created / Modified
 
 ### ✅ Core Utilities
-- [x] `/src/lib/soft-delete.ts` - Core soft delete utility functions
-- [x] `/src/types/database.ts` - Added soft delete fields to Contact interface
+- [x] `/src/core/data/soft-delete.ts` - Core soft delete utility functions
+- [x] `/src/shared/types/database.ts` - Added soft delete fields to Contact interface
 
 ### ✅ Service Layer
-- [x] `/src/lib/db/crm-service.ts` - Enhanced with soft delete methods:
+- [x] `/src/core/data/crm-service.ts` - Enhanced with soft delete methods:
   - `softDeleteContact(id, userId)` - Logical delete
   - `restoreContact(id, userId)` - Restore from trash
   - `getDeletedContacts()` - Get trash items
@@ -24,7 +24,7 @@
 - [x] `/src/app/dashboard/crm/contacts/contacts-client.tsx` - Added Trash button to header
 
 ### ✅ Translations (i18n)
-- [x] `/src/lib/i18n/translations.ts` - Added EN/AR translations:
+- [x] `/src/shared/i18n/translations.ts` - Added EN/AR translations:
   - `trash` - Trash / سطل المهملات
   - `trashDescription` - Description
   - `trashEmpty` - Empty state message

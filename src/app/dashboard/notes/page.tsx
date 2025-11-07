@@ -3,12 +3,12 @@
 import * as React from 'react';
 import { Lightbulb, Archive as ArchiveIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { CreateNoteCard } from '@/components/notes/create-note-card';
-import { NotesGrid } from '@/components/notes/notes-grid';
-import { Button } from '@/components/ui/button';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import type { Note } from '@/lib/db/notes-service';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { CreateNoteCard } from '@/features/notes/components/create-note-card';
+import { NotesGrid } from '@/features/notes/components/notes-grid';
+import { Button } from '@/shared/components/ui/button';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import type { Note } from '@/core/data/notes-service';
 
 export default function NotesPage() {
   const { t } = useI18n();

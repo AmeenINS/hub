@@ -19,7 +19,7 @@
 
 ### 📍 File Location
 ```
-src/lib/api-client.ts
+src/core/api/client.ts
 ```
 
 ### ⚠️ Important Rules
@@ -40,8 +40,8 @@ src/lib/api-client.ts
 #### 1️⃣ GET Request
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
-import { Contact } from '@/types/database';
+import { apiClient } from '@/core/api/client';
+import { Contact } from '@/shared/types/database';
 
 // Simple
 const response = await apiClient.get('/api/crm/contacts');
@@ -68,8 +68,8 @@ const response = await apiClient.get('/api/crm/contacts', {
 #### 2️⃣ POST Request (Create)
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
-import { Contact } from '@/types/database';
+import { apiClient } from '@/core/api/client';
+import { Contact } from '@/shared/types/database';
 
 const newContact = {
   fullNameEn: 'John Doe',
@@ -88,7 +88,7 @@ if (response.success && response.data) {
 #### 3️⃣ PUT Request (Full Update)
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 const updatedData = {
   fullNameEn: 'John Doe Updated',
@@ -106,7 +106,7 @@ if (response.success) {
 #### 4️⃣ PATCH Request (Partial Update)
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 // Update only one field
 const response = await apiClient.patch(`/api/crm/contacts/${contactId}`, {
@@ -121,7 +121,7 @@ if (response.success) {
 #### 5️⃣ DELETE Request
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 const response = await apiClient.delete(`/api/crm/contacts/${contactId}`);
 if (response.success) {
@@ -133,7 +133,7 @@ if (response.success) {
 #### 6️⃣ File Upload
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 const formData = new FormData();
 formData.append('file', file);
@@ -151,7 +151,7 @@ if (response.success && response.data) {
 #### Check Login Status
 
 ```typescript
-import { isAuthenticated } from '@/lib/api-client';
+import { isAuthenticated } from '@/core/api/client';
 
 if (isAuthenticated()) {
   console.log('User is logged in');
@@ -163,7 +163,7 @@ if (isAuthenticated()) {
 #### Get Token
 
 ```typescript
-import { getAuthToken } from '@/lib/api-client';
+import { getAuthToken } from '@/core/api/client';
 
 const token = getAuthToken();
 if (token) {
@@ -178,7 +178,7 @@ if (token) {
 ### Standard Error Handling
 
 ```typescript
-import { apiClient, ApiClientError, getErrorMessage } from '@/lib/api-client';
+import { apiClient, ApiClientError, getErrorMessage } from '@/core/api/client';
 import { toast } from 'sonner';
 
 try {
@@ -207,9 +207,9 @@ try {
 
 ```typescript
 import { useState } from 'react';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 import { toast } from 'sonner';
-import { Contact } from '@/types/database';
+import { Contact } from '@/shared/types/database';
 
 export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -259,8 +259,8 @@ export function useContacts() {
 #### 1️⃣ ImageUpload - For Image Uploads
 
 ```typescript
-import { ImageUpload } from '@/components/ui/image-upload';
-import { UploadedFile } from '@/components/ui/file-upload';
+import { ImageUpload } from '@/shared/components/ui/image-upload';
+import { UploadedFile } from '@/shared/components/ui/file-upload';
 
 function MyComponent() {
   const handleUploadComplete = async (file: UploadedFile) => {
@@ -288,8 +288,8 @@ function MyComponent() {
 #### 2️⃣ FileUpload - For General File Uploads
 
 ```typescript
-import { FileUpload } from '@/components/ui/file-upload';
-import { UploadedFile } from '@/components/ui/file-upload';
+import { FileUpload } from '@/shared/components/ui/file-upload';
+import { UploadedFile } from '@/shared/components/ui/file-upload';
 
 function MyComponent() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -321,7 +321,7 @@ function MyComponent() {
 #### 3️⃣ UserAvatarUpload - User Avatar Upload
 
 ```typescript
-import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
+import { UserAvatarUpload } from '@/features/dashboard/components/user-avatar-upload';
 
 function ProfileSettings({ user }) {
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
@@ -342,7 +342,7 @@ function ProfileSettings({ user }) {
 #### 4️⃣ ContactAvatarUpload - Contact Avatar Upload
 
 ```typescript
-import { ContactAvatarUpload } from '@/components/crm/contact-avatar-upload';
+import { ContactAvatarUpload } from '@/features/crm/components/contact-avatar-upload';
 
 function ContactForm({ contactId, contactData }) {
   const [avatarUrl, setAvatarUrl] = useState(contactData?.avatarUrl);
@@ -364,7 +364,7 @@ function ContactForm({ contactId, contactData }) {
 If you need manual upload:
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 async function uploadFile(file: File, entityType: string, entityId: string) {
   try {
@@ -418,7 +418,7 @@ interface UploadedFile {
 
 ### 📍 Translation File Location
 ```
-src/lib/i18n/translations.ts
+src/shared/i18n/translations.ts
 ```
 
 ### 🔐 Translation Structure
@@ -455,7 +455,7 @@ export const translations = {
 #### Step 1: Add to Translation File
 
 ```typescript
-// src/lib/i18n/translations.ts
+// src/shared/i18n/translations.ts
 
 export const translations = {
   en: {
@@ -498,7 +498,7 @@ export const translations = {
 ```typescript
 'use client';
 
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from '@/shared/hooks/use-translation';
 
 export function MyComponent() {
   const { t } = useTranslation();
@@ -602,7 +602,7 @@ The system automatically handles RTL for Arabic:
 
 ```typescript
 // Language toggle component handles RTL
-import { LanguageToggle } from '@/components/language-toggle';
+import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 
 <LanguageToggle />
 ```
@@ -633,8 +633,8 @@ Before creating any new feature:
 
 ### 📍 Permission Files Location
 ```
-src/lib/auth/permissions.ts        - Permission checking logic
-src/lib/db/user-service.ts         - Role & Permission service
+src/core/auth/permissions.ts        - Permission checking logic
+src/core/data/user-service.ts         - Role & Permission service
 src/app/api/permissions/           - Permission API endpoints
 ```
 
@@ -715,8 +715,8 @@ addMyFeaturePermissions();
 // app/api/myFeature/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
 
 export async function GET(request: NextRequest) {
   try {
@@ -775,8 +775,8 @@ export async function GET(request: NextRequest) {
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { checkUserPermission } from '@/lib/auth/permissions';
-import { useAuthStore } from '@/store/auth-store';
+import { checkUserPermission } from '@/core/auth/permissions';
+import { useAuthStore } from '@/shared/state/auth-store';
 
 export function MyFeaturePage() {
   const router = useRouter();
@@ -834,9 +834,9 @@ export function MyFeaturePage() {
 'use client';
 
 import { useEffect, useState } from 'react';
-import { checkUserPermission } from '@/lib/auth/permissions';
-import { useAuthStore } from '@/store/auth-store';
-import { Button } from '@/components/ui/button';
+import { checkUserPermission } from '@/core/auth/permissions';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { Button } from '@/shared/components/ui/button';
 
 export function MyFeatureActions({ itemId }: { itemId: string }) {
   const { user } = useAuthStore();
@@ -891,8 +891,8 @@ Create a reusable hook for permission checks:
 // hooks/use-permissions.ts
 
 import { useEffect, useState } from 'react';
-import { checkUserPermission, getUserModulePermissions } from '@/lib/auth/permissions';
-import { useAuthStore } from '@/store/auth-store';
+import { checkUserPermission, getUserModulePermissions } from '@/core/auth/permissions';
+import { useAuthStore } from '@/shared/state/auth-store';
 
 export function usePermission(module: string, action: string) {
   const { user } = useAuthStore();
@@ -958,8 +958,8 @@ export function useModulePermissions(module: string) {
 ```typescript
 'use client';
 
-import { usePermission, useModulePermissions } from '@/hooks/use-permissions';
-import { Button } from '@/components/ui/button';
+import { usePermission, useModulePermissions } from '@/shared/hooks/use-permissions';
+import { Button } from '@/shared/components/ui/button';
 
 export function ContactsPage() {
   // Check single permission
@@ -1031,8 +1031,8 @@ export function ContactForm({ contact }: { contact?: Contact }) {
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
 
 export async function middleware(request: NextRequest) {
   // Get token
@@ -1127,7 +1127,7 @@ Follow this naming pattern:
 ```typescript
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 import { toast } from 'sonner';
 
 export function useContactForm() {
@@ -1199,7 +1199,7 @@ export default async function ContactsPage() {
 
 ```typescript
 import { useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 
 export function useContactList() {
   const [contacts, setContacts] = useState([]);
@@ -1234,7 +1234,7 @@ export function useContactList() {
 ### Standard Error Handling
 
 ```typescript
-import { apiClient, ApiClientError, getErrorMessage } from '@/lib/api-client';
+import { apiClient, ApiClientError, getErrorMessage } from '@/core/api/client';
 import { toast } from 'sonner';
 
 // ✅ Recommended approach
@@ -1380,8 +1380,8 @@ const data = response.data;
 
 ```typescript
 import { useState, useEffect } from 'react';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { Contact } from '@/types/database';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Contact } from '@/shared/types/database';
 import { toast } from 'sonner';
 
 export function useContactCRUD() {
@@ -1511,10 +1511,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { ContactAvatarUpload } from '@/components/crm/contact-avatar-upload';
-import { Button } from '@/components/ui/button';
-import { Form } from '@/components/ui/form';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { ContactAvatarUpload } from '@/features/crm/components/contact-avatar-upload';
+import { Button } from '@/shared/components/ui/button';
+import { Form } from '@/shared/components/ui/form';
 import { toast } from 'sonner';
 import { contactFormSchema, ContactFormData } from './contact-schema';
 
@@ -1589,11 +1589,11 @@ export function NewContactForm() {
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslation } from '@/hooks/use-translation';
-import { useModulePermissions } from '@/hooks/use-permissions';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useTranslation } from '@/shared/hooks/use-translation';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
 import { toast } from 'sonner';
 
 interface MyComponentProps {
@@ -1702,7 +1702,7 @@ export function DataList() {
 ### Rate Limiting
 
 ```typescript
-// lib/rate-limit.ts
+// core/security/rate-limit.ts
 import { LRUCache } from 'lru-cache';
 
 type Options = {
@@ -1734,7 +1734,7 @@ export default function rateLimit(options?: Options) {
 }
 
 // Usage in API route
-import rateLimit from '@/lib/rate-limit';
+import rateLimit from '@/core/security/rate-limit';
 
 const limiter = rateLimit({
   interval: 60 * 1000, // 1 minute
@@ -1872,7 +1872,7 @@ const contacts = await prisma.contact.findMany({
 
 ```typescript
 // ✅ Correct - Use transactions for related operations
-import { prisma } from '@/lib/db/prisma';
+import { prisma } from '@/core/data/prisma';
 
 async function createContactWithCompany(contactData, companyData) {
   return await prisma.$transaction(async (tx) => {
@@ -1931,7 +1931,7 @@ async function getPaginatedContacts(cursor?: string, limit = 20) {
 ```typescript
 // tests/lib/utils.test.ts
 import { describe, it, expect } from 'vitest';
-import { formatPhone, validateEmail } from '@/lib/utils';
+import { formatPhone, validateEmail } from '@/core/utils';
 
 describe('Utils', () => {
   describe('formatPhone', () => {
@@ -2053,7 +2053,7 @@ import Image from 'next/image';
 // ✅ Correct - Dynamic imports for heavy components
 import dynamic from 'next/dynamic';
 
-const HeavyChart = dynamic(() => import('@/components/heavy-chart'), {
+const HeavyChart = dynamic(() => import('@/features/dashboard/components/heavy-chart'), {
   loading: () => <div>Loading chart...</div>,
   ssr: false // Don't render on server if not needed
 });
@@ -2119,7 +2119,7 @@ export function SearchInput() {
 
 ```typescript
 // Mobile drawer navigation
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/shared/components/ui/sheet';
 import { Menu } from 'lucide-react';
 
 export function MobileNav() {
@@ -2174,10 +2174,10 @@ When creating or editing code:
 
 ## 📖 Additional Resources
 
-- **API Client Documentation**: `/src/lib/api-client.ts`
-- **Permission System**: `/src/lib/auth/permissions.ts`
-- **Translation System**: `/src/lib/i18n/translations.ts`
-- **Upload Components**: `/src/components/ui/` and `/src/components/crm/`
+- **API Client Documentation**: `/src/core/api/client.ts`
+- **Permission System**: `/src/core/auth/permissions.ts`
+- **Translation System**: `/src/shared/i18n/translations.ts`
+- **Upload Components**: `/src/shared/components/ui/` and `/src/features/crm/components/`
 - **Type Definitions**: `/src/types/database.ts`
 - **Permission Hooks**: `/src/hooks/use-permissions.ts`
 - **Example Usage**: `/src/app/dashboard/crm/contacts/`
@@ -2205,4 +2205,3 @@ When adding new features:
 **Last Updated**: November 2024  
 **Maintained By**: Development Team  
 **Version**: 1.0.0
-

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserRoleService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { UserRoleService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
 
 const userRoleService = new UserRoleService();
 
@@ -108,7 +108,7 @@ export async function PUT(
     }
 
     // Make sure LMDB is initialized
-    const { lmdb } = await import('@/lib/db/lmdb');
+    const { lmdb } = await import('@/core/data/lmdb');
     await lmdb.initialize();
     console.log('LMDB initialized');
 

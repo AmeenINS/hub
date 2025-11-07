@@ -1,4 +1,4 @@
-import { lmdb } from '../src/lib/db/lmdb';
+import { lmdb } from '../src/core/data/lmdb';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Permission {

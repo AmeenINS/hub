@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PositionService } from '@/lib/db/user-service';
+import { PositionService } from '@/core/data/user-service';
 
 const positionService = new PositionService();
 

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { fileStorage, FileStorageManager, UploadedFile } from '@/lib/file-storage';
-import { lmdb } from '@/lib/db/lmdb';
+import { JWTService } from '@/core/auth/jwt';
+import { fileStorage, FileStorageManager, UploadedFile } from '@/core/storage/file-storage';
+import { lmdb } from '@/core/data/lmdb';
 
 // Configuration
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB default

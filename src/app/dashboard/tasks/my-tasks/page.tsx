@@ -9,16 +9,16 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 // Components
-import { Button } from '@/components/ui/button';
-import KanbanBoard from '@/components/tasks/kanban-board';
-import TaskDetailDialog from '@/components/tasks/task-detail-dialog';
+import { Button } from '@/shared/components/ui/button';
+import KanbanBoard from '@/features/tasks/components/kanban-board';
+import TaskDetailDialog from '@/features/tasks/components/task-detail-dialog';
 
 // Types
-import { Task, TaskStatus } from '@/types/database';
+import { Task, TaskStatus } from '@/shared/types/database';
 
 // Types & Interfaces
 interface ApiResponse<T> {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { NotificationService } from '@/lib/db/notification-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { SSEBroadcast } from '@/lib/sse-broadcast';
+import { NotificationService } from '@/core/data/notification-service';
+import { JWTService } from '@/core/auth/jwt';
+import { SSEBroadcast } from '@/core/sse/broadcast';
 
 async function handleMarkAllAsRead(request: NextRequest) {
   try {

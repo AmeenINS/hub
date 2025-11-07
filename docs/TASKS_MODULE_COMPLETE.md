@@ -65,7 +65,7 @@ if (response.success && response.data) {
 
 ---
 
-### 4. src/components/tasks/kanban-board.tsx ✅
+### 4. src/features/tasks/components/kanban-board.tsx ✅
 **Status**: FULLY REFACTORED
 
 **Changes Made**:
@@ -128,7 +128,7 @@ const response = await apiClient.put(`/api/tasks/${taskId}`, data);
 
 ## ⚠️ Remaining Files (1/6)
 
-### 6. src/components/tasks/task-detail-dialog.tsx ⏳
+### 6. src/features/tasks/components/task-detail-dialog.tsx ⏳
 **Status**: NEEDS REFACTORING
 
 **Issues Found**:
@@ -233,14 +233,14 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 // Components
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 
 // Types
-import { Task } from '@/types/database';
+import { Task } from '@/shared/types/database';
 ```
 
 ### 2. API Calls Pattern:

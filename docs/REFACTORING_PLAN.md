@@ -7,25 +7,25 @@ Refactor entire application to be highly professional, cohesive, and aligned wit
 
 ### 1. API Client Migration
 - [x] `/src/app/dashboard/page.tsx` - Replaced `fetch` with `apiClient`
-- [x] `/src/components/dashboard/user-avatar-upload.tsx` - Replaced `fetch` with `apiClient`
+- [x] `/src/features/dashboard/components/user-avatar-upload.tsx` - Replaced `fetch` with `apiClient`
 - [x] `/src/app/dashboard/crm/contacts/contacts-client.tsx` - Replaced `fetch` with `apiClient`
 
 ## 🔄 In Progress
 
 ### 2. Remaining fetch() Replacements
 - [ ] `/src/app/dashboard/crm/contacts/[id]/contact-profile-client.tsx`
-- [ ] `/src/components/tasks/task-detail-dialog.tsx` (multiple fetch calls)
-- [ ] `/src/components/scheduler/create-scheduler-dialog.tsx`
-- [ ] `/src/components/scheduler/notification-service.tsx`
-- [ ] `/src/components/scheduler/scheduler-event-detail-dialog.tsx`
-- [ ] `/src/components/scheduler/scheduler-event-card.tsx`
-- [ ] `/src/components/ui/file-upload.tsx`
+- [ ] `/src/features/tasks/components/task-detail-dialog.tsx` (multiple fetch calls)
+- [ ] `/src/features/scheduler/components/create-scheduler-dialog.tsx`
+- [ ] `/src/features/scheduler/components/notification-service.tsx`
+- [ ] `/src/features/scheduler/components/scheduler-event-detail-dialog.tsx`
+- [ ] `/src/features/scheduler/components/scheduler-event-card.tsx`
+- [ ] `/src/shared/components/ui/file-upload.tsx`
 
 ## 📋 Next Steps
 
 ### 3. Translation System Audit
 - [ ] Audit all components for hardcoded text
-- [ ] Move all text to `/src/lib/i18n/translations.ts`
+- [ ] Move all text to `/src/shared/i18n/translations.ts`
 - [ ] Ensure bilingual support (EN + AR) for all UI elements
 - [ ] Add missing translations
 
@@ -102,16 +102,16 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 // 3. Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useTranslation } from '@/hooks/use-translation';
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useTranslation } from '@/shared/hooks/use-translation';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 // 4. Components (UI first, then features)
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
 
 // 5. Types
-import { Contact } from '@/types/database';
+import { Contact } from '@/shared/types/database';
 
 // 6. Icons (last)
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -189,9 +189,9 @@ export function MyComponent({ id, data }: MyComponentProps) {
 ### API Route Template
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
-import { prisma } from '@/lib/db/prisma';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
+import { prisma } from '@/core/data/prisma';
 import { z } from 'zod';
 
 // Validation schema

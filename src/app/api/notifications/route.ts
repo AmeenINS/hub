@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { NotificationService } from '@/lib/db/notification-service';
-import { JWTService } from '@/lib/auth/jwt';
+import { NotificationService } from '@/core/data/notification-service';
+import { JWTService } from '@/core/auth/jwt';
 
 export async function GET(request: NextRequest) {
   try {

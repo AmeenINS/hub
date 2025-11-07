@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { lmdb } from '@/lib/db/lmdb';
+import { lmdb } from '@/core/data/lmdb';
 import { 
   ScheduledEvent, 
   SchedulerType, 
@@ -7,13 +7,13 @@ import {
   NotificationMethod,
   RecurrenceType,
   User 
-} from '@/types/database';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
+} from '@/shared/types/database';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
 import { v4 as uuidv4 } from 'uuid';
 
 // Initialize Scheduler Service globally
-import '@/scheduler-init';
+import '@/core/scheduler/init';
 
 // Helper function to verify token and get user
 async function verifyToken(token: string): Promise<User | null> {

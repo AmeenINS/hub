@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService, UserRoleService, RoleService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { AuditService } from '@/lib/db/audit-service';
-import { AuditAction } from '@/types/database';
-import { logSecurity, logError } from '@/lib/logger';
+import { UserService, UserRoleService, RoleService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { AuditService } from '@/core/data/audit-service';
+import { AuditAction } from '@/shared/types/database';
+import { logSecurity, logError } from '@/core/logging/logger';
 
 /**
  * POST /api/auth/login

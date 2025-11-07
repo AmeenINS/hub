@@ -4,16 +4,16 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lightbulb, Calculator } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
-import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
-import { MobileNav } from '@/components/dashboard/mobile-nav';
-import { Spinner } from '@/components/ui/spinner';
-import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import SchedulerNotificationService from '@/components/scheduler/notification-service';
-import { NotificationButton } from '@/components/dashboard/notification-button';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/shared/components/ui/sidebar';
+import { AppSidebar } from '@/features/dashboard/components/app-sidebar';
+import { MobileNav } from '@/features/dashboard/components/mobile-nav';
+import { Spinner } from '@/shared/components/ui/spinner';
+import { RTLSidebarWrapper } from '@/shared/components/ui/rtl-sidebar-wrapper';
+import { Separator } from '@/shared/components/ui/separator';
+import { Button } from '@/shared/components/ui/button';
+import SchedulerNotificationService from '@/features/scheduler/components/notification-service';
+import { NotificationButton } from '@/features/dashboard/components/notification-button';
 import 'overlayscrollbars/overlayscrollbars.css';
 
 export default function DashboardLayout({

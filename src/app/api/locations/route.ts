@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserLocationService } from '@/lib/db/location-service';
-import { UserService } from '@/lib/db/user-service';
-import { checkPermission } from '@/lib/auth/middleware';
+import { JWTService } from '@/core/auth/jwt';
+import { UserLocationService } from '@/core/data/location-service';
+import { UserService } from '@/core/data/user-service';
+import { checkPermission } from '@/core/auth/middleware';
 
 const locationSchema = z.object({
   latitude: z.number().min(-90).max(90),

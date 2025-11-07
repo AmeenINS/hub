@@ -2,8 +2,8 @@
  * Check admin user permissions
  */
 
-import { RolePermissionService } from '@/lib/db/user-service';
-import { checkUserPermission } from '@/lib/auth/permissions';
+import { RolePermissionService } from '@/core/data/user-service';
+import { checkUserPermission } from '@/core/auth/permissions';
 
 async function checkAdminPermissions() {
   console.log('🔍 Checking admin permissions...\n');

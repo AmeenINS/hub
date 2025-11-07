@@ -8,14 +8,14 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   Form,
   FormControl,
@@ -24,20 +24,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { Switch } from '@/shared/components/ui/switch';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { RTLChevron } from '@/components/ui/rtl-icon';
-import { ImageUpload } from '@/components/ui/image-upload';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+} from '@/shared/components/ui/select';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { RTLChevron } from '@/shared/components/ui/rtl-icon';
+import { ImageUpload } from '@/shared/components/ui/image-upload';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
-import { ContactService, CompanyService } from "@/lib/db/crm-service";
-import { ContactType } from "@/types/database";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { ContactService, CompanyService } from "@/core/data/crm-service";
+import { ContactType } from "@/shared/types/database";
 import ContactsClient from "./contacts-client";
 
 export const metadata: Metadata = {

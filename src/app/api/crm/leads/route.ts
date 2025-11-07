@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LeadService } from '@/lib/db/crm-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
-import { logError } from '@/lib/logger';
+import { LeadService } from '@/core/data/crm-service';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
+import { logError } from '@/core/logging/logger';
 
 export async function GET(request: NextRequest) {
   try {

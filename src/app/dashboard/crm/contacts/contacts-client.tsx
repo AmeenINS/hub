@@ -5,15 +5,15 @@ import { useState } from "react";
 import Link from "next/link";
 
 // Internal utilities
-import { apiClient, getErrorMessage } from "@/lib/api-client";
-import { useI18n } from "@/lib/i18n/i18n-context";
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { useI18n } from "@/shared/i18n/i18n-context";
 
 // Components - UI
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Badge } from "@/shared/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,12 +21,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useToast } from "@/hooks/use-toast";
+} from "@/shared/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/shared/components/ui/confirm-dialog";
+import { useToast } from "@/shared/hooks/use-toast";
 
 // Types
-import { Contact, ContactType } from "@/types/database";
+import { Contact, ContactType } from "@/shared/types/database";
 
 // Icons
 import { 

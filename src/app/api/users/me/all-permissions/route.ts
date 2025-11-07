@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { getUserModulePermissions } from '@/lib/auth/permissions';
+import { JWTService } from '@/core/auth/jwt';
+import { getUserModulePermissions } from '@/core/auth/permissions';
 
 /**
  * GET /api/users/me/all-permissions

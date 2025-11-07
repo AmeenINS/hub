@@ -3,7 +3,7 @@
  * Creates an admin user with full access to all modules
  */
 
-import { UserService, RoleService, UserRoleService, RolePermissionService, PermissionService } from '@/lib/db/user-service';
+import { UserService, RoleService, UserRoleService, RolePermissionService, PermissionService } from '@/core/data/user-service';
 
 async function createSuperAdmin() {
   const userService = new UserService();

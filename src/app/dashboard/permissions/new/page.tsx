@@ -6,27 +6,27 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/shared/components/ui/card';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { useAuthStore } from '@/store/auth-store';
-import { RTLChevron } from '@/components/ui/rtl-icon';
+} from '@/shared/components/ui/select';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { RTLChevron } from '@/shared/components/ui/rtl-icon';
 
 const permissionSchema = z.object({
   name: z.string().min(1, 'Name is required'),

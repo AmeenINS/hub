@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
-import { SSEBroadcast } from '@/lib/sse-broadcast';
-import { lmdb } from '@/lib/db/lmdb';
+import { SSEBroadcast } from '@/core/sse/broadcast';
+import { lmdb } from '@/core/data/lmdb';
 
 // Secret key for cron job authentication (should be in env variable)
 const CRON_SECRET = process.env.CRON_SECRET || 'change-me-in-production';
