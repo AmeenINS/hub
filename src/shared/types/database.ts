@@ -32,6 +32,7 @@ export interface Role {
   name: string;
   description?: string;
   isSystemRole: boolean; // true for default roles like 'super_admin'
+  moduleLevels?: Record<string, number> | string; // Permission levels for each module
   createdAt: string;
   updatedAt: string;
 }
