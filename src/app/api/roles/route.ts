@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RoleService } from '@/core/data/user-service';
 import { JWTService } from '@/core/auth/jwt';
-import { checkPermission } from '@/core/auth/middleware';
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 import { logError } from '@/core/logging/logger';
 
 const roleService = new RoleService();
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'roles', 'read');
+  const hasPermission = await AdvancedPermissionService.hasMinimumLevel(userId, 'roles', PermissionLevel.READ);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -44,7 +45,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const roles = await roleService.getAllRoles();
+    let roles = await roleService.getAllRoles();
+    // Normalize moduleLevels to object for all roles
+    roles = roles.map((role) => {
+      if (typeof role.moduleLevels === 'string') {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (role as any).moduleLevels = JSON.parse(role.moduleLevels);
+        } catch {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (role as any).moduleLevels = {};
+        }
+      }
+      return role;
+    });
 
     return NextResponse.json({
       success: true,
@@ -88,7 +102,7 @@ export async function POST(request: NextRequest) {
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'roles', 'create');
+  const hasPermission = await AdvancedPermissionService.hasMinimumLevel(userId, 'roles', PermissionLevel.ADMIN);
 
     if (!hasPermission) {
       return NextResponse.json(

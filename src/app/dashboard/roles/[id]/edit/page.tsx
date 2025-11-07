@@ -83,7 +83,17 @@ export default function EditRolePage() {
       const response = await apiClient.get<Role>(`/api/roles/${params.id}`);
       
       if (response.success && response.data) {
-        setFormData(response.data);
+        const role = response.data as Role & { moduleLevels?: Record<string, number> | string };
+        const normalizedLevels: Record<string, number> = role.moduleLevels
+          ? (typeof role.moduleLevels === 'string' ? JSON.parse(role.moduleLevels) : role.moduleLevels)
+          : {};
+        setFormData({
+          id: role.id,
+          name: role.name,
+          description: role.description,
+          isSystemRole: role.isSystemRole,
+          moduleLevels: normalizedLevels,
+        });
       } else {
         toast.error(t('roles.fetchError'));
         router.push('/dashboard/roles');
@@ -109,7 +119,10 @@ export default function EditRolePage() {
       const response = await apiClient.put(`/api/roles/${params.id}`, {
         name: formData.name,
         description: formData.description,
-        moduleLevels: formData.moduleLevels,
+        // Ensure moduleLevels is a plain object with numeric values
+        moduleLevels: Object.fromEntries(
+          Object.entries(formData.moduleLevels || {}).map(([k, v]) => [k, Number(v)])
+        ),
       });
 
       if (response.success) {

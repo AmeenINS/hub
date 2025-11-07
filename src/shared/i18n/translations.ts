@@ -881,6 +881,7 @@ export const translations = {
       yourMessage: 'Your Message',
       adminReply: 'Admin Reply',
       waitingForReply: 'Waiting for admin response...',
+      noWriteAccess: 'You do not have permission to send messages',
     },
     
     // Messages
@@ -1794,6 +1795,7 @@ export const translations = {
       yourMessage: 'رسالتك',
       adminReply: 'رد المدير',
       waitingForReply: 'في انتظار رد المدير...',
+      noWriteAccess: 'ليس لديك صلاحية لإرسال الرسائل',
     },
     
     // Messages

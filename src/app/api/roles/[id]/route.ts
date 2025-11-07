@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RoleService } from '@/core/data/user-service';
 import { JWTService } from '@/core/auth/jwt';
-import { checkPermission } from '@/core/auth/middleware';
+// Legacy checkPermission removed; use AdvancedPermissionService with level-based checks
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 import { logError } from '@/core/logging/logger';
 
 const roleService = new RoleService();
@@ -40,7 +42,7 @@ export async function GET(
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'roles', 'read');
+  const hasPermission = await AdvancedPermissionService.hasMinimumLevel(userId, 'roles', PermissionLevel.READ);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -57,6 +59,15 @@ export async function GET(
         { success: false, error: 'Role not found' },
         { status: 404 }
       );
+    }
+
+    // Normalize moduleLevels to object for client
+    if (typeof role.moduleLevels === 'string') {
+      try {
+        role.moduleLevels = JSON.parse(role.moduleLevels);
+      } catch {
+        role.moduleLevels = {} as unknown as Record<string, number>;
+      }
     }
 
     return NextResponse.json({
@@ -106,7 +117,7 @@ export async function PUT(
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'roles', 'update');
+  const hasPermission = await AdvancedPermissionService.hasMinimumLevel(userId, 'roles', PermissionLevel.ADMIN);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -183,6 +194,15 @@ export async function PUT(
       ...(validatedModuleLevels ? { moduleLevels: validatedModuleLevels } : {}),
     });
 
+    // Normalize moduleLevels to object before returning
+    if (updatedRole && typeof updatedRole.moduleLevels === 'string') {
+      try {
+        updatedRole.moduleLevels = JSON.parse(updatedRole.moduleLevels);
+      } catch {
+        updatedRole.moduleLevels = {};
+      }
+    }
+
     if (!updatedRole) {
       return NextResponse.json(
         { success: false, error: 'Role not found' },
@@ -237,7 +257,7 @@ export async function DELETE(
     const userId = payload.userId;
 
     // Check permission
-    const hasPermission = await checkPermission(userId, 'roles', 'delete');
+  const hasPermission = await AdvancedPermissionService.hasMinimumLevel(userId, 'roles', PermissionLevel.ADMIN);
 
     if (!hasPermission) {
       return NextResponse.json(

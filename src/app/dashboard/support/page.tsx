@@ -15,6 +15,8 @@ import { ar, enUS } from 'date-fns/locale';
 import { SupportMessageStatus } from '@/shared/types/database';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/shared/state/auth-store';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { apiClient } from '@/core/api/client';
 
 interface SupportMessage {
   id: string;
@@ -33,93 +35,38 @@ export default function SupportPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const { token, isAuthenticated } = useAuthStore();
+  const { canView, canWrite, isLoading: permLoading } = usePermissionLevel('support');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  // Legacy access state removed; rely on permission level system
   const [formData, setFormData] = useState({
     subject: '',
     message: '',
   });
 
-  // Check permissions
-  const checkAccess = useCallback(async () => {
-    if (!token || !isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/users/me/permissions?modules=support', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const permissions = await response.json();
-        const hasReadAccess = permissions.support && permissions.support.length > 0;
-        setHasAccess(hasReadAccess);
-        
-        if (!hasReadAccess) {
-          router.push('/dashboard/access-denied');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to check permissions:', error);
-      setHasAccess(false);
-      router.push('/dashboard/access-denied');
-    }
-  }, [token, isAuthenticated, router]);
-
   const fetchMessages = useCallback(async () => {
-    if (hasAccess === false) return;
-    
+    if (!canView) return;
     try {
       setLoading(true);
-      
-      if (!token || !isAuthenticated) {
-        router.push('/login');
-        return;
-      }
-
-      const response = await fetch('/api/support', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.status === 401) {
-        toast.error('Session expired. Please login again');
-        router.push('/login');
-        return;
-      }
-
-      if (response.status === 403) {
-        router.push('/dashboard/access-denied');
-        return;
-      }
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data);
+      const response = await apiClient.get<SupportMessage[]>('/api/support');
+      if (response.success && response.data) {
+        setMessages(response.data);
       }
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
       setLoading(false);
     }
-  }, [router, token, isAuthenticated, hasAccess]);
+  }, [canView]);
 
   useEffect(() => {
-    checkAccess();
-  }, [checkAccess]);
-
-  useEffect(() => {
-    if (hasAccess === true) {
+    if (canView && !permLoading) {
       fetchMessages();
+    } else if (!permLoading && !canView) {
+      router.push('/dashboard/access-denied');
     }
-  }, [fetchMessages, hasAccess]);
+  }, [canView, permLoading, fetchMessages, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,19 +81,15 @@ export default function SupportPage() {
       router.push('/login');
       return;
     }
+    if (!canWrite) {
+      toast.error(t('support.noWriteAccess'));
+      return;
+    }
 
     try {
       setSending(true);
-      const response = await fetch('/api/support', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
+      const response = await apiClient.post<SupportMessage>('/api/support', formData);
+      if (response.success && response.data) {
         toast.success(t('support.sendSuccess'));
         setFormData({ subject: '', message: '' });
         fetchMessages();
@@ -185,6 +128,7 @@ export default function SupportPage() {
       </div>
 
       {/* Send Message Form */}
+      {canView && (
       <Card>
         <CardHeader>
           <CardTitle>{t('support.sendMessage')}</CardTitle>
@@ -228,8 +172,10 @@ export default function SupportPage() {
           </form>
         </CardContent>
       </Card>
+      )}
 
       {/* Previous Messages */}
+      {canView && (
       <Card>
         <CardHeader>
           <CardTitle>{t('support.yourMessages')}</CardTitle>
@@ -303,6 +249,7 @@ export default function SupportPage() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
