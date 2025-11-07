@@ -63,6 +63,7 @@ interface SubMenuItem {
   url: string;
   icon: React.ElementType;
   iconColor: string;
+  module?: string;
 }
 
 interface AppModule {
@@ -213,11 +214,11 @@ export default function DashboardPage() {
       color: 'from-purple-500 to-purple-600',
       module: 'crm',
       subItems: [
-        { title: t('modules.contacts'), url: '/dashboard/crm/contacts', icon: Users, iconColor: 'text-purple-500' },
-        { title: t('modules.companies'), url: '/dashboard/crm/companies', icon: Building2, iconColor: 'text-purple-600' },
-        { title: t('modules.deals'), url: '/dashboard/crm/deals', icon: Briefcase, iconColor: 'text-purple-700' },
-        { title: t('modules.activities'), url: '/dashboard/crm/activities', icon: Activity, iconColor: 'text-purple-500' },
-        { title: t('modules.campaigns'), url: '/dashboard/crm/campaigns', icon: Mail, iconColor: 'text-purple-600' },
+        { title: t('modules.contacts'), url: '/dashboard/crm/contacts', icon: Users, iconColor: 'text-purple-500', module: 'crm_contacts' },
+        { title: t('modules.companies'), url: '/dashboard/crm/companies', icon: Building2, iconColor: 'text-purple-600', module: 'crm_companies' },
+        { title: t('modules.deals'), url: '/dashboard/crm/deals', icon: Briefcase, iconColor: 'text-purple-700', module: 'crm_deals' },
+        { title: t('modules.activities'), url: '/dashboard/crm/activities', icon: Activity, iconColor: 'text-purple-500', module: 'crm_activities' },
+        { title: t('modules.campaigns'), url: '/dashboard/crm/campaigns', icon: Mail, iconColor: 'text-purple-600', module: 'crm_campaigns' },
       ],
     },
     {
@@ -390,7 +391,20 @@ export default function DashboardPage() {
 
   const accessibleModules = permissionsLoading
     ? []
-    : appModules.filter(module => hasModuleAccess(module.module));
+    : appModules.filter(module => {
+        // Check if user has access to the main module
+        if (!hasModuleAccess(module.module)) return false;
+        
+        // If module has subItems, check if user has access to at least one subItem
+        if (module.subItems && module.subItems.length > 0) {
+          const accessibleSubItems = module.subItems.filter(subItem => 
+            subItem.module ? hasModuleAccess(subItem.module) : true
+          );
+          return accessibleSubItems.length > 0;
+        }
+        
+        return true;
+      });
 
   return (
     <div className="p-6 space-y-6">
@@ -543,7 +557,9 @@ export default function DashboardPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="flex gap-3 flex-wrap">
-            {selectedModule?.subItems.map((item, index) => (
+            {selectedModule?.subItems
+              .filter(item => item.module ? hasModuleAccess(item.module) : true)
+              .map((item, index) => (
               <Card
                 key={index}
                 onClick={() => handleSubItemClick(item.url)}

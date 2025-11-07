@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { RoleService } from '@/core/data/user-service';
+import { RoleService, UserRoleService } from '@/core/data/user-service';
 import { JWTService } from '@/core/auth/jwt';
 // Legacy checkPermission removed; use AdvancedPermissionService with level-based checks
 import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
@@ -7,6 +7,7 @@ import { PermissionLevel } from '@/core/auth/permission-levels';
 import { logError } from '@/core/logging/logger';
 
 const roleService = new RoleService();
+const userRoleService = new UserRoleService();
 
 /**
  * GET /api/roles/[id]
@@ -61,6 +62,10 @@ export async function GET(
       );
     }
 
+    // Get user count for this role
+    const userRoles = await userRoleService.getUserRolesByRole(id);
+    const userCount = userRoles.length;
+
     // Normalize moduleLevels to object for client
     if (typeof role.moduleLevels === 'string') {
       try {
@@ -72,7 +77,12 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: role,
+      data: {
+        ...role,
+        _count: {
+          users: userCount
+        }
+      },
     });
   } catch (error) {
     logError('GET /api/roles/[id]', error);

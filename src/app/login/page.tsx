@@ -15,6 +15,7 @@ import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { apiClient, getErrorMessage } from '@/core/api/client';
+import { getFullVersionString } from '@/core/utils/version';
 
 interface LoginResponse {
   user: {
@@ -315,7 +316,21 @@ export default function LoginPage() {
             </motion.div>
           </CardFooter>
         </form>
-      </Card>
+        </Card>
+      </motion.div>
+      
+      {/* Version Information - Outside login card */}
+      <motion.div
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.4, duration: 0.5 }}
+      >
+        <div className="text-xs text-muted-foreground/60 text-center backdrop-blur-sm bg-background/30 px-3 py-1 rounded-full border border-border/20">
+          <span className="font-mono tracking-wider">
+            {getFullVersionString()}
+          </span>
+        </div>
       </motion.div>
     </div>
   );

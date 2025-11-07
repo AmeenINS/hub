@@ -93,6 +93,7 @@ import { ThemeToggle } from '@/shared/components/theme/theme-toggle';
 import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
 import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
+import { VersionDisplay } from '@/shared/components/ui/version-display';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t, dir, locale } = useI18n();
@@ -646,20 +647,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (permissionsLoading) return [];
     
     const filtered = allNavItems
-      .filter((item) => hasModuleAccess(item.module))
       .map((item) => {
         // If item has subitems, filter them based on permissions
         if (item.items && item.items.length > 0) {
           const filteredSubItems = item.items.filter((subItem: any) => {
             // If subitem has module defined, check permission
             if (subItem.module) {
-              return hasModuleAccess(subItem.module);
+              return canAccessModule(subItem.module);
             }
-            // If no module defined, inherit parent permission (already checked)
-            return true;
+            // If no module defined, inherit parent permission
+            return canAccessModule(item.module);
           });
           
-          // If all subitems are filtered out, hide the parent
+          // If all subitems are filtered out, hide the parent entirely
           if (filteredSubItems.length === 0) {
             return null;
           }
@@ -670,18 +670,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           };
         }
         
-        return item;
+        // For items without subitems, check parent module access
+        return canAccessModule(item.module) ? item : null;
       })
       .filter((item): item is NonNullable<typeof item> => item !== null);
     
     return filtered;
-  }, [permissionsLoading, allNavItems, hasModuleAccess]);
+  }, [permissionsLoading, allNavItems, canAccessModule]);
 
   // Filter navigation based on permissions
   const navMain = filterNavItems;
   const navSecondary = permissionsLoading
     ? []
-    : allNavSecondary.filter((item) => hasModuleAccess(item.module));
+    : allNavSecondary.filter((item) => canAccessModule(item.module));
 
   return (
     <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} {...props}>
@@ -804,6 +805,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
+        {/* Version Info */}
+        <div className="px-3 py-2 border-t border-sidebar-border">
+          <VersionDisplay variant="simple" className="text-xs text-muted-foreground" />
+        </div>
+        
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

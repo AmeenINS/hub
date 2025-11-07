@@ -162,13 +162,22 @@ export default function RolesPage() {
                           {new Date(role.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/roles/${role.id}/edit`)}
-                          >
-                            {t('common.edit')}
-                          </Button>
+                          <div className="flex items-center gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => router.push(`/dashboard/roles/${role.id}`)}
+                            >
+                              {t('roles.details')}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => router.push(`/dashboard/roles/${role.id}/edit`)}
+                            >
+                              {t('common.edit')}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuthStore } from '@/shared/state/auth-store';
 import { apiClient } from '@/core/api/client';
 import { PermissionLevel } from '@/core/auth/permission-levels';
@@ -177,17 +177,24 @@ export function usePermissionProfile() {
     fetchProfile();
   }, [user]);
 
+  // Memoize the profile object to prevent unnecessary re-renders
+  const memoizedProfile = useMemo(() => profile, [
+    profile.isLoading,
+    profile.effectiveLevel,
+    JSON.stringify(profile.moduleLevels) // Only re-create if moduleLevels actually change
+  ]);
+
   return {
-    profile,
+    profile: memoizedProfile,
     
     /** Get permission level for a specific module */
     getModuleLevel: (module: string): PermissionLevel => {
-      return profile.moduleLevels[module] || PermissionLevel.NONE;
+      return memoizedProfile.moduleLevels[module] || PermissionLevel.NONE;
     },
     
     /** Check if user has minimum level for a module */
     hasModuleAccess: (module: string, minimumLevel: PermissionLevel): boolean => {
-      const moduleLevel = profile.moduleLevels[module] || PermissionLevel.NONE;
+      const moduleLevel = memoizedProfile.moduleLevels[module] || PermissionLevel.NONE;
       return moduleLevel >= minimumLevel;
     },
   };

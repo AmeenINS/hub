@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { PermissionLevel } from '@/core/auth/permission-levels';
 import { usePermissionProfile } from './use-permission-level';
 
@@ -53,6 +53,9 @@ const resolveModuleNames = (name: string | string[]) => {
 export function useModuleVisibility() {
   const { profile } = usePermissionProfile();
 
+  // Memoize moduleLevels to prevent callback recreation
+  const moduleLevelsString = useMemo(() => JSON.stringify(profile.moduleLevels), [profile.moduleLevels]);
+
   const hasAccess = useCallback(
     (moduleName: string | string[], minimumLevel: PermissionLevel = PermissionLevel.READ) => {
       if (!moduleName) return false;
@@ -68,7 +71,7 @@ export function useModuleVisibility() {
         return typeof level === 'number' && level >= minimumLevel;
       });
     },
-    [profile.moduleLevels]
+    [moduleLevelsString, profile.moduleLevels]
   );
 
   const getAccessLevel = useCallback(

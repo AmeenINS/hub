@@ -90,7 +90,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { t } = useI18n();
-  const { canView, canWrite, canFull, isLoading } = usePermissionLevel('contacts');
+  const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_contacts');
 
   // Show loading state
   if (isLoading) {

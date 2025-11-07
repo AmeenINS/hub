@@ -53,6 +53,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
+    const canTrackLocation = await checkPermission(payload.userId, 'tracking', 'track');
+    if (!canTrackLocation) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const parsed = locationSchema.safeParse(body);
 
@@ -87,7 +92,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    const canViewLocations = await checkPermission(payload.userId, 'liveTracking', 'read');
+    const canViewLocations = await checkPermission(payload.userId, 'tracking', 'view');
     if (!canViewLocations) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }

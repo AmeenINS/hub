@@ -20,25 +20,7 @@ export default function NotesPage() {
   
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('notes');
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Check if user has at least READ permission for Notes
-  if (!canView) {
-    return null;
-  }
-
-  const canCreate = canWrite;
-  const canEdit = canWrite;
-  const canDelete = canFull;
-
-  // Fetch notes
+  // Fetch notes - MUST be defined before any early returns
   const fetchNotes = React.useCallback(async () => {
     try {
       setIsLoadingNotes(true);
@@ -59,6 +41,25 @@ export default function NotesPage() {
   React.useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
+
+  // Derived permission variables
+  const canCreate = canWrite;
+  const canEdit = canWrite;
+  const canDelete = canFull;
+
+  // Show loading state - moved after all hooks
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Check if user has at least READ permission for Notes - moved after all hooks
+  if (!canView) {
+    return null;
+  }
 
   // Create note
   const handleCreateNote = async (data: { title: string; content: string; color: string }) => {
