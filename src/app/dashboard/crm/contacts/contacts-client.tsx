@@ -7,6 +7,7 @@ import Link from "next/link";
 // Internal utilities
 import { apiClient, getErrorMessage } from "@/core/api/client";
 import { useI18n } from "@/shared/i18n/i18n-context";
+import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
 
 // Components - UI
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
@@ -89,6 +90,25 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { t } = useI18n();
+  const { canView, canWrite, canFull, isLoading } = usePermissionLevel('contacts');
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  // Check if user has at least READ permission for Contacts
+  if (!canView) {
+    return null;
+  }
+
+  const canCreate = canWrite;
+  const canEdit = canWrite;
+  const canDelete = canFull;
 
   // Filter contacts based on search
   const filteredContacts = contacts.filter(contact => {
@@ -157,12 +177,14 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
               {t('crm.trash')}
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/dashboard/crm/contacts/new">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('crm.addContact')}
-            </Link>
-          </Button>
+          {canCreate && (
+            <Button asChild>
+              <Link href="/dashboard/crm/contacts/new">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('crm.addContact')}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -305,24 +327,30 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>{t('common.actions')}</DropdownMenuLabel>
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/crm/contacts/${contact.id}/edit`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            {t('crm.editContactAction')}
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
                           <Link href={`/dashboard/crm/contacts/${contact.id}`}>
                             {t('crm.viewProfile')}
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className="text-destructive"
-                          onClick={() => openDeleteDialog(contact)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {t('crm.deleteContactAction')}
-                        </DropdownMenuItem>
+                        {canEdit && (
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/crm/contacts/${contact.id}/edit`}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              {t('crm.editContactAction')}
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-destructive"
+                              onClick={() => openDeleteDialog(contact)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t('crm.deleteContactAction')}
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

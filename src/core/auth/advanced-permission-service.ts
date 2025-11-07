@@ -22,9 +22,6 @@ export interface PermissionProfile {
   /** Effective permission level (highest across all modules) */
   effectiveLevel: PermissionLevel;
   
-  /** Is user a super admin */
-  isSuperAdmin: boolean;
-  
   /** Legacy permissions for backward compatibility */
   legacyPermissions?: Record<string, string[]>;
 }
@@ -46,15 +43,8 @@ export class AdvancedPermissionService {
       // Compute module levels
       const moduleLevels = await this.computeEffectiveLevels(userId, permissions);
       
-      // Determine if super admin
-      const isSuperAdmin = Object.values(moduleLevels).some(
-        level => level === PermissionLevel.SUPER_ADMIN
-      );
-      
       // Calculate effective level (highest level across all modules)
-      const effectiveLevel = isSuperAdmin
-        ? PermissionLevel.SUPER_ADMIN
-        : Math.max(...Object.values(moduleLevels), PermissionLevel.NONE);
+      const effectiveLevel = Math.max(...Object.values(moduleLevels), PermissionLevel.NONE);
       
       // Build legacy permission map for backward compatibility
       const legacyPermissions: Record<string, string[]> = {};
@@ -69,7 +59,6 @@ export class AdvancedPermissionService {
         userId,
         moduleLevels,
         effectiveLevel: effectiveLevel as PermissionLevel,
-        isSuperAdmin,
         legacyPermissions,
       };
     } catch (error) {
@@ -78,7 +67,6 @@ export class AdvancedPermissionService {
         userId,
         moduleLevels: {},
         effectiveLevel: PermissionLevel.NONE,
-        isSuperAdmin: false,
       };
     }
   }
@@ -178,11 +166,6 @@ export class AdvancedPermissionService {
     try {
       const profile = await this.getUserPermissionProfile(userId);
       
-      // Super admins have all permissions
-      if (profile.isSuperAdmin) {
-        return true;
-      }
-      
       // Get user's level for this module
       const userLevel = profile.moduleLevels[module] || PermissionLevel.NONE;
       
@@ -206,11 +189,6 @@ export class AdvancedPermissionService {
   ): Promise<boolean> {
     try {
       const profile = await this.getUserPermissionProfile(userId);
-      
-      // Super admins have all permissions
-      if (profile.isSuperAdmin) {
-        return true;
-      }
       
       // Get user's level for settings module
       const settingsLevel = profile.moduleLevels.settings || PermissionLevel.NONE;
@@ -237,10 +215,6 @@ export class AdvancedPermissionService {
   ): Promise<boolean> {
     try {
       const profile = await this.getUserPermissionProfile(userId);
-      
-      if (profile.isSuperAdmin) {
-        return true;
-      }
       
       const userLevel = profile.moduleLevels[module] || PermissionLevel.NONE;
       return hasMinimumLevel(userLevel, minimumLevel);

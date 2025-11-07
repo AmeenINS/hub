@@ -289,7 +289,6 @@ console.log(profile);
     users: 1        // READ
   },
   effectiveLevel: 4,  // Highest level
-  isSuperAdmin: false,
   legacyPermissions: { ... }  // For backward compatibility
 }
 */

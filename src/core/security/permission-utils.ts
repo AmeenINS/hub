@@ -6,25 +6,12 @@
  */
 
 /**
- * Check if user is super admin from permission map
- */
-export function isSuperAdmin(permissionMap: Record<string, string[]>): boolean {
-  // Check if has super admin marker
-  return permissionMap['*']?.includes('*') || false;
-}
-
-/**
  * Check if user has access to a module
  */
 export function hasModuleAccess(
   permissionMap: Record<string, string[]>,
   moduleName: string
 ): boolean {
-  // Super admin has access to everything
-  if (isSuperAdmin(permissionMap)) {
-    return true;
-  }
-  
   // Check if module has any permissions
   const modulePerms = permissionMap[moduleName];
   return modulePerms !== undefined && modulePerms.length > 0;
@@ -38,11 +25,6 @@ export function hasPermission(
   moduleName: string,
   action: string
 ): boolean {
-  // Super admin has all permissions
-  if (isSuperAdmin(permissionMap)) {
-    return true;
-  }
-  
   const moduleActions = permissionMap[moduleName] || [];
   return moduleActions.includes(action) || moduleActions.includes('*');
 }

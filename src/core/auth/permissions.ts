@@ -15,11 +15,7 @@ export async function getUserModulePermissions(userId: string, modules: string[]
     result[m] = getLevelActions(level as PermissionLevel);
   }
 
-  if (profile.isSuperAdmin) {
-    for (const m of modules) {
-      result[m] = ['*'];
-    }
-  }
+
 
   return result;
 }

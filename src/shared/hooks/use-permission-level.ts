@@ -107,9 +107,6 @@ export interface PermissionProfile {
   /** Module name to permission level mapping */
   moduleLevels: Record<string, PermissionLevel>;
   
-  /** Is user a super admin */
-  isSuperAdmin: boolean;
-  
   /** Highest permission level across all modules */
   effectiveLevel: PermissionLevel;
   
@@ -133,7 +130,6 @@ export function usePermissionProfile() {
   const { user } = useAuthStore();
   const [profile, setProfile] = useState<PermissionProfile>({
     moduleLevels: {},
-    isSuperAdmin: false,
     effectiveLevel: PermissionLevel.NONE,
     isLoading: true,
   });
@@ -143,7 +139,6 @@ export function usePermissionProfile() {
       if (!user) {
         setProfile({
           moduleLevels: {},
-          isSuperAdmin: false,
           effectiveLevel: PermissionLevel.NONE,
           isLoading: false,
         });
@@ -155,7 +150,6 @@ export function usePermissionProfile() {
           userId: string;
           moduleLevels: Record<string, PermissionLevel>;
           effectiveLevel: PermissionLevel;
-          isSuperAdmin: boolean;
         }>('/api/permissions/profile');
 
         if (response.success && response.data) {
@@ -166,7 +160,6 @@ export function usePermissionProfile() {
         } else {
           setProfile({
             moduleLevels: {},
-            isSuperAdmin: false,
             effectiveLevel: PermissionLevel.NONE,
             isLoading: false,
           });
@@ -175,7 +168,6 @@ export function usePermissionProfile() {
         console.error('Failed to fetch permission profile:', error);
         setProfile({
           moduleLevels: {},
-          isSuperAdmin: false,
           effectiveLevel: PermissionLevel.NONE,
           isLoading: false,
         });

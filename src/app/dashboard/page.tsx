@@ -41,13 +41,15 @@ import {
   Layers,
   ShoppingCart,
   Folder,
-  Lightbulb
+  Lightbulb,
+  Radar
 } from 'lucide-react';
 import { useAuthStore } from '@/shared/state/auth-store';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/shared/components/ui/badge';
 import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
 import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
 import * as React from 'react';
 import {
   Dialog,
@@ -77,7 +79,7 @@ export default function DashboardPage() {
   const { token } = useAuthStore();
   const router = useRouter();
   const { unreadCount } = useRealTimeNotifications();
-  const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
+  const { hasAccess: canAccessModule, isLoading: permissionsLoading } = useModuleVisibility();
   const [selectedModule, setSelectedModule] = React.useState<AppModule | null>(null);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [notesStats, setNotesStats] = React.useState<{
@@ -133,30 +135,6 @@ export default function DashboardPage() {
     return colorMap[iconColor] || 'from-gray-500 to-gray-600';
   };
 
-  React.useEffect(() => {
-    const fetchPermissions = async () => {
-      if (!token) return;
-      
-      try {
-        const response = await apiClient.get<Record<string, string[]>>('/api/users/me/all-permissions');
-        
-        if (response.success && response.data) {
-          // API returns { success: true, data: Record<string, string[]> }
-          // response.data is already the permissions object
-          setPermissions(
-            typeof response.data === 'object' && !Array.isArray(response.data)
-              ? response.data
-              : {}
-          );
-        }
-      } catch (error) {
-        console.error('Failed to fetch permissions:', getErrorMessage(error));
-      }
-    };
-
-    fetchPermissions();
-  }, [token]);
-
   // Fetch notes statistics
   React.useEffect(() => {
     const fetchNotesStats = async () => {
@@ -191,23 +169,10 @@ export default function DashboardPage() {
     fetchNotesStats();
   }, [token]);
 
-  const hasModuleAccess = (module: string) => {
-    // If permissions are not loaded yet, show all modules
-    if (!permissions || Object.keys(permissions).length === 0) return true;
-    
-    // Check if user is super admin (has system:admin permission)
-    const isSuperAdmin = permissions['system']?.includes('admin');
-    if (isSuperAdmin) return true;
-    
-    // For CRM module, check if user has access to any CRM sub-module
-    if (module === 'crm') {
-      return ['crm', 'crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns']
-        .some(subModule => permissions[subModule] && permissions[subModule].length > 0);
-    }
-    
-    // Check specific module permission
-    return permissions[module] && permissions[module].length > 0;
-  };
+  const hasModuleAccess = React.useCallback(
+    (module: string) => canAccessModule(module),
+    [canAccessModule]
+  );
 
   const handleModuleClick = (module: AppModule) => {
     if (module.subItems.length === 1) {
@@ -231,6 +196,15 @@ export default function DashboardPage() {
       module: 'dashboard',
       subItems: [
         { title: t('nav.dashboard'), url: '/dashboard', icon: LayoutDashboard, iconColor: 'text-blue-500' },
+      ],
+    },
+    {
+      title: t('nav.liveTracking'),
+      icon: Radar,
+      color: 'from-sky-500 to-sky-600',
+      module: 'liveTracking',
+      subItems: [
+        { title: t('nav.liveTracking'), url: '/dashboard/live-tracking', icon: Radar, iconColor: 'text-sky-500' },
       ],
     },
     {
@@ -414,122 +388,141 @@ export default function DashboardPage() {
     },
   ];
 
-  const accessibleModules = appModules.filter(module => 
-    module.module === 'dashboard' || 
-    module.module === 'settings' ||
-    module.module === 'notes' ||
-    module.module === 'notifications' ||
-    hasModuleAccess(module.module)
-  );
+  const accessibleModules = permissionsLoading
+    ? []
+    : appModules.filter(module => hasModuleAccess(module.module));
 
   return (
     <div className="p-6 space-y-6">
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Notes */}
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('notes.title')}
-                </p>
-                <p className="text-3xl font-bold mt-2">
-                  {notesStats.total}
-                </p>
+        {/* Total Notes - Only show if user has access to notes */}
+        {hasModuleAccess('notes') && (
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('notes.title')}
+                  </p>
+                  <p className="text-3xl font-bold mt-2">
+                    {notesStats.total}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600">
+                  <Lightbulb className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600">
-                <Lightbulb className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Pinned Notes */}
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('notes.pinned')}
-                </p>
-                <p className="text-3xl font-bold mt-2">
-                  {notesStats.pinned}
-                </p>
+        {/* Pinned Notes - Only show if user has access to notes */}
+        {hasModuleAccess('notes') && (
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('notes.pinned')}
+                  </p>
+                  <p className="text-3xl font-bold mt-2">
+                    {notesStats.pinned}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
+                  <CheckCircle2 className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
-                <CheckCircle2 className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Archived Notes */}
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('notes.archivedNotes')}
-                </p>
-                <p className="text-3xl font-bold mt-2">
-                  {notesStats.archived}
-                </p>
+        {/* Archived Notes - Only show if user has access to notes */}
+        {hasModuleAccess('notes') && (
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('notes.archivedNotes')}
+                  </p>
+                  <p className="text-3xl font-bold mt-2">
+                    {notesStats.archived}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600">
+                  <Folder className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600">
-                <Folder className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Notifications */}
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {t('nav.notifications')}
-                </p>
-                <p className="text-3xl font-bold mt-2">
-                  {unreadCount}
-                </p>
+        {/* Notifications - Only show if user has access to notifications */}
+        {hasModuleAccess('notifications') && (
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {t('nav.notifications')}
+                  </p>
+                  <p className="text-3xl font-bold mt-2">
+                    {unreadCount}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
+                  <Bell className="h-6 w-6 text-white" />
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
-                <Bell className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Modules Grid */}
       <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
-        {accessibleModules.map((module, index) => (
-          <Card 
-            key={index}
-            onClick={() => handleModuleClick(module)}
-            className="group relative hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/50 overflow-hidden hover:scale-105 py-0"
-          >
-            <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-            
-            <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2 relative">
-              <div className={`p-3 rounded-xl bg-gradient-to-br ${module.color} shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                <module.icon className="h-6 w-6 text-white" />
-              </div>
+        {permissionsLoading ? (
+          Array.from({ length: 12 }).map((_, index) => (
+            <Card key={`module-skeleton-${index}`} className="animate-pulse py-0">
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                <div className="p-3 rounded-xl bg-muted shadow-md h-12 w-12" />
+                <div className="h-3 w-16 rounded bg-muted" />
+              </CardContent>
+            </Card>
+          ))
+        ) : accessibleModules.length === 0 ? (
+          <div className="col-span-full text-center text-muted-foreground py-10">
+            {t('common.noData')}
+          </div>
+        ) : (
+          accessibleModules.map((module, index) => (
+            <Card 
+              key={index}
+              onClick={() => handleModuleClick(module)}
+              className="group relative hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/50 overflow-hidden hover:scale-105 py-0"
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
               
-              <h3 className="font-medium text-xs leading-tight group-hover:text-primary transition-colors">
-                {module.title}
-              </h3>
+              <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2 relative">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${module.color} shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <module.icon className="h-6 w-6 text-white" />
+                </div>
+                
+                <h3 className="font-medium text-xs leading-tight group-hover:text-primary transition-colors">
+                  {module.title}
+                </h3>
 
-              {module.badge && (
-                <Badge variant="destructive" className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center p-0 rounded-full text-xs">
-                  {module.badge}
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                {module.badge && (
+                  <Badge variant="destructive" className="absolute top-1 right-1 h-5 w-5 flex items-center justify-center p-0 rounded-full text-xs">
+                    {module.badge}
+                  </Badge>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

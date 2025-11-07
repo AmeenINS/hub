@@ -2,8 +2,6 @@
 
 import * as React from 'react';
 import '@/app/sidebar-enhanced.css';
-import { apiClient } from '@/core/api/client';
-import { isSuperAdmin, hasModuleAccess as checkModuleAccess } from '@/core/security/permission-utils';
 import {
   Bot,
   ChevronRight,
@@ -50,7 +48,6 @@ import {
   LayoutDashboard,
   Network,
   Layers,
-  Settings,
   Lightbulb,
   Radar,
 } from 'lucide-react';
@@ -81,6 +78,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSkeleton,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
@@ -94,112 +92,33 @@ import Link from 'next/link';
 import { ThemeToggle } from '@/shared/components/theme/theme-toggle';
 import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
+import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { t, dir, locale } = useI18n();
-  const { user, logout, token } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [permissions, setPermissions] = React.useState<Record<string, string[]>>({});
-  const [loading, setLoading] = React.useState(true);
   
   // Use real-time notifications hook
   const { unreadCount } = useRealTimeNotifications();
+  const { hasAccess: canAccessModule, isLoading: permissionsLoading } = useModuleVisibility();
 
-
-
-  // Fetch user permissions using new permission level system
-  React.useEffect(() => {
-    const fetchPermissions = async () => {
-      if (!token) return;
-
-      try {
-        // Get complete permission profile from new API
-        const response = await apiClient.get('/api/permissions/profile');
-
-        console.log('=== New Permission System ===');
-        console.log('Response:', response);
-
-        if (response.success && response.data) {
-          // Convert module levels to permission format for backward compatibility
-          const { moduleLevels, isSuperAdmin } = response.data;
-          const permissionMap: Record<string, string[]> = {};
-          
-          // If super admin, grant all permissions
-          if (isSuperAdmin) {
-            Object.keys(moduleLevels).forEach(module => {
-              permissionMap[module] = ['*']; // Super admin wildcard
-            });
-          } else {
-            // Convert levels to action arrays for compatibility
-            Object.entries(moduleLevels).forEach(([module, level]) => {
-              const levelNum = level as number;
-              if (levelNum >= 1) { // READ or higher
-                permissionMap[module] = ['view', 'read'];
-                if (levelNum >= 2) { // WRITE or higher
-                  permissionMap[module].push('create', 'edit');
-                  if (levelNum >= 3) { // FULL or higher
-                    permissionMap[module].push('delete', 'manage');
-                    if (levelNum >= 4) { // ADMIN or higher
-                      permissionMap[module].push('admin', 'configure');
-                    }
-                  }
-                }
-              }
-            });
-          }
-          
-          setPermissions(permissionMap);
-        } else {
-          console.error('Failed to get permission profile:', response);
-        }
-      } catch (error) {
-        console.error('Failed to fetch permission profile:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPermissions();
-  }, [token]);
-
-
+  /**
+   * Check if user has access to a module
+   * Supports checking parent modules and sub-modules with aliases
+   */
+  const hasModuleAccess = React.useCallback(
+    (moduleName: string | string[]) => {
+      if (!moduleName) return false;
+      return canAccessModule(moduleName);
+    },
+    [canAccessModule]
+  );
 
   const handleLogout = () => {
     logout();
     router.push('/login');
-  };
-
-  // Check if user has access to a module
-  const hasModuleAccess = (moduleName: string) => {
-    if (loading) return true; // Show all while loading
-    
-    // Super admin has access to everything
-    if (isSuperAdmin(permissions)) {
-      return true;
-    }
-    
-    // Public modules accessible to all users
-    const publicModules = ['dashboard', 'notes', 'notifications'];
-    if (publicModules.includes(moduleName)) {
-      return true;
-    }
-    
-    // For CRM, check if user has access to any CRM module
-    if (moduleName === 'crm') {
-      return ['crm_contacts', 'crm_companies', 'crm_leads', 'crm_deals', 'crm_activities', 'crm_campaigns']
-        .some(module => checkModuleAccess(permissions, module));
-    }
-    
-    // Map legacy module names to new ones
-    const moduleMapping: Record<string, string> = {
-      'liveTracking': 'tracking',
-      'commission': 'accounting',
-    };
-    
-    const actualModule = moduleMapping[moduleName] || moduleName;
-    
-    return checkModuleAccess(permissions, actualModule);
   };
 
   // Navigation data based on user permissions
@@ -234,36 +153,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/crm/contacts',
           icon: UserCheck,
           iconColor: 'text-purple-500',
+          module: ['crm', 'crm_contacts', 'contacts'],
         },
         {
           title: t('modules.companies'),
           url: '/dashboard/crm/companies',
           icon: Building2,
           iconColor: 'text-purple-600',
+          module: ['crm', 'crm_companies', 'companies'],
         },
         {
           title: t('modules.leads'),
           url: '/dashboard/crm/leads',
           icon: Target,
           iconColor: 'text-purple-700',
+          module: ['crm', 'crm_leads', 'leads'],
         },
         {
           title: t('modules.deals'),
           url: '/dashboard/crm/deals',
           icon: Briefcase,
           iconColor: 'text-purple-800',
+          module: ['crm', 'crm_deals', 'deals'],
         },
         {
           title: t('modules.activities'),
           url: '/dashboard/crm/activities',
           icon: Activity,
           iconColor: 'text-purple-500',
+          module: ['crm', 'crm_activities', 'activities'],
         },
         {
           title: t('modules.campaigns'),
           url: '/dashboard/crm/campaigns',
           icon: Mail,
           iconColor: 'text-purple-600',
+          module: ['crm', 'crm_campaigns', 'campaigns'],
         },
       ],
     },
@@ -281,30 +206,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/policies',
           icon: FileCheck,
           iconColor: 'text-emerald-500',
+          module: 'policies',
         },
         {
           title: t('modules.newPolicy'),
           url: '/dashboard/policies/new',
           icon: FileText,
           iconColor: 'text-emerald-600',
+          module: 'policies',
         },
         {
           title: t('modules.renewals'),
           url: '/dashboard/policies/renewals',
           icon: Clock,
           iconColor: 'text-emerald-700',
+          module: 'policies',
         },
         {
           title: t('modules.expired'),
           url: '/dashboard/policies/expired',
           icon: AlertCircle,
           iconColor: 'text-red-500',
+          module: 'policies',
         },
         {
           title: t('modules.policyTypes'),
           url: '/dashboard/policies/types',
           icon: Layers,
           iconColor: 'text-emerald-600',
+          module: 'policies',
         },
       ],
     },
@@ -322,36 +252,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/claims',
           icon: ClipboardList,
           iconColor: 'text-orange-500',
+          module: 'claims',
         },
         {
           title: t('modules.newClaim'),
           url: '/dashboard/claims/new',
           icon: FileText,
           iconColor: 'text-orange-600',
+          module: 'claims',
         },
         {
           title: t('modules.pending'),
           url: '/dashboard/claims/pending',
           icon: Clock,
           iconColor: 'text-yellow-600',
+          module: 'claims',
         },
         {
           title: t('modules.approved'),
           url: '/dashboard/claims/approved',
           icon: CheckCircle2,
           iconColor: 'text-green-600',
+          module: 'claims',
         },
         {
           title: t('modules.rejected'),
           url: '/dashboard/claims/rejected',
           icon: AlertCircle,
           iconColor: 'text-red-600',
+          module: 'claims',
         },
         {
           title: t('modules.processing'),
           url: '/dashboard/claims/processing',
           icon: Workflow,
           iconColor: 'text-orange-700',
+          module: 'claims',
         },
       ],
     },
@@ -369,36 +305,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/commission',
           icon: DollarSign,
           iconColor: 'text-teal-500',
+          module: ['accounting', 'commission', 'calculator'],
         },
         {
           title: t('modules.payouts'),
           url: '/dashboard/commission/payouts',
           icon: Wallet,
           iconColor: 'text-teal-600',
+          module: ['accounting', 'commission'],
         },
         {
           title: t('modules.invoices'),
           url: '/dashboard/accounting/invoices',
           icon: Receipt,
           iconColor: 'text-teal-700',
+          module: 'accounting',
         },
         {
           title: t('modules.payments'),
           url: '/dashboard/accounting/payments',
           icon: CreditCard,
           iconColor: 'text-teal-800',
+          module: 'accounting',
         },
         {
           title: t('modules.transactions'),
           url: '/dashboard/accounting/transactions',
           icon: Banknote,
           iconColor: 'text-teal-600',
+          module: 'accounting',
         },
         {
           title: t('nav.reports'),
           url: '/dashboard/accounting/reports',
           icon: FileSpreadsheet,
           iconColor: 'text-teal-700',
+          module: ['accounting', 'reports'],
         },
       ],
     },
@@ -416,18 +358,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/workflows',
           icon: GitBranch,
           iconColor: 'text-indigo-500',
+          module: 'workflows',
         },
         {
           title: t('modules.automations'),
           url: '/dashboard/workflows/automations',
           icon: Workflow,
           iconColor: 'text-indigo-600',
+          module: 'workflows',
         },
         {
           title: t('modules.templates'),
           url: '/dashboard/workflows/templates',
           icon: Folder,
           iconColor: 'text-indigo-700',
+          module: 'workflows',
         },
       ],
     },
@@ -445,18 +390,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/tasks',
           icon: ListTodo,
           iconColor: 'text-pink-500',
+          module: 'tasks',
         },
         {
           title: t('tasks.createTask'),
           url: '/dashboard/tasks/new',
           icon: FileText,
           iconColor: 'text-pink-600',
+          module: 'tasks',
         },
         {
           title: t('tasks.myTasks'),
           url: '/dashboard/tasks/my-tasks',
           icon: UserCheck,
           iconColor: 'text-pink-700',
+          module: 'tasks',
         },
       ],
     },
@@ -483,18 +431,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/scheduler',
           icon: CalendarIcon,
           iconColor: 'text-cyan-500',
+          module: 'scheduler',
         },
         {
           title: t('modules.newEvent'),
           url: '/dashboard/scheduler/new',
           icon: FileText,
           iconColor: 'text-cyan-600',
+          module: 'scheduler',
         },
         {
           title: t('modules.calendarView'),
           url: '/dashboard/scheduler?view=calendar',
           icon: Clock,
           iconColor: 'text-cyan-700',
+          module: 'scheduler',
         },
       ],
     },
@@ -512,18 +463,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/inventory',
           icon: Package,
           iconColor: 'text-amber-500',
+          module: 'inventory',
         },
         {
           title: t('modules.categories'),
           url: '/dashboard/inventory/categories',
           icon: Layers,
           iconColor: 'text-amber-600',
+          module: 'inventory',
         },
         {
           title: t('modules.stock'),
           url: '/dashboard/inventory/stock',
           icon: ShoppingCart,
           iconColor: 'text-amber-700',
+          module: 'inventory',
         },
       ],
     },
@@ -541,18 +495,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/procurement/orders',
           icon: FileText,
           iconColor: 'text-yellow-500',
+          module: 'procurement',
         },
         {
           title: t('modules.suppliers'),
           url: '/dashboard/procurement/suppliers',
           icon: Building2,
           iconColor: 'text-yellow-600',
+          module: 'procurement',
         },
         {
           title: t('modules.requisitions'),
           url: '/dashboard/procurement/requisitions',
           icon: ClipboardList,
           iconColor: 'text-yellow-700',
+          module: 'procurement',
         },
       ],
     },
@@ -570,18 +527,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/users',
           icon: Users,
           iconColor: 'text-violet-500',
+          module: 'users',
         },
         {
           title: t('users.createUser'),
           url: '/dashboard/users/new',
           icon: UserPlus,
           iconColor: 'text-violet-600',
+          module: 'users',
         },
         {
           title: t('dashboard.orgChart') || 'Org Chart',
           url: '/dashboard/users/chart',
           icon: Network,
           iconColor: 'text-violet-700',
+          module: 'users',
         },
       ],
     },
@@ -599,6 +559,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/roles',
           icon: Shield,
           iconColor: 'text-fuchsia-500',
+          module: 'roles',
         },
       ],
     },
@@ -616,30 +577,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/reports',
           icon: BarChart3,
           iconColor: 'text-slate-500',
+          module: 'reports',
         },
         {
           title: 'Sales Reports',
           url: '/dashboard/reports/sales',
           icon: TrendingUp,
           iconColor: 'text-slate-600',
+          module: 'reports',
         },
         {
           title: 'Financial Reports',
           url: '/dashboard/reports/financial',
           icon: DollarSign,
           iconColor: 'text-slate-700',
+          module: 'reports',
         },
         {
           title: 'Performance',
           url: '/dashboard/reports/performance',
           icon: Award,
           iconColor: 'text-slate-600',
+          module: 'reports',
         },
         {
           title: 'Custom Reports',
           url: '/dashboard/reports/custom',
           icon: PieChart,
           iconColor: 'text-slate-500',
+          module: 'reports',
         },
       ],
     },
@@ -670,15 +636,52 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
   ];
 
+  /**
+   * Filter navigation items based on permissions
+   * - Filters parent modules without access
+   * - Filters submenu items without access
+   * - Hides parent menu if all subitems are filtered out
+   */
+  const filterNavItems = React.useMemo(() => {
+    if (permissionsLoading) return [];
+    
+    const filtered = allNavItems
+      .filter((item) => hasModuleAccess(item.module))
+      .map((item) => {
+        // If item has subitems, filter them based on permissions
+        if (item.items && item.items.length > 0) {
+          const filteredSubItems = item.items.filter((subItem: any) => {
+            // If subitem has module defined, check permission
+            if (subItem.module) {
+              return hasModuleAccess(subItem.module);
+            }
+            // If no module defined, inherit parent permission (already checked)
+            return true;
+          });
+          
+          // If all subitems are filtered out, hide the parent
+          if (filteredSubItems.length === 0) {
+            return null;
+          }
+          
+          return {
+            ...item,
+            items: filteredSubItems,
+          };
+        }
+        
+        return item;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+    
+    return filtered;
+  }, [permissionsLoading, allNavItems, hasModuleAccess]);
+
   // Filter navigation based on permissions
-  const data = {
-    navMain: allNavItems.filter(item => 
-      item.module === 'dashboard' || hasModuleAccess(item.module)
-    ),
-    navSecondary: allNavSecondary.filter(item => 
-      item.module === 'settings' || hasModuleAccess(item.module)
-    ),
-  };
+  const navMain = filterNavItems;
+  const navSecondary = permissionsLoading
+    ? []
+    : allNavSecondary.filter((item) => hasModuleAccess(item.module));
 
   return (
     <Sidebar collapsible="icon" side={dir === 'rtl' ? 'right' : 'left'} {...props}>
@@ -703,88 +706,100 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>{t('nav.mainMenu')}</SidebarGroupLabel>
           <SidebarMenu>
-            {data.navMain.map((item) => {
-              const isParentActive = pathname?.startsWith(item.url) || item.isActive;
-              const hasActiveChild = item.items?.some(subItem => pathname === subItem.url);
-              
-              if (item.items) {
+            {permissionsLoading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <SidebarMenuSkeleton key={`nav-main-skeleton-${index}`} showIcon />
+              ))
+            ) : (
+              navMain.map((item) => {
+                const isParentActive = pathname?.startsWith(item.url) || item.isActive;
+                const hasActiveChild = item.items?.some(subItem => pathname === subItem.url);
+                
+                if (item.items) {
+                  return (
+                    <Collapsible
+                      key={item.title}
+                      asChild
+                      defaultOpen={isParentActive}
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton 
+                            tooltip={item.title}
+                            isActive={hasActiveChild}
+                            className={hasActiveChild ? 'bg-sidebar-accent' : ''}
+                          >
+                            {item.icon && <item.icon className={item.iconColor} />}
+                            <span className={hasActiveChild ? 'font-bold' : ''}>{item.title}</span>
+                            <ChevronRight className={`ml-auto transition-transform duration-200 ${dir === 'rtl' ? 'rotate-180 group-data-[state=open]/collapsible:rotate-90' : 'group-data-[state=open]/collapsible:rotate-90'}`} />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {item.items?.map((subItem) => {
+                              const isSubItemActive = pathname === subItem.url;
+                              return (
+                                <SidebarMenuSubItem key={subItem.title}>
+                                  <SidebarMenuSubButton 
+                                    asChild 
+                                    isActive={isSubItemActive}
+                                  >
+                                    <Link href={subItem.url}>
+                                      {subItem.icon && <subItem.icon className={subItem.iconColor} />}
+                                      <span className={isSubItemActive ? 'font-bold' : ''}>{subItem.title}</span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
+                      </SidebarMenuItem>
+                    </Collapsible>
+                  );
+                }
                 return (
-                  <Collapsible
-                    key={item.title}
-                    asChild
-                    defaultOpen={isParentActive}
-                    className="group/collapsible"
-                  >
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton 
-                          tooltip={item.title}
-                          isActive={hasActiveChild}
-                          className={hasActiveChild ? 'bg-sidebar-accent' : ''}
-                        >
-                          {item.icon && <item.icon className={item.iconColor} />}
-                          <span className={hasActiveChild ? 'font-bold' : ''}>{item.title}</span>
-                          <ChevronRight className={`ml-auto transition-transform duration-200 ${dir === 'rtl' ? 'rotate-180 group-data-[state=open]/collapsible:rotate-90' : 'group-data-[state=open]/collapsible:rotate-90'}`} />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => {
-                            const isSubItemActive = pathname === subItem.url;
-                            return (
-                              <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton 
-                                  asChild 
-                                  isActive={isSubItemActive}
-                                >
-                                  <Link href={subItem.url}>
-                                    {subItem.icon && <subItem.icon className={subItem.iconColor} />}
-                                    <span className={isSubItemActive ? 'font-bold' : ''}>{subItem.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            );
-                          })}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
+                      <Link href={item.url}>
+                        {item.icon && <item.icon className={item.iconColor} />}
+                        <span className={item.isActive ? 'font-bold' : ''}>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 );
-              }
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
-                    <Link href={item.url}>
-                      {item.icon && <item.icon className={item.iconColor} />}
-                      <span className={item.isActive ? 'font-bold' : ''}>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
+              })
+            )}
           </SidebarMenu>
         </SidebarGroup>
         <SidebarGroup className="mt-auto">
           <SidebarGroupLabel>{t('common.more')}</SidebarGroupLabel>
           <SidebarMenu>
-            {data.navSecondary.map((item) => {
-              const isSecondaryActive = pathname?.startsWith(item.url);
-              return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild size="sm" isActive={isSecondaryActive}>
-                    <Link href={item.url}>
-                      <item.icon className={item.iconColor} />
-                      <span className={isSecondaryActive ? 'font-bold' : ''}>{item.title}</span>
-                      {item.badge && parseInt(item.badge) > 0 && (
-                        <Badge variant="destructive" className="ml-auto text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
+            {permissionsLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <SidebarMenuSkeleton key={`nav-secondary-skeleton-${index}`} showIcon />
+              ))
+            ) : (
+              navSecondary.map((item) => {
+                const isSecondaryActive = pathname?.startsWith(item.url);
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild size="sm" isActive={isSecondaryActive}>
+                      <Link href={item.url}>
+                        <item.icon className={item.iconColor} />
+                        <span className={isSecondaryActive ? 'font-bold' : ''}>{item.title}</span>
+                        {item.badge && parseInt(item.badge) > 0 && (
+                          <Badge variant="destructive" className="ml-auto text-xs">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })
+            )}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

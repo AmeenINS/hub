@@ -32,14 +32,14 @@ export async function GET(request: NextRequest) {
 
     const userId = payload.userId;
 
-    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const { permissionMap } = await getUserPermissionsContext(userId);
     const canReadUsers = hasPermission(permissionMap, 'users', 'read');
     
     console.log('=== Users API Permission Check ===');
     console.log('User ID:', userId);
-    console.log('Has Permission:', canReadUsers || isSuperAdmin);
+    console.log('Has Permission:', canReadUsers);
 
-    if (!canReadUsers && !isSuperAdmin) {
+    if (!canReadUsers) {
       console.log('❌ Access denied - No permission');
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
@@ -52,8 +52,7 @@ export async function GET(request: NextRequest) {
     
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
-    const canManageAllUsers =
-      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+    const canManageAllUsers = hasPermission(permissionMap, 'users', 'assign-role');
 
     let managedUsers;
     
@@ -112,10 +111,10 @@ export async function POST(request: NextRequest) {
     const userId = payload.userId;
 
     // Check permission
-    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const { permissionMap } = await getUserPermissionsContext(userId);
     const canCreateUser = hasPermission(permissionMap, 'users', 'create');
 
-    if (!canCreateUser && !isSuperAdmin) {
+    if (!canCreateUser) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -167,8 +166,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const canManageAllUsers =
-      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+    const canManageAllUsers = hasPermission(permissionMap, 'users', 'assign-role');
 
     // Validate managerId if provided
     if (managerId) {

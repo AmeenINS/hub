@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { JWTService } from '@/core/auth/jwt';
 import { NotesService } from '@/core/data/notes-service';
 import { getErrorMessage } from '@/core/api/client';
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 
 /**
  * PUT /api/notes/[id] - Update a note
@@ -24,6 +26,20 @@ export async function PUT(
       return NextResponse.json(
         { success: false, message: 'Invalid token' },
         { status: 401 }
+      );
+    }
+
+    // Check permission level for updating notes
+    const hasPermission = await AdvancedPermissionService.hasMinimumLevel(
+      decoded.userId, 
+      'notes', 
+      PermissionLevel.WRITE
+    );
+    
+    if (!hasPermission) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
       );
     }
 
@@ -81,6 +97,20 @@ export async function DELETE(
       );
     }
 
+    // Check permission level for deleting notes
+    const hasPermission = await AdvancedPermissionService.hasMinimumLevel(
+      decoded.userId, 
+      'notes', 
+      PermissionLevel.FULL
+    );
+    
+    if (!hasPermission) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
     const { id: noteId } = await params;
     const deleted = await NotesService.deleteNote(noteId, decoded.userId);
 
@@ -125,6 +155,20 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, message: 'Invalid token' },
         { status: 401 }
+      );
+    }
+
+    // Check permission level for updating notes (PATCH operations)
+    const hasPermission = await AdvancedPermissionService.hasMinimumLevel(
+      decoded.userId, 
+      'notes', 
+      PermissionLevel.WRITE
+    );
+    
+    if (!hasPermission) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
       );
     }
 

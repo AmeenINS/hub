@@ -13,6 +13,8 @@ interface NotesGridProps {
   onNotePin: (noteId: string) => void;
   onNoteColorChange: (noteId: string, color: string) => void;
   onNotesReorder: (noteIds: string[]) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 export function NotesGrid({
@@ -23,6 +25,8 @@ export function NotesGrid({
   onNotePin,
   onNoteColorChange,
   onNotesReorder,
+  canEdit = true,
+  canDelete = true,
 }: NotesGridProps) {
   const { t } = useI18n();
   const [editingNoteId, setEditingNoteId] = React.useState<string | null>(null);
@@ -102,6 +106,8 @@ export function NotesGrid({
                   onColorChange={onNoteColorChange}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                canEdit={canEdit}
+                  canDelete={canDelete}
                 />
               </div>
             ))}
@@ -135,6 +141,8 @@ export function NotesGrid({
                   onColorChange={onNoteColorChange}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                canEdit={canEdit}
+                  canDelete={canDelete}
                 />
               </div>
             ))}

@@ -1,25 +1,47 @@
 'use client';
 
 import * as React from 'react';
-import { Lightbulb, Archive as ArchiveIcon } from 'lucide-react';
+import { Lightbulb, Archive as ArchiveIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { CreateNoteCard } from '@/features/notes/components/create-note-card';
 import { NotesGrid } from '@/features/notes/components/notes-grid';
 import { Button } from '@/shared/components/ui/button';
 import { useI18n } from '@/shared/i18n/i18n-context';
+import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import type { Note } from '@/core/data/notes-service';
 
 export default function NotesPage() {
   const { t } = useI18n();
   const [notes, setNotes] = React.useState<Note[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoadingNotes, setIsLoadingNotes] = React.useState(true);
   const [showArchived, setShowArchived] = React.useState(false);
+  
+  const { canView, canWrite, canFull, isLoading } = usePermissionLevel('notes');
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Check if user has at least READ permission for Notes
+  if (!canView) {
+    return null;
+  }
+
+  const canCreate = canWrite;
+  const canEdit = canWrite;
+  const canDelete = canFull;
 
   // Fetch notes
   const fetchNotes = React.useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsLoadingNotes(true);
       const response = await apiClient.get<Note[]>(
         `/api/notes${showArchived ? '?archived=true' : ''}`
       );
@@ -30,7 +52,7 @@ export default function NotesPage() {
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to fetch notes'));
     } finally {
-      setIsLoading(false);
+      setIsLoadingNotes(false);
     }
   }, [showArchived]);
 
@@ -183,12 +205,14 @@ export default function NotesPage() {
       </div>
 
       {/* Create note card */}
-      <div className="max-w-2xl mx-auto">
-        <CreateNoteCard onCreate={handleCreateNote} />
-      </div>
+      {canCreate && (
+        <div className="max-w-2xl mx-auto">
+          <CreateNoteCard onCreate={handleCreateNote} />
+        </div>
+      )}
 
       {/* Notes grid */}
-      {isLoading ? (
+      {isLoadingNotes ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-muted-foreground">{t('notes.loading')}</div>
         </div>
@@ -201,6 +225,8 @@ export default function NotesPage() {
           onNotePin={handlePinNote}
           onNoteColorChange={handleColorChange}
           onNotesReorder={handleReorderNotes}
+          canEdit={canEdit}
+          canDelete={canDelete}
         />
       )}
     </div>

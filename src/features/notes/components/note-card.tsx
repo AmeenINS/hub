@@ -44,6 +44,8 @@ interface NoteCardProps {
   onColorChange: (noteId: string, color: string) => void;
   onDragStart: (note: Note) => void;
   onDragEnd: () => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
 export function NoteCard({
@@ -57,6 +59,8 @@ export function NoteCard({
   onColorChange,
   onDragStart,
   onDragEnd,
+  canEdit = true,
+  canDelete = true,
 }: NoteCardProps) {
   const { t } = useI18n();
   const [editedTitle, setEditedTitle] = React.useState(note.title);
@@ -94,7 +98,7 @@ export function NoteCard({
       draggable={!isEditing}
       onDragStart={() => onDragStart(note)}
       onDragEnd={onDragEnd}
-      onClick={() => !isEditing && onEdit(note)}
+      onClick={() => !isEditing && canEdit && onEdit(note)}
     >
       <div className={`p-4 space-y-2 ${getTextColor(note.color)}`}>
         {/* Pin indicator */}
@@ -202,21 +206,27 @@ export function NoteCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenuItem onClick={() => onPin(note.id)}>
-                    <Pin className="h-4 w-4 mr-2" />
-                    {note.pinned ? t('notes.unpinNote') : t('notes.pinNote')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onArchive(note.id)}>
-                    <Archive className="h-4 w-4 mr-2" />
-                    {t('notes.archiveNote')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onDelete(note.id)}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    {t('notes.deleteNote')}
-                  </DropdownMenuItem>
+                  {canEdit && (
+                    <DropdownMenuItem onClick={() => onPin(note.id)}>
+                      <Pin className="h-4 w-4 mr-2" />
+                      {note.pinned ? t('notes.unpinNote') : t('notes.pinNote')}
+                    </DropdownMenuItem>
+                  )}
+                  {canEdit && (
+                    <DropdownMenuItem onClick={() => onArchive(note.id)}>
+                      <Archive className="h-4 w-4 mr-2" />
+                      {t('notes.archiveNote')}
+                    </DropdownMenuItem>
+                  )}
+                  {canDelete && (
+                    <DropdownMenuItem
+                      onClick={() => onDelete(note.id)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {t('notes.deleteNote')}
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

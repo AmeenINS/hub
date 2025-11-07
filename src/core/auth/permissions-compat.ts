@@ -25,7 +25,7 @@ export async function getUserPermissionsContext(userId: string) {
       acc[moduleName] = getLevelActions(level as PermissionLevel);
       return acc;
     }, {} as Record<string, string[]>),
-    isSuperAdmin: profile.isSuperAdmin,
+
   };
 }
 

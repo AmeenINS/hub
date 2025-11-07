@@ -1,3 +1,5 @@
+"use client";
+
 import { Metadata } from "next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -13,14 +15,13 @@ import {
   Calendar,
   Phone,
   Mail,
-  Plus
+  Plus,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
+import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
 
-export const metadata: Metadata = {
-  title: "CRM Dashboard - Hub",
-  description: "Customer Relationship Management Dashboard"
-};
+
 
 // Mock data for demonstration
 const stats = [
@@ -109,6 +110,20 @@ const recentActivities = [
 ];
 
 export default function CRMDashboard() {
+  const { canView, isLoading } = usePermissionLevel('crm');
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!canView) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}

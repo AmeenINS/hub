@@ -48,7 +48,7 @@ export async function checkPermission(
   requiredAction: string
 ): Promise<boolean> {
   try {
-    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const { permissionMap } = await getUserPermissionsContext(userId);
 
     console.log('=== Permission Check ===');
     console.log('User ID:', userId);
@@ -59,17 +59,9 @@ export async function checkPermission(
         .flatMap(([module, actions]) => actions.map((action) => `${module}:${action}`))
     );
     
-    if (isSuperAdmin) {
-      console.log('Has Permission:', true);
-      console.log('Is Admin:', true);
-      console.log('======================');
-      return true;
-    }
-
     const allowed = hasPermission(permissionMap, requiredModule, requiredAction);
 
     console.log('Has Permission:', allowed);
-    console.log('Is Admin:', isSuperAdmin);
     console.log('======================');
 
     return allowed;
