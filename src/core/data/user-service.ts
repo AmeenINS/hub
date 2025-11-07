@@ -234,7 +234,20 @@ export class RoleService {
    * Update role
    */
   async updateRole(id: string, data: Partial<Role>): Promise<Role | null> {
-    return lmdb.update<Role>(this.dbName, id, data);
+    // Ensure updatedAt is refreshed and immutable fields are preserved
+    const existing = await this.getRoleById(id);
+    if (!existing) return null;
+
+    const updated: Role = {
+      ...existing,
+      ...data,
+      id: existing.id,
+      createdAt: existing.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await lmdb.update<Role>(this.dbName, id, updated);
+    return updated;
   }
 
   /**

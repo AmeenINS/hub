@@ -68,6 +68,7 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [formData, setFormData] = useState<Role>({
     id: '',
     name: '',
@@ -114,13 +115,12 @@ export default function EditRolePage() {
       if (response.success) {
         toast.success(t('roles.updateSuccess'));
         
+        // Show saved indicator
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 3000);
+        
         // Refresh the form data to show updated values
         await fetchRole();
-        
-        // Show a temporary success indicator
-        setTimeout(() => {
-          toast.success(t('roles.dataRefreshed'));
-        }, 500);
         
       } else {
         toast.error(response.message || t('roles.updateError'));
@@ -350,9 +350,19 @@ export default function EditRolePage() {
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                variant={justSaved ? "default" : "default"}
+                className={justSaved ? "bg-green-600 hover:bg-green-700" : ""}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {loading ? t('common.loading') : t('common.save')}
+                {loading 
+                  ? t('common.loading') 
+                  : justSaved 
+                    ? t('common.saved') 
+                    : t('common.save')
+                }
               </Button>
               <Link href="/dashboard/roles">
                 <Button type="button" variant="outline">
