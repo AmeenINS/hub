@@ -19,7 +19,8 @@ const CRM_MODULES = [
 ];
 
 const MODULE_ALIAS_MAP: Record<string, string[]> = {
-  crm: CRM_MODULES,
+  // Note: 'crm' parent module should only check itself, not all submodules
+  // Submodules like 'crm_contacts' should be checked individually
   livetracking: ['tracking', 'liveTracking'],
   tracking: ['tracking', 'liveTracking'],
   commission: ['accounting'],
@@ -71,7 +72,7 @@ export function useModuleVisibility() {
         return typeof level === 'number' && level >= minimumLevel;
       });
     },
-    [moduleLevelsString, profile.moduleLevels]
+    [moduleLevelsString]
   );
 
   const getAccessLevel = useCallback(
@@ -86,7 +87,7 @@ export function useModuleVisibility() {
         return level > maxLevel ? level : maxLevel;
       }, PermissionLevel.NONE);
     },
-    [profile.moduleLevels]
+    [moduleLevelsString]
   );
 
   return {

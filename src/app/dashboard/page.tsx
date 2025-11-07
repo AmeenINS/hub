@@ -392,18 +392,16 @@ export default function DashboardPage() {
   const accessibleModules = permissionsLoading
     ? []
     : appModules.filter(module => {
-        // Check if user has access to the main module
-        if (!hasModuleAccess(module.module)) return false;
-        
         // If module has subItems, check if user has access to at least one subItem
         if (module.subItems && module.subItems.length > 0) {
           const accessibleSubItems = module.subItems.filter(subItem => 
-            subItem.module ? hasModuleAccess(subItem.module) : true
+            subItem.module ? hasModuleAccess(subItem.module) : hasModuleAccess(module.module)
           );
           return accessibleSubItems.length > 0;
         }
         
-        return true;
+        // For modules without subItems, check the main module
+        return hasModuleAccess(module.module);
       });
 
   return (

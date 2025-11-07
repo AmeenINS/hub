@@ -109,13 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
    * Check if user has access to a module
    * Supports checking parent modules and sub-modules with aliases
    */
-  const hasModuleAccess = React.useCallback(
-    (moduleName: string | string[]) => {
-      if (!moduleName) return false;
-      return canAccessModule(moduleName);
-    },
-    [canAccessModule]
-  );
+
 
   const handleLogout = () => {
     logout();
@@ -154,42 +148,42 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/crm/contacts',
           icon: UserCheck,
           iconColor: 'text-purple-500',
-          module: ['crm', 'crm_contacts', 'contacts'],
+          module: 'crm_contacts',
         },
         {
           title: t('modules.companies'),
           url: '/dashboard/crm/companies',
           icon: Building2,
           iconColor: 'text-purple-600',
-          module: ['crm', 'crm_companies', 'companies'],
+          module: 'crm_companies',
         },
         {
           title: t('modules.leads'),
           url: '/dashboard/crm/leads',
           icon: Target,
           iconColor: 'text-purple-700',
-          module: ['crm', 'crm_leads', 'leads'],
+          module: 'crm_leads',
         },
         {
           title: t('modules.deals'),
           url: '/dashboard/crm/deals',
           icon: Briefcase,
           iconColor: 'text-purple-800',
-          module: ['crm', 'crm_deals', 'deals'],
+          module: 'crm_deals',
         },
         {
           title: t('modules.activities'),
           url: '/dashboard/crm/activities',
           icon: Activity,
           iconColor: 'text-purple-500',
-          module: ['crm', 'crm_activities', 'activities'],
+          module: 'crm_activities',
         },
         {
           title: t('modules.campaigns'),
           url: '/dashboard/crm/campaigns',
           icon: Mail,
           iconColor: 'text-purple-600',
-          module: ['crm', 'crm_campaigns', 'campaigns'],
+          module: 'crm_campaigns',
         },
       ],
     },

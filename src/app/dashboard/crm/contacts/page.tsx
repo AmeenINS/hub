@@ -16,26 +16,6 @@ export default function ContactsPage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check permissions first
-  if (permissionsLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!canView) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h3 className="text-lg font-medium">{t('accessDenied.title')}</h3>
-          <p className="text-muted-foreground">{t('accessDenied.description')}</p>
-        </div>
-      </div>
-    );
-  }
-
   // Fetch data function
   const fetchData = async () => {
     try {
@@ -63,6 +43,26 @@ export default function ContactsPage() {
       fetchData();
     }
   }, [canView]);
+
+  // Check permissions first
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!canView) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-medium">{t('accessDenied.title')}</h3>
+          <p className="text-muted-foreground">{t('accessDenied.description')}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
