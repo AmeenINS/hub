@@ -552,6 +552,7 @@ export const translations = {
       customRoleDesc: 'Custom role created by administrators',
       permissionLevels: 'Permission Levels',
       modulePermissions: 'Module permission levels for this role',
+      permissionLevelGuide: 'Permission Level Guide',
     },
     
     // Reports
@@ -1479,6 +1480,7 @@ export const translations = {
       customRoleDesc: 'دور مخصص تم إنشاؤه من قبل المديرين',
       permissionLevels: 'مستويات الصلاحيات',
       modulePermissions: 'مستويات صلاحيات الوحدات لهذا الدور',
+      permissionLevelGuide: 'دليل مستويات الصلاحيات',
     },
     
     // CRM
