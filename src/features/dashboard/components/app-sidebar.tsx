@@ -690,8 +690,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Ameen Hub</span>
-                  <span className="truncate text-xs">{t('common.platform')}</span>
-                </div>
+                  <VersionDisplay variant="simple" className="text-xs text-muted-foreground" />
+                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -799,11 +799,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        {/* Version Info */}
-        <div className="px-3 py-2 border-t border-sidebar-border">
-          <VersionDisplay variant="simple" className="text-xs text-muted-foreground" />
-        </div>
-        
+       
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>

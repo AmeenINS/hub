@@ -526,7 +526,7 @@ export default function LiveTrackingPage() {
                       {location.email ? <span>{location.email}</span> : null}
                       {location.updatedAt ? (
                         <span>
-                          {t('tracking.lastUpdated')}: {new Date(location.updatedAt).toLocaleTimeString()}
+                          {t('tracking.lastUpdated', { time: new Date(location.updatedAt).toLocaleTimeString() })}
                         </span>
                       ) : null}
                     </div>
@@ -537,10 +537,10 @@ export default function LiveTrackingPage() {
                     {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
                   </span>
                   {location.platform ? (
-                    <span>{t('tracking.platform')}: {location.platform}</span>
+                    <span>{t('tracking.platformLabel', { platform: location.platform })}</span>
                   ) : null}
                   {location.accuracy ? (
-                    <span>{t('tracking.accuracy')}: {Math.round(location.accuracy)}m</span>
+                    <span>{t('tracking.accuracyLabel', { meters: Math.round(location.accuracy) })}</span>
                   ) : null}
                 </div>
               </div>

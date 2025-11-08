@@ -8,7 +8,7 @@ import { usePreventPointerEventsDisable } from '@/shared/hooks/use-prevent-point
 interface I18nContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
   dir: 'ltr' | 'rtl';
   isChanging: boolean;
 }
@@ -75,7 +75,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('locale', newLocale);
   };
 
-  const t = (key: string): string => {
+  const t = (key: string, vars?: Record<string, string | number>): string => {
     const keys = key.split('.');
     let value: unknown = translations[locale];
     
@@ -87,7 +87,15 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       }
     }
     
-    return typeof value === 'string' ? value : key;
+    if (typeof value === 'string') {
+      if (vars) {
+        return value.replace(/\{\{(\w+)\}\}/g, (_, key) => 
+          vars[key]?.toString() ?? `{{${key}}}`
+        );
+      }
+      return value;
+    }
+    return key;
   };
 
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
