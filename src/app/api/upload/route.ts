@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 import { JWTService } from '@/core/auth/jwt';
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 import { fileStorage, FileStorageManager, UploadedFile } from '@/core/storage/file-storage';
 import { lmdb } from '@/core/data/lmdb';
 
@@ -27,7 +29,7 @@ const ALLOWED_FILE_TYPES = {
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
-    const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Parse form data
+  // Parse form data
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const entityType = formData.get('entityType') as string | null;
@@ -68,6 +70,12 @@ export async function POST(request: NextRequest) {
         { error: 'File type not allowed', allowedTypes: allowedTypesArray },
         { status: 400 }
       );
+    }
+
+    // Check permissions: require WRITE access to 'files' module to upload
+    const canUpload = await AdvancedPermissionService.hasMinimumLevel(payload.userId, 'files', PermissionLevel.WRITE);
+    if (!canUpload) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Convert file to buffer
@@ -109,7 +117,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user
-    const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -161,7 +169,7 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Authenticate user
-    const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

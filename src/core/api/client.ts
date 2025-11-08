@@ -128,6 +128,8 @@ async function request<T = any>(
     const response = await fetch(fullUrl, {
       ...fetchOptions,
       headers: requestHeaders,
+      // Include cookies for endpoints that rely on cookie-based auth
+      credentials: 'include',
     });
 
     // Parse response
@@ -305,6 +307,8 @@ export const apiClient = {
         method: 'POST',
         headers: requestHeaders,
         body: formData,
+        // Ensure cookies are sent for cookie-based authentication
+        credentials: 'include',
       });
 
       let data: ApiResponse<T>;

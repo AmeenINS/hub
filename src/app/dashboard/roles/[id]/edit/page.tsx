@@ -58,6 +58,8 @@ const MODULES = [
   { id: 'workflows', label: 'Workflow & Automation' },
   { id: 'inventory', label: 'Inventory Management' },
   { id: 'procurement', label: 'Procurement' },
+  // Files & Uploads
+  { id: 'files', label: 'Files & Uploads' },
 ];
 
 export default function EditRolePage() {

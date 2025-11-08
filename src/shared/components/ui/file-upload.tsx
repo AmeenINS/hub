@@ -96,22 +96,14 @@ export function FileUpload({
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include' // Include cookies
-      });
-
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-      }
-
-      const data = await response.json();
-      const uploadedFile = data.file as UploadedFile;
+      // Use centralized apiClient for uploads
+  const data = await (await import('@/core/api/client')).apiClient.upload('/api/upload', formData);
+  clearInterval(progressInterval);
+  setUploadProgress(100);
+  // server may return the uploaded file either as top-level 'file' or inside 'data.file'
+  // accept both shapes for compatibility
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const uploadedFile = ((data as any).file ?? (data as any).data?.file) as UploadedFile;
 
       setUploadedFiles(prev => [...prev, uploadedFile]);
       onUploadComplete?.(uploadedFile);
@@ -172,13 +164,11 @@ export function FileUpload({
 
   const handleRemove = async (fileId: string) => {
     try {
-      const response = await fetch(`/api/upload?id=${fileId}`, {
-        method: 'DELETE',
-        credentials: 'include' // Include cookies
-      });
-
-      if (response.ok) {
+      try {
+        await (await import('@/core/api/client')).apiClient.delete('/api/upload', { params: { id: fileId } });
         setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+      } catch (error) {
+        console.error('Error deleting file via apiClient:', error);
       }
     } catch (error) {
       console.error('Error deleting file:', error);

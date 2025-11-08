@@ -112,22 +112,13 @@ export function ImageUpload({
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include' // Include cookies
-      });
-
+      const data = await (await import('@/core/api/client')).apiClient.upload('/api/upload', formData);
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Upload failed');
-      }
-
-      const data = await response.json();
-      const uploadedImage = data.file as UploadedImage;
+      // accept both top-level 'file' or nested 'data.file'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const uploadedImage = ((data as any).file ?? (data as any).data?.file) as UploadedImage;
 
       setPreviewUrl(uploadedImage.fileUrl);
       onUploadComplete?.(uploadedImage);
