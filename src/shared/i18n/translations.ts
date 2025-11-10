@@ -752,6 +752,27 @@ export const translations = {
       notes: 'Notes',
       additionalNotes: 'Add any additional notes about this contact...',
       
+      // Contact Notes
+      addNote: 'Add Note',
+      editNote: 'Edit Note',
+      deleteNote: 'Delete Note',
+      noteContent: 'Note Content',
+      writeNote: 'Write your note here...',
+      noteCreated: 'Note created successfully',
+      noteUpdated: 'Note updated successfully',
+      noteDeleted: 'Note deleted successfully',
+      failedToCreateNote: 'Failed to create note',
+      failedToUpdateNote: 'Failed to update note',
+      failedToDeleteNote: 'Failed to delete note',
+      deleteNoteTitle: 'Delete Note',
+      deleteNoteDescription: 'Are you sure you want to delete this note? This action cannot be undone.',
+      noNotes: 'No notes yet',
+      startAddingNotes: 'Start adding notes to keep track of important information',
+      noteBy: 'By',
+      notePlaceholder: 'Enter note content...',
+      saveNote: 'Save Note',
+      cancel: 'Cancel',
+      
       // Contact types
       lead: 'Lead',
       customer: 'Customer',
@@ -1527,6 +1548,27 @@ export const translations = {
       
       notes: 'ملاحظات',
       additionalNotes: 'أضف أي ملاحظات إضافية حول جهة الاتصال...',
+      
+      // Contact Notes (Arabic translations)
+      addNote: 'إضافة ملاحظة',
+      editNote: 'تعديل الملاحظة',
+      deleteNote: 'حذف الملاحظة',
+      noteContent: 'محتوى الملاحظة',
+      writeNote: 'اكتب ملاحظتك هنا...',
+      noteCreated: 'تم إنشاء الملاحظة بنجاح',
+      noteUpdated: 'تم تحديث الملاحظة بنجاح',
+      noteDeleted: 'تم حذف الملاحظة بنجاح',
+      failedToCreateNote: 'فشل إنشاء الملاحظة',
+      failedToUpdateNote: 'فشل تحديث الملاحظة',
+      failedToDeleteNote: 'فشل حذف الملاحظة',
+      deleteNoteTitle: 'حذف الملاحظة',
+      deleteNoteDescription: 'هل أنت متأكد من حذف هذه الملاحظة؟ لا يمكن التراجع عن هذا الإجراء.',
+      noNotes: 'لا توجد ملاحظات بعد',
+      startAddingNotes: 'ابدأ بإضافة ملاحظات لتتبع المعلومات المهمة',
+      noteBy: 'بواسطة',
+      notePlaceholder: 'أدخل محتوى الملاحظة...',
+      saveNote: 'حفظ الملاحظة',
+      cancel: 'إلغاء',
       
       // Contact types (Arabic translations)
       lead: 'عميل محتمل',

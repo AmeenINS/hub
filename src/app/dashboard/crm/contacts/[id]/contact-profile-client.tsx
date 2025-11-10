@@ -5,9 +5,9 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Contact, Company } from '@/shared/types/database';
+import { Contact, Company, ContactNote } from '@/shared/types/database';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { useToast } from '@/shared/hooks/use-toast';
 import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog';
@@ -17,6 +17,8 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Separator } from '@/shared/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 import {
   Mail,
   Phone,
@@ -35,6 +37,10 @@ import {
   MessageSquare,
   Users,
   CheckCircle2,
+  Plus,
+  Save,
+  X,
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
@@ -69,6 +75,143 @@ export default function ContactProfileClient({
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Notes state
+  const [notes, setNotes] = useState<ContactNote[]>([]);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteContent, setEditNoteContent] = useState('');
+  const [deleteNoteDialogOpen, setDeleteNoteDialogOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<ContactNote | null>(null);
+  const [isDeletingNote, setIsDeletingNote] = useState(false);
+
+  const loadNotes = async () => {
+    setIsLoadingNotes(true);
+    try {
+      const response = await apiClient.get<ContactNote[]>(
+        `/api/crm/contacts/${contact.id}/notes`
+      );
+      if (response.success && response.data) {
+        setNotes(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  };
+
+  // Load notes when component mounts
+  useEffect(() => {
+    loadNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact.id]);
+
+  const handleAddNote = async () => {
+    if (!newNoteContent.trim()) {
+      toast({
+        title: t('common.error'),
+        description: t('crm.noteContent'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSavingNote(true);
+    try {
+      const response = await apiClient.post<ContactNote>(
+        `/api/crm/contacts/${contact.id}/notes`,
+        { content: newNoteContent }
+      );
+
+      if (response.success && response.data) {
+        setNotes([response.data, ...notes]);
+        setNewNoteContent('');
+        setIsAddingNote(false);
+        toast({
+          title: t('messages.success'),
+          description: t('crm.noteCreated'),
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: getErrorMessage(error, t('crm.failedToCreateNote')),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleEditNote = async (noteId: string) => {
+    if (!editNoteContent.trim()) {
+      toast({
+        title: t('common.error'),
+        description: t('crm.noteContent'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSavingNote(true);
+    try {
+      const response = await apiClient.put<ContactNote>(
+        `/api/crm/contacts/${contact.id}/notes/${noteId}`,
+        { content: editNoteContent }
+      );
+
+      if (response.success && response.data) {
+        setNotes(notes.map(n => n.id === noteId ? response.data! : n));
+        setEditingNoteId(null);
+        setEditNoteContent('');
+        toast({
+          title: t('messages.success'),
+          description: t('crm.noteUpdated'),
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: getErrorMessage(error, t('crm.failedToUpdateNote')),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async () => {
+    if (!noteToDelete) return;
+
+    setIsDeletingNote(true);
+    try {
+      const response = await apiClient.delete(
+        `/api/crm/contacts/${contact.id}/notes/${noteToDelete.id}`
+      );
+
+      if (response.success) {
+        setNotes(notes.filter(n => n.id !== noteToDelete.id));
+        setDeleteNoteDialogOpen(false);
+        setNoteToDelete(null);
+        toast({
+          title: t('messages.success'),
+          description: t('crm.noteDeleted'),
+        });
+      }
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: getErrorMessage(error, t('crm.failedToDeleteNote')),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeletingNote(false);
+    }
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -253,14 +396,10 @@ export default function ContactProfileClient({
 
       {/* Tabbed Content */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
           <TabsTrigger value="overview">
             <UserIcon className="h-4 w-4 mr-2" />
             {t('crm.overview')}
-          </TabsTrigger>
-          <TabsTrigger value="details">
-            <FileText className="h-4 w-4 mr-2" />
-            {t('crm.details')}
           </TabsTrigger>
           <TabsTrigger value="activity">
             <Activity className="h-4 w-4 mr-2" />
@@ -432,78 +571,6 @@ export default function ContactProfileClient({
           </div>
         </TabsContent>
 
-        {/* Details Tab */}
-        <TabsContent value="details" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('crm.completeInformation')}</CardTitle>
-              <CardDescription>{t('crm.allContactDetails')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Personal Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">{t('crm.personalInformation')}</h3>
-                  <Separator />
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-muted-foreground">{t('crm.fullNameEn')}</dt>
-                      <dd className="text-sm font-medium">{displayNameEn || '-'}</dd>
-                    </div>
-                    {displayNameAr && (
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('crm.fullNameAr')}</dt>
-                        <dd className="text-sm font-medium">{displayNameAr}</dd>
-                      </div>
-                    )}
-                    <div>
-                      <dt className="text-sm text-muted-foreground">{t('crm.type')}</dt>
-                      <dd className="text-sm font-medium">
-                        <Badge className={getContactTypeColor(contact.type)}>
-                          {contact.type}
-                        </Badge>
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {/* Professional Information */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">{t('crm.professionalInformation')}</h3>
-                  <Separator />
-                  <dl className="space-y-3">
-                    {contact.jobTitle && (
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('crm.position')}</dt>
-                        <dd className="text-sm font-medium">{contact.jobTitle}</dd>
-                      </div>
-                    )}
-                    {contact.department && (
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('crm.department')}</dt>
-                        <dd className="text-sm font-medium">{contact.department}</dd>
-                      </div>
-                    )}
-                    {company && (
-                      <div>
-                        <dt className="text-sm text-muted-foreground">{t('crm.company')}</dt>
-                        <dd className="text-sm font-medium">
-                          <Link
-                            href={`/dashboard/crm/companies/${company.id}`}
-                            className="hover:underline"
-                          >
-                            {company.name}
-                          </Link>
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Activity Tab */}
         <TabsContent value="activity" className="space-y-6">
           <Card>
@@ -556,21 +623,159 @@ export default function ContactProfileClient({
         <TabsContent value="notes" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                {t('crm.notes')}
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  {t('crm.notes')} ({notes.length})
+                </div>
+                {!isAddingNote && (
+                  <Button onClick={() => setIsAddingNote(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('crm.addNote')}
+                  </Button>
+                )}
               </CardTitle>
               <CardDescription>{t('crm.internalNotes')}</CardDescription>
             </CardHeader>
-            <CardContent>
-              {contact.notes ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap">{contact.notes}</p>
+            <CardContent className="space-y-4">
+              {/* Add Note Form */}
+              {isAddingNote && (
+                <Card className="border-2 border-primary">
+                  <CardContent className="pt-4 space-y-3">
+                    <Textarea
+                      placeholder={t('crm.writeNote')}
+                      value={newNoteContent}
+                      onChange={(e) => setNewNoteContent(e.target.value)}
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsAddingNote(false);
+                          setNewNoteContent('');
+                        }}
+                        disabled={isSavingNote}
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        {t('crm.cancel')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleAddNote}
+                        disabled={isSavingNote || !newNoteContent.trim()}
+                      >
+                        {isSavingNote ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4 mr-2" />
+                        )}
+                        {t('crm.saveNote')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Notes List */}
+              {isLoadingNotes ? (
+                <div className="text-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                </div>
+              ) : notes.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                  <h3 className="font-semibold text-lg mb-1">{t('crm.noNotes')}</h3>
+                  <p className="text-sm">{t('crm.startAddingNotes')}</p>
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                  <p className="text-sm">{t('crm.noNotesAvailable')}</p>
+                <div className="space-y-4">
+                  {notes.map((note) => (
+                    <Card key={note.id} className="border">
+                      <CardContent className="pt-4">
+                        {editingNoteId === note.id ? (
+                          <div className="space-y-3">
+                            <Textarea
+                              value={editNoteContent}
+                              onChange={(e) => setEditNoteContent(e.target.value)}
+                              rows={4}
+                              className="resize-none"
+                            />
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingNoteId(null);
+                                  setEditNoteContent('');
+                                }}
+                                disabled={isSavingNote}
+                              >
+                                <X className="h-4 w-4 mr-2" />
+                                {t('crm.cancel')}
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleEditNote(note.id)}
+                                disabled={isSavingNote || !editNoteContent.trim()}
+                              >
+                                {isSavingNote ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Save className="h-4 w-4 mr-2" />
+                                )}
+                                {t('crm.saveNote')}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <UserIcon className="h-4 w-4" />
+                                <span>{t('crm.noteBy')}</span>
+                                <span className="font-medium">{note.createdByName || note.createdBy}</span>
+                                <span>•</span>
+                                <Clock className="h-3 w-3" />
+                                <span>{formatDate(note.createdAt)}</span>
+                              </div>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingNoteId(note.id);
+                                    setEditNoteContent(note.content);
+                                  }}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setNoteToDelete(note);
+                                    setDeleteNoteDialogOpen(true);
+                                  }}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{note.content}</p>
+                            {note.updatedAt !== note.createdAt && (
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {t('crm.updatedAt')}: {formatDate(note.updatedAt)}
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </CardContent>
@@ -578,7 +783,20 @@ export default function ContactProfileClient({
         </TabsContent>
       </Tabs>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Note Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteNoteDialogOpen}
+        onOpenChange={setDeleteNoteDialogOpen}
+        onConfirm={handleDeleteNote}
+        title={t('crm.deleteNoteTitle')}
+        description={t('crm.deleteNoteDescription')}
+        confirmText={isDeletingNote ? t('common.deleting') : t('common.delete')}
+        cancelText={t('crm.cancel')}
+        variant="danger"
+        isLoading={isDeletingNote}
+      />
+
+      {/* Delete Contact Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
