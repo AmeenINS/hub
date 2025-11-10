@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PositionService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
+import { PositionService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
 
 const positionService = new PositionService();
 

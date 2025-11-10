@@ -1,0 +1,311 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                     AMEEN HUB - Production Architecture                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              INTERNET                                    │
+└──────────────────────────────┬──────────────────────────────────────────┘
+                               │
+                               │ DNS: your-domain.com → Server IP
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         SERVER FIREWALL                                  │
+│                    Ports: 80 (HTTP), 443 (HTTPS)                        │
+└──────────────────────────────┬──────────────────────────────────────────┘
+                               │
+                               ▼
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                      DOCKER NETWORK (ameen-network)                       ║
+║                                                                           ║
+║  ┌─────────────────────────────────────────────────────────────────┐    ║
+║  │                    Nginx Reverse Proxy                           │    ║
+║  │                   Container: ameen-nginx                         │    ║
+║  │                  Ports: 80:80, 443:443                          │    ║
+║  │                                                                  │    ║
+║  │  Features:                                                       │    ║
+║  │  • HTTP → HTTPS Redirect                                        │    ║
+║  │  • SSL/TLS Termination                                          │    ║
+║  │  • Reverse Proxy                                                │    ║
+║  │  • Static File Caching (30 days)                                │    ║
+║  │  • Gzip Compression                                             │    ║
+║  │  • Security Headers                                             │    ║
+║  │  • SSE Support (Real-time)                                      │    ║
+║  │  • Health Check Monitoring                                      │    ║
+║  └────────────────────────┬─────────────────────────────────────────┘    ║
+║                           │                                              ║
+║                           │ Internal Port 4000                           ║
+║                           ▼                                              ║
+║  ┌─────────────────────────────────────────────────────────────────┐    ║
+║  │                 Next.js Application                              │    ║
+║  │               Container: ameen-hub                               │    ║
+║  │                  Port: 4000                                      │    ║
+║  │                                                                  │    ║
+║  │  Components:                                                     │    ║
+║  │  ┌──────────────────────────────────────────────────────────┐  │    ║
+║  │  │  React Frontend                                           │  │    ║
+║  │  │  • Dashboard                                              │  │    ║
+║  │  │  • CRM Module                                             │  │    ║
+║  │  │  • Tasks Management                                       │  │    ║
+║  │  │  • Scheduler                                              │  │    ║
+║  │  │  • Notifications                                          │  │    ║
+║  │  │  • User Management                                        │  │    ║
+║  │  │  • Settings & Permissions                                 │  │    ║
+║  │  └──────────────────────────────────────────────────────────┘  │    ║
+║  │                                                                  │    ║
+║  │  ┌──────────────────────────────────────────────────────────┐  │    ║
+║  │  │  API Routes                                               │  │    ║
+║  │  │  • /api/auth/*          - Authentication                 │  │    ║
+║  │  │  • /api/crm/*           - CRM Operations                 │  │    ║
+║  │  │  • /api/tasks/*         - Task Management                │  │    ║
+║  │  │  • /api/scheduler/*     - Event Scheduling               │  │    ║
+║  │  │  • /api/notifications/* - Notification System            │  │    ║
+║  │  │  • /api/users/*         - User Management                │  │    ║
+║  │  │  • /api/health          - Health Check                   │  │    ║
+║  │  └──────────────────────────────────────────────────────────┘  │    ║
+║  │                                                                  │    ║
+║  │  ┌──────────────────────────────────────────────────────────┐  │    ║
+║  │  │  Background Services                                      │  │    ║
+║  │  │                                                            │  │    ║
+║  │  │  • Scheduler Service (Cron: Every minute)                │  │    ║
+║  │  │    - Process notifications                                │  │    ║
+║  │  │    - Complete past events                                 │  │    ║
+║  │  │    - Handle recurring events                              │  │    ║
+║  │  │                                                            │  │    ║
+║  │  │  • Event Cleanup (Cron: Every hour)                      │  │    ║
+║  │  │    - Remove old events                                    │  │    ║
+║  │  │    - Clean expired data                                   │  │    ║
+║  │  │                                                            │  │    ║
+║  │  │  • SSE Broadcast                                          │  │    ║
+║  │  │    - Real-time notifications                              │  │    ║
+║  │  │    - Multi-user support                                   │  │    ║
+║  │  └──────────────────────────────────────────────────────────┘  │    ║
+║  │                                                                  │    ║
+║  │  ┌──────────────────────────────────────────────────────────┐  │    ║
+║  │  │  LMDB Database                                            │  │    ║
+║  │  │  • Lightning Memory-Mapped Database                      │  │    ║
+║  │  │  • High-performance key-value store                      │  │    ║
+║  │  │  • ACID compliance                                        │  │    ║
+║  │  │  • Zero-copy reads                                        │  │    ║
+║  │  └──────────────────────────────────────────────────────────┘  │    ║
+║  └─────────────────────┬────────────────────────────────────────────┘    ║
+║                        │                                                 ║
+║                        │ Volume Mounts                                   ║
+║                        ▼                                                 ║
+║  ┌─────────────────────────────────────────────────────────────────┐    ║
+║  │                    Certbot (SSL Manager)                         │    ║
+║  │                 Container: ameen-certbot                         │    ║
+║  │                                                                  │    ║
+║  │  • Auto-renewal: Every 12 hours                                 │    ║
+║  │  • Let's Encrypt certificates                                   │    ║
+║  │  • Email notifications                                          │    ║
+║  │  • Renews 30 days before expiry                                 │    ║
+║  └──────────────────────────────────────────────────────────────────┘    ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+                               │
+                               │ Persistent Storage
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     HOST FILE SYSTEM (Volumes)                           │
+│                                                                          │
+│  ./data/                  - Application data                            │
+│    ├── lmdb/             - Database files                               │
+│    └── uploads/          - User uploaded files                          │
+│        ├── images/       - Image files                                  │
+│        ├── documents/    - Documents                                    │
+│        ├── videos/       - Video files                                  │
+│        └── others/       - Other files                                  │
+│                                                                          │
+│  ./logs/                  - Application logs                            │
+│    ├── nginx/            - Nginx access & error logs                    │
+│    └── app.log           - Application logs                             │
+│                                                                          │
+│  ./certbot/               - SSL certificates                            │
+│    ├── conf/             - Certificate files                            │
+│    └── www/              - ACME challenge files                         │
+│                                                                          │
+│  ./nginx/                 - Nginx configuration                         │
+│    ├── nginx.conf        - Main config                                  │
+│    └── conf.d/           - Site configs                                 │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                            REQUEST FLOW                                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+User Request (HTTPS)
+      │
+      ▼
+[Nginx] Check SSL Certificate
+      │
+      ▼
+[Nginx] Apply Security Headers
+      │
+      ▼
+[Nginx] Check Cache (Static Files)
+      │
+      ├─→ Cache Hit? → Serve from Cache (30 days)
+      │
+      └─→ Cache Miss
+           │
+           ▼
+      [Nginx] Proxy to Next.js App
+           │
+           ▼
+      [Next.js] Process Request
+           │
+           ├─→ Static Page? → Serve Pre-rendered
+           │
+           ├─→ API Call? → Execute API Route
+           │    │
+           │    ▼
+           │   [API] Check Authentication (JWT)
+           │    │
+           │    ▼
+           │   [API] Check Permissions
+           │    │
+           │    ▼
+           │   [LMDB] Database Operations
+           │    │
+           │    ▼
+           │   [API] Return Response
+           │
+           └─→ Dynamic Page? → Server-Side Render
+                │
+                ▼
+           [LMDB] Fetch Data
+                │
+                ▼
+           [React] Render Components
+                │
+                ▼
+           Return HTML
+      │
+      ▼
+[Nginx] Return to User
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                         SECURITY LAYERS                                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+1. Firewall Level
+   • Only ports 80 and 443 open
+   • SSH access restricted
+   • DDoS protection
+
+2. Nginx Level
+   • SSL/TLS encryption (TLS 1.2, 1.3)
+   • Security headers (HSTS, XSS, etc.)
+   • Rate limiting
+   • Request size limits (20MB)
+
+3. Application Level
+   • JWT authentication
+   • Role-based permissions
+   • Input validation (Zod)
+   • XSS protection
+   • CSRF protection
+
+4. Database Level
+   • File-based LMDB (no network exposure)
+   • Transaction support
+   • Data integrity checks
+
+5. File System Level
+   • Restricted file permissions
+   • Upload size limits
+   • File type validation
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                        AUTOMATED TASKS                                    ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Every Minute:
+├─ Scheduler Service
+│  ├─ Check scheduled events
+│  ├─ Send notifications
+│  ├─ Complete past events
+│  └─ Create recurring events
+
+Every Hour:
+├─ Event Cleanup
+│  ├─ Remove old completed events
+│  └─ Clean expired data
+
+Every 12 Hours:
+├─ SSL Certificate Renewal
+│  ├─ Check certificate expiry
+│  ├─ Renew if needed (30 days before)
+│  └─ Reload Nginx
+
+Every 30 Seconds:
+├─ Health Checks
+│  ├─ Application /api/health
+│  ├─ Nginx availability
+│  └─ Auto-restart if unhealthy
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                      DEPLOYMENT PROCESS                                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+1. Setup
+   └─ ./deploy-production.sh setup
+      ├─ Configure domain name
+      ├─ Update .env.production
+      └─ Update Nginx config
+
+2. Security
+   └─ ./deploy-production.sh secrets
+      ├─ Generate JWT secret
+      └─ Generate CRON secret
+
+3. SSL
+   └─ ./deploy-production.sh ssl
+      ├─ Obtain Let's Encrypt certificate
+      ├─ Configure auto-renewal
+      └─ Enable HTTPS
+
+4. Build
+   └─ ./deploy-production.sh build
+      ├─ Build Docker images
+      └─ Optimize for production
+
+5. Deploy
+   └─ ./deploy-production.sh start
+      ├─ Start all containers
+      ├─ Enable health checks
+      └─ Configure auto-restart
+
+6. Initialize
+   └─ ./deploy-production.sh init
+      ├─ Create database structure
+      ├─ Create default admin
+      └─ Setup default roles
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                           MONITORING                                      ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Health Endpoints:
+├─ /api/health              - Application health
+├─ /api/scheduler/service   - Scheduler status
+└─ /api/notifications/cron  - Notification service
+
+Logs:
+├─ Application: docker logs ameen-hub
+├─ Nginx Access: ./logs/nginx/ameen-access.log
+├─ Nginx Error: ./logs/nginx/ameen-error.log
+└─ Combined: ./deploy-production.sh logs
+
+Metrics:
+├─ docker stats              - Container resources
+├─ df -h                     - Disk usage
+└─ docker compose ps         - Service status
+

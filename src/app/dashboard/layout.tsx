@@ -3,17 +3,18 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lightbulb } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
-import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
-import { MobileNav } from '@/components/dashboard/mobile-nav';
-import { Spinner } from '@/components/ui/spinner';
-import { RTLSidebarWrapper } from '@/components/ui/rtl-sidebar-wrapper';
-import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import SchedulerNotificationService from '@/components/scheduler/notification-service';
-import { NotificationButton } from '@/components/dashboard/notification-button';
+import { Lightbulb, Calculator } from 'lucide-react';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/shared/components/ui/sidebar';
+import { AppSidebar } from '@/features/dashboard/components/app-sidebar';
+import { MobileNav } from '@/features/dashboard/components/mobile-nav';
+import { Spinner } from '@/shared/components/ui/spinner';
+import { RTLSidebarWrapper } from '@/shared/components/ui/rtl-sidebar-wrapper';
+import { Separator } from '@/shared/components/ui/separator';
+import { Button } from '@/shared/components/ui/button';
+import SchedulerNotificationService from '@/features/scheduler/components/notification-service';
+import { NotificationButton } from '@/features/dashboard/components/notification-button';
+import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
 import 'overlayscrollbars/overlayscrollbars.css';
 
 export default function DashboardLayout({
@@ -23,6 +24,11 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuthStore();
+  const { hasAccess: canAccessModule, isLoading: permissionsLoading } = useModuleVisibility();
+
+  const showCalculatorShortcut = !permissionsLoading && canAccessModule('accounting');
+  const showNotesShortcut = !permissionsLoading && canAccessModule('notes');
+  const showNotificationButton = !permissionsLoading && canAccessModule('notifications');
 
   useEffect(() => {
     // Wait for store to rehydrate
@@ -62,15 +68,26 @@ export default function DashboardLayout({
               {/* Spacer to push buttons to the right */}
               <div className="flex-1" />
               
+              {/* Calculator quick access button */}
+              {showCalculatorShortcut && (
+                <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
+                  <Link href="/dashboard/calculator">
+                    <Calculator className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
+
               {/* Notes quick access button */}
-              <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
-                <Link href="/dashboard/notes">
-                  <Lightbulb className="h-5 w-5" />
-                </Link>
-              </Button>
+              {showNotesShortcut && (
+                <Button variant="ghost" size="icon" asChild className="ml-2 rtl:ml-0 rtl:mr-2">
+                  <Link href="/dashboard/notes">
+                    <Lightbulb className="h-5 w-5" />
+                  </Link>
+                </Button>
+              )}
               
               {/* Notification button */}
-              <NotificationButton />
+              {showNotificationButton && <NotificationButton />}
             </div>
           </header>
           

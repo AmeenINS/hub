@@ -1,26 +1,77 @@
-import { Metadata } from "next";
-import { Card, CardContent } from "@/components/ui/card";
-import { ContactService, CompanyService } from "@/lib/db/crm-service";
-import { ContactType } from "@/types/database";
+'use client';
+
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { ContactType, Contact } from "@/shared/types/database";
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
+import { useI18n } from "@/shared/i18n/i18n-context";
+import { Loader2 } from "lucide-react";
 import ContactsClient from "./contacts-client";
 
-export const metadata: Metadata = {
-  title: "Contacts - CRM",
-  description: "Manage your customer contacts"
-};
+export default function ContactsPage() {
+  const { t } = useI18n();
+  const { canView, isLoading: permissionsLoading } = usePermissionLevel('crm_contacts');
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-// Force dynamic rendering to prevent caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+  // Fetch data function
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [contactsResponse, companiesResponse] = await Promise.all([
+        apiClient.get('/api/crm/contacts'),
+        apiClient.get('/api/crm/companies')
+      ]);
 
-export default async function ContactsPage() {
-  // Fetch contacts from database
-  const contactService = new ContactService();
-  const companyService = new CompanyService();
-  
-  const contacts = await contactService.getAllContacts();
-  const companies = await companyService.getAllCompanies();
-  
+      if (contactsResponse.success) {
+        setContacts(contactsResponse.data || []);
+      }
+      if (companiesResponse.success) {
+        setCompanies(companiesResponse.data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (canView) {
+      fetchData();
+    }
+  }, [canView]);
+
+  // Check permissions first
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!canView) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-medium">{t('accessDenied.title')}</h3>
+          <p className="text-muted-foreground">{t('accessDenied.description')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   // Create a map of company IDs to company names
   const companyMap = new Map(companies.map(c => [c.id, c.name]));
   

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { lmdb } from '@/lib/db/lmdb';
+import { lmdb } from '@/core/data/lmdb';
 import { 
   ScheduledEvent, 
   ScheduledNotification, 
@@ -8,10 +8,10 @@ import {
   NotificationType,
   Notification,
   User 
-} from '@/types/database';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
-import { SSEBroadcast } from '@/lib/sse-broadcast';
+} from '@/shared/types/database';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
+import { SSEBroadcast } from '@/core/sse/broadcast';
 import { v4 as uuidv4 } from 'uuid';
 
 // Helper function to verify token and get user

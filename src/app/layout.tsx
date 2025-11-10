@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import { I18nProvider } from "@/lib/i18n/i18n-context";
-import { Toaster } from "@/components/ui/sonner";
+import { I18nProvider } from "@/shared/i18n/i18n-context";
+import { Toaster } from "@/shared/components/ui/sonner";
 import { cookies } from "next/headers";
 
 const geistSans = Geist({
@@ -36,16 +36,16 @@ export const metadata: Metadata = {
     title: "Ameen Hub",
   },
   applicationName: "Ameen Hub",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
 };
 
 export default async function RootLayout({

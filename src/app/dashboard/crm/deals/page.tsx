@@ -1,10 +1,12 @@
-import { Metadata } from "next";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+"use client";
+
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Badge } from "@/shared/components/ui/badge";
+import { Progress } from "@/shared/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { 
   Search, 
   Filter, 
@@ -19,7 +21,8 @@ import {
   Clock,
   Edit,
   Trash2,
-  FileText
+  FileText,
+  Loader2
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -29,12 +32,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/components/ui/dropdown-menu";
+import { useModuleVisibility } from "@/shared/hooks/use-module-visibility";
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 
-export const metadata: Metadata = {
-  title: "Deals - CRM",
-  description: "Manage your sales deals and pipeline"
-};
+
 
 // Mock data for demonstration
 const deals = [
@@ -144,6 +146,27 @@ const getStatusBadgeVariant = (stage: string) => {
 };
 
 export default function DealsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { canView, canWrite, canFull, isLoading } = usePermissionLevel('deals');
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Check if user has at least READ permission for Deals
+  if (!canView) {
+    return null;
+  }
+
+  const canCreate = canWrite;
+  const canEdit = canWrite;
+  const canDelete = canFull;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -160,12 +183,14 @@ export default function DealsPage() {
               View Pipeline
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/dashboard/crm/deals/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Deal
-            </Link>
-          </Button>
+          {canCreate && (
+            <Button asChild>
+              <Link href="/dashboard/crm/deals/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Deal
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -300,23 +325,33 @@ export default function DealsPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuItem>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit Deal
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Add Activity
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Clone Deal
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Deal
-                      </DropdownMenuItem>
+                      {canEdit && (
+                        <DropdownMenuItem>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Deal
+                        </DropdownMenuItem>
+                      )}
+                      {canCreate && (
+                        <>
+                          <DropdownMenuItem>
+                            Add Activity
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            Clone Deal
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                      {canDelete && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Deal
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

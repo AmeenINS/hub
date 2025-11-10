@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { TaskActivityService } from '@/lib/db/task-service';
+import { JWTService } from '@/core/auth/jwt';
+import { TaskActivityService } from '@/core/data/task-service';
 
 const activityService = new TaskActivityService();
 

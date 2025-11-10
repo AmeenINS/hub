@@ -20,11 +20,11 @@ Added comprehensive "Language Rules" section at the top:
    - Changed: `// فقط در development`
    - To: `// Only in development mode`
 
-2. **`src/lib/scheduler/scheduler-service.ts`**
+2. **`src/core/scheduler/scheduler-service.ts`**
    - Changed: `timezone: 'Asia/Muscat' // تنظیم timezone مناسب`
    - To: `timezone: 'Asia/Muscat' // Set appropriate timezone for Oman`
 
-3. **`src/lib/i18n/translations.ts`** (Multiple sections)
+3. **`src/shared/i18n/translations.ts`** (Multiple sections)
    - Changed all Arabic section comments to English with clarification
    - Examples:
      - `// حقول نموذج جهة الاتصال` → `// Contact form fields (Arabic translations)`
@@ -107,7 +107,7 @@ Added documentation links section at the top:
    - ✅ Check documentation is in English
 
 3. **For user-facing text**:
-   - ✅ Add to `src/lib/i18n/translations.ts`
+   - ✅ Add to `src/shared/i18n/translations.ts`
    - ✅ Add both English and Arabic translations
    - ✅ Use `t()` function in components
 

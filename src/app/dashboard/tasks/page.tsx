@@ -9,18 +9,18 @@ import { ListTodo, RefreshCw, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 // Components - UI
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   Table,
   TableBody,
@@ -28,11 +28,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+} from '@/shared/components/ui/table';
+import { Badge } from '@/shared/components/ui/badge';
 
 // Types
-import { TaskStatus, TaskPriority } from '@/types/database';
+import { TaskStatus, TaskPriority } from '@/shared/types/database';
 
 // Types & Interfaces
 interface Task {

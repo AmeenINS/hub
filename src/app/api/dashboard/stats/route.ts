@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/db/user-service';
-import { RoleService } from '@/lib/db/user-service';
-import { TaskService } from '@/lib/db/task-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { TaskStatus } from '@/types/database';
+import { UserService } from '@/core/data/user-service';
+import { RoleService } from '@/core/data/user-service';
+import { TaskService } from '@/core/data/task-service';
+import { JWTService } from '@/core/auth/jwt';
+import { TaskStatus } from '@/shared/types/database';
 
 /**
  * GET /api/dashboard/stats

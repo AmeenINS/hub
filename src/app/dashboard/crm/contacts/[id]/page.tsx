@@ -6,9 +6,9 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import ContactProfileClient from './contact-profile-client';
-import { ContactService, CompanyService } from '@/lib/db/crm-service';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ContactService, CompanyService } from '@/core/data/crm-service';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Skeleton } from '@/shared/components/ui/skeleton';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';

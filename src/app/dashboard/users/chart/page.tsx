@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import OrgChart from '@/components/dashboard/org-chart-reactflow';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { RTLChevron } from '@/components/ui/rtl-icon';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import OrgChart from '@/features/dashboard/components/org-chart';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { RTLChevron } from '@/shared/components/ui/rtl-icon';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 interface User {
   id: string;

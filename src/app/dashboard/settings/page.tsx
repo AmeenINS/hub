@@ -1,102 +1,88 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Settings as SettingsIcon, User, Bell, Shield, Globe, Briefcase, Plus, Pencil, Trash2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageToggle } from '@/components/language-toggle';
-import { OverlayScrollbar } from '@/components/ui/overlay-scrollbar';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
-import { UserAvatarUpload } from '@/components/dashboard/user-avatar-upload';
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import {
+  Settings as SettingsIcon,
+  User,
+  Bell,
+  Shield,
+  Globe,
+  Briefcase,
+  DatabaseBackup,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
-interface UserData {
-  id: string;
-  fullNameEn: string;
-  fullNameAr: string;
-  email: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-  emailNotifications?: boolean;
-  pushNotifications?: boolean;
-  taskNotifications?: boolean;
-}
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { OverlayScrollbar } from '@/shared/components/ui/overlay-scrollbar';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useAuthStore } from '@/shared/state/auth-store';
+import { useSettingsPermissions } from '@/shared/hooks/use-permission-level';
+import { Spinner } from '@/shared/components/ui/spinner';
+import {
+  AppearanceSettingsCard,
+  BackupManagerCard,
+  NotificationPreferencesCard,
+  PositionsManager,
+  ProfileSettingsCard,
+  SecuritySettingsCard,
+} from '@/features/dashboard/components/settings';
+import type {
+  PasswordChangePayload,
+  UserData,
+  UserSettings,
+} from '@/features/dashboard/components/settings';
 
-interface UserSettings {
-  fullNameEn: string;
-  fullNameAr: string;
-  email: string;
-  phoneNumber?: string;
-  avatarUrl?: string;
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-  taskNotifications: boolean;
-}
-
-interface Position {
-  id: string;
-  name: string;
-  nameAr?: string;
-  description?: string;
-  level: number;
-  isActive: boolean;
-}
+const defaultSettings: UserSettings = {
+  fullNameEn: '',
+  fullNameAr: '',
+  email: '',
+  phoneNumber: '',
+  avatarUrl: '',
+  emailNotifications: true,
+  pushNotifications: true,
+  taskNotifications: true,
+};
 
 export default function SettingsPage() {
   const { t, dir } = useI18n();
   const router = useRouter();
   const { token, isAuthenticated } = useAuthStore();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [userId, setUserId] = useState<string>('');
-  const [settings, setSettings] = useState<UserSettings>({
-    fullNameEn: '',
-    fullNameAr: '',
-    email: '',
-    phoneNumber: '',
-    avatarUrl: '',
-    emailNotifications: true,
-    pushNotifications: true,
-    taskNotifications: true,
-  });
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const {
+    canEditAppearance,
+    canEditCompany,
+    canManageIntegrations,
+    isLoading: permissionsLoading,
+  } = useSettingsPermissions();
 
-  // Position Management States
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [loadingPositions, setLoadingPositions] = useState(false);
-  const [isPositionDialogOpen, setIsPositionDialogOpen] = useState(false);
-  const [editingPosition, setEditingPosition] = useState<Position | null>(null);
-const [positionForm, setPositionForm] = useState({
-  name: '',
-  nameAr: '',
-  description: '',
-  level: 1,
-  isActive: true,
-});
+  const [settings, setSettings] = useState<UserSettings>(defaultSettings);
+  const [userId, setUserId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [notificationSaving, setNotificationSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+
+  const canViewSettings = canEditAppearance; // Anyone with WRITE or higher can view
+  const canManageSettings = canEditCompany; // FULL level or higher
+
+  const canManageBackups = canManageSettings;
+
+  const handleSettingsChange = (partial: Partial<UserSettings>) => {
+    setSettings((previous) => ({ ...previous, ...partial }));
+  };
 
   const fetchSettings = useCallback(async () => {
+    if (!canViewSettings) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      
+
       if (!token || !isAuthenticated) {
-        toast.error('Please login to continue');
+        toast.error(t('settings.loginRequired'));
         router.push('/login');
         return;
       }
@@ -104,8 +90,8 @@ const [positionForm, setPositionForm] = useState({
       const response = await apiClient.get<UserData>('/api/users/me');
 
       if (!response.success) {
-        if (response.message?.includes('Unauthorized') || response.message?.includes('token')) {
-          toast.error('Session expired. Please login again');
+        if (response.message?.includes('Unauthorized')) {
+          toast.error(t('settings.loginRequired'));
           router.push('/login');
         }
         return;
@@ -126,29 +112,24 @@ const [positionForm, setPositionForm] = useState({
         });
       }
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
       toast.error(getErrorMessage(error, 'Failed to load settings'));
     } finally {
       setLoading(false);
     }
-  }, [router, token, isAuthenticated]);
+  }, [canViewSettings, isAuthenticated, router, t, token]);
 
   useEffect(() => {
-    fetchSettings();
+    void fetchSettings();
   }, [fetchSettings]);
 
-  useEffect(() => {
-    if (token) {
-      fetchPositions();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
-
   const handleUpdateProfile = async () => {
-    if (!token) return;
-    
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     try {
-      setSaving(true);
+      setProfileSaving(true);
       const response = await apiClient.put('/api/users/me', {
         fullNameEn: settings.fullNameEn,
         fullNameAr: settings.fullNameAr,
@@ -161,18 +142,20 @@ const [positionForm, setPositionForm] = useState({
         toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
-      console.error('Failed to update profile:', error);
       toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
-      setSaving(false);
+      setProfileSaving(false);
     }
   };
 
   const handleUpdateNotifications = async () => {
-    if (!token) return;
-    
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return;
+    }
+
     try {
-      setSaving(true);
+      setNotificationSaving(true);
       const response = await apiClient.put('/api/users/me/settings', {
         emailNotifications: settings.emailNotifications,
         pushNotifications: settings.pushNotifications,
@@ -185,168 +168,59 @@ const [positionForm, setPositionForm] = useState({
         toast.error(response.message || t('messages.updateError'));
       }
     } catch (error) {
-      console.error('Failed to update notifications:', error);
       toast.error(getErrorMessage(error, t('messages.updateError')));
     } finally {
-      setSaving(false);
+      setNotificationSaving(false);
     }
   };
 
-  const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error(t('settings.passwordMismatch'));
-      return;
+  const handleChangePassword = async (payload: PasswordChangePayload): Promise<boolean> => {
+    if (!canManageSettings) {
+      toast.error(t('settings.permissionDenied'));
+      return false;
     }
 
-    if (!token) return;
+    if (payload.newPassword !== payload.confirmPassword) {
+      toast.error(t('settings.passwordMismatch'));
+      return false;
+    }
 
     try {
-      setSaving(true);
+      setPasswordSaving(true);
       const response = await apiClient.put('/api/users/me/password', {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
+        currentPassword: payload.currentPassword,
+        newPassword: payload.newPassword,
       });
 
       if (response.success) {
         toast.success(t('settings.passwordChanged'));
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        });
-      } else {
-        toast.error(response.message || t('messages.updateError'));
+        return true;
       }
+
+      toast.error(response.message || t('messages.updateError'));
+      return false;
     } catch (error) {
-      console.error('Failed to change password:', error);
       toast.error(getErrorMessage(error, t('messages.updateError')));
+      return false;
     } finally {
-      setSaving(false);
+      setPasswordSaving(false);
     }
   };
 
-  // Position Management Functions
-  const fetchPositions = async () => {
-    try {
-      setLoadingPositions(true);
-      const response = await apiClient.get<Position[]>('/api/positions');
-
-      if (response.success && response.data) {
-        setPositions(response.data.sort((a, b) => a.level - b.level));
-      }
-    } catch (error) {
-      console.error('Failed to fetch positions:', error);
-      toast.error(t('messages.fetchError'));
-    } finally {
-      setLoadingPositions(false);
-    }
-  };
-
-  const handleOpenPositionDialog = (position?: Position) => {
-    if (position) {
-      setEditingPosition(position);
-      setPositionForm({
-        name: position.name,
-        nameAr: position.nameAr || '',
-        description: position.description || '',
-        level: position.level,
-        isActive: position.isActive,
-      });
-    } else {
-      setEditingPosition(null);
-      setPositionForm({
-        name: '',
-        nameAr: '',
-        description: '',
-        level: 1,
-        isActive: true,
-      });
-    }
-    setIsPositionDialogOpen(true);
-  };
-
-  const handleClosePositionDialog = () => {
-    setIsPositionDialogOpen(false);
-    setEditingPosition(null);
-    setPositionForm({
-      name: '',
-      nameAr: '',
-      description: '',
-      level: 1,
-      isActive: true,
-    });
-  };
-
-  const handleSavePosition = async () => {
-    if (!positionForm.name.trim()) {
-      toast.error(t('settings.positionNameRequired'));
-      return;
-    }
-    if (!positionForm.nameAr.trim()) {
-      toast.error(t('settings.positionNameRequired'));
-      return;
-    }
-
-    if (!token) return;
-
-    try {
-      setSaving(true);
-      
-      const url = editingPosition 
-        ? `/api/positions/${editingPosition.id}`
-        : '/api/positions';
-      
-      const response = editingPosition
-        ? await apiClient.put(url, positionForm)
-        : await apiClient.post(url, positionForm);
-
-      if (response.success) {
-        toast.success(editingPosition ? t('settings.positionUpdated') : t('settings.positionCreated'));
-        handleClosePositionDialog();
-        fetchPositions();
-      } else {
-        toast.error(response.message || t('messages.updateError'));
-      }
-    } catch (error) {
-      console.error('Failed to save position:', error);
-      toast.error(getErrorMessage(error, t('messages.updateError')));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeletePosition = async (id: string) => {
-    if (!token) return;
-    
-    if (!confirm(t('settings.deletePositionConfirm'))) {
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const response = await apiClient.delete(`/api/positions/${id}`);
-
-      if (response.success) {
-        toast.success(t('settings.positionDeleted'));
-        fetchPositions();
-      } else {
-        toast.error(response.message || t('messages.deleteError'));
-      }
-    } catch (error) {
-      console.error('Failed to delete position:', error);
-      toast.error(getErrorMessage(error, t('messages.deleteError')));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
+      <div className="flex h-96 flex-col items-center justify-center gap-3">
+        <Spinner className="h-12 w-12" />
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+      </div>
+    );
+  }
+
+  if (!canViewSettings) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-3 text-center">
+        <Shield className="h-12 w-12 text-muted-foreground" />
+        <p className="text-muted-foreground">{t('settings.permissionDenied')}</p>
       </div>
     );
   }
@@ -354,16 +228,16 @@ const [positionForm, setPositionForm] = useState({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="flex items-center gap-2 text-3xl font-bold">
           <SettingsIcon className="h-8 w-8" />
           {t('settings.title')}
         </h1>
-        <p className="text-muted-foreground mt-2">{t('settings.description')}</p>
+        <p className="mt-2 text-muted-foreground">{t('settings.description')}</p>
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4" dir={dir}>
-        <OverlayScrollbar className="border-b">
-          <TabsList className="w-full md:w-auto inline-flex h-12">
+        <OverlayScrollbar>
+          <TabsList className="flex h-12 w-full flex-wrap gap-2 md:w-auto md:flex-nowrap">
             <TabsTrigger value="profile" className="gap-2 whitespace-nowrap px-4">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">{t('settings.profile')}</span>
@@ -384,384 +258,54 @@ const [positionForm, setPositionForm] = useState({
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">{t('settings.positions')}</span>
             </TabsTrigger>
+            <TabsTrigger value="backup" className="gap-2 whitespace-nowrap px-4">
+              <DatabaseBackup className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('settings.backupTabLabel')}</span>
+            </TabsTrigger>
           </TabsList>
         </OverlayScrollbar>
 
-        {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="space-y-6">
-            {/* Avatar Upload */}
-            {userId && (
-              <UserAvatarUpload
-                userId={userId}
-                currentAvatarUrl={settings.avatarUrl}
-                userFullName={settings.fullNameEn}
-                onAvatarUpdated={(avatarUrl) => setSettings({ ...settings, avatarUrl })}
-                variant="card"
-              />
-            )}
-
-            {/* Profile Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('settings.profile')}</CardTitle>
-                <CardDescription>{t('settings.updateProfile')}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="fullNameEn">{t('users.fullNameEn') || 'Full Name (English)'}</Label>
-                  <Input
-                    id="fullNameEn"
-                    value={settings.fullNameEn}
-                    onChange={(e) => setSettings({ ...settings, fullNameEn: e.target.value })}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="fullNameAr">{t('users.fullNameAr') || 'Full Name (Arabic)'}</Label>
-                  <Input
-                    id="fullNameAr"
-                    dir="rtl"
-                    value={settings.fullNameAr}
-                    onChange={(e) => setSettings({ ...settings, fullNameAr: e.target.value })}
-                    placeholder="محمد أحمد"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('users.email')}</Label>
-                <Input id="email" value={settings.email} disabled />
-                <p className="text-sm text-muted-foreground ltr:text-left rtl:text-right">
-                  {t('settings.emailCannotChange')}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">{t('users.phone')}</Label>
-                <Input
-                  id="phone"
-                  value={settings.phoneNumber || ''}
-                  onChange={(e) => setSettings({ ...settings, phoneNumber: e.target.value })}
-                />
-              </div>
-
-              <Button onClick={handleUpdateProfile} disabled={saving}>
-                {saving ? t('common.loading') : t('settings.saveChanges')}
-              </Button>
-            </CardContent>
-          </Card>
-          </div>
+          <ProfileSettingsCard
+            settings={settings}
+            userId={userId}
+            isSaving={profileSaving}
+            canManage={canManageSettings}
+            onSettingsChange={handleSettingsChange}
+            onSave={handleUpdateProfile}
+          />
         </TabsContent>
 
-        {/* Notifications Tab */}
         <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('settings.notifications')}</CardTitle>
-              <CardDescription>{t('settings.manageNotifications')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5 ltr:text-left rtl:text-right">
-                  <Label>{t('settings.emailNotifications')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.receiveEmailNotifications')}
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.emailNotifications}
-                  onCheckedChange={(checked) =>
-                    setSettings({ ...settings, emailNotifications: checked })
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5 ltr:text-left rtl:text-right">
-                  <Label>{t('settings.pushNotifications')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.receivePushNotifications')}
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.pushNotifications}
-                  onCheckedChange={(checked) =>
-                    setSettings({ ...settings, pushNotifications: checked })
-                  }
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5 ltr:text-left rtl:text-right">
-                  <Label>{t('settings.taskNotifications')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.notifyTaskAssigned')}
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.taskNotifications}
-                  onCheckedChange={(checked) =>
-                    setSettings({ ...settings, taskNotifications: checked })
-                  }
-                />
-              </div>
-
-              <Button onClick={handleUpdateNotifications} disabled={saving}>
-                {saving ? t('common.loading') : t('settings.saveChanges')}
-              </Button>
-            </CardContent>
-          </Card>
+          <NotificationPreferencesCard
+            settings={settings}
+            isSaving={notificationSaving}
+            canManage={canManageSettings}
+            onSettingsChange={handleSettingsChange}
+            onSave={handleUpdateNotifications}
+          />
         </TabsContent>
 
-        {/* Security Tab */}
         <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('settings.changePassword')}</CardTitle>
-              <CardDescription>{t('settings.updatePasswordDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">{t('settings.currentPassword')}</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">{t('settings.newPassword')}</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, newPassword: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">{t('settings.confirmPassword')}</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                  }
-                />
-              </div>
-
-              <Button onClick={handleChangePassword} disabled={saving}>
-                {saving ? t('common.loading') : t('settings.changePassword')}
-              </Button>
-            </CardContent>
-          </Card>
+          <SecuritySettingsCard
+            canManage={canManageSettings}
+            isSaving={passwordSaving}
+            onChangePassword={handleChangePassword}
+          />
         </TabsContent>
 
-        {/* Appearance Tab */}
         <TabsContent value="appearance">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('settings.appearance')}</CardTitle>
-              <CardDescription>{t('settings.customizeAppearance')}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5 ltr:text-left rtl:text-right">
-                  <Label>{t('common.theme')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.selectTheme')}
-                  </p>
-                </div>
-                <ThemeToggle />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5 ltr:text-left rtl:text-right">
-                  <Label>{t('common.language')}</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {t('settings.selectLanguage')}
-                  </p>
-                </div>
-                <LanguageToggle />
-              </div>
-            </CardContent>
-          </Card>
+          <AppearanceSettingsCard />
         </TabsContent>
 
-        {/* Positions Tab */}
         <TabsContent value="positions">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t('settings.positions')}</CardTitle>
-                  <CardDescription>{t('settings.positionsManagement')}</CardDescription>
-                </div>
-                <Button onClick={() => handleOpenPositionDialog()}>
-                  <Plus className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-                  {t('settings.addPosition')}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loadingPositions ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                    <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
-                  </div>
-                </div>
-              ) : positions.length === 0 ? (
-                <div className="text-center py-8">
-                  <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">{t('settings.noPositions')}</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('settings.positionName')}</TableHead>
-                      <TableHead>{t('settings.positionDescription')}</TableHead>
-                      <TableHead>{t('settings.positionLevel')}</TableHead>
-                      <TableHead>{t('common.status')}</TableHead>
-                      <TableHead className="text-right">{t('common.actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {positions.map((position) => (
-                      <TableRow key={position.id}>
-                        <TableCell className="font-medium">
-                          <div>{position.name}</div>
-                          {position.nameAr && (
-                            <div className="text-xs text-muted-foreground">{position.nameAr}</div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {position.description || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {t('settings.level')} {position.level}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={position.isActive ? 'default' : 'secondary'}>
-                            {position.isActive ? t('common.active') : t('common.inactive')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleOpenPositionDialog(position)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeletePosition(position.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+          <PositionsManager canView={canViewSettings} canManage={canManageSettings} />
+        </TabsContent>
+
+        <TabsContent value="backup">
+          <BackupManagerCard canView={canViewSettings} canManageBackups={canManageBackups} />
         </TabsContent>
       </Tabs>
-
-      {/* Position Dialog */}
-      <Dialog open={isPositionDialogOpen} onOpenChange={setIsPositionDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingPosition ? t('settings.editPosition') : t('settings.addPosition')}
-            </DialogTitle>
-            <DialogDescription>
-              {editingPosition ? t('settings.editPositionDescription') : t('settings.addPositionDescription')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="position-name">{t('settings.positionName')}</Label>
-              <Input
-                id="position-name"
-                value={positionForm.name}
-                onChange={(e) => setPositionForm({ ...positionForm, name: e.target.value })}
-                placeholder={t('settings.positionNamePlaceholder')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="position-name-ar">{t('settings.positionNameAr') || 'Position Name (Arabic)'}</Label>
-              <Input
-                id="position-name-ar"
-                dir="rtl"
-                value={positionForm.nameAr}
-                onChange={(e) => setPositionForm({ ...positionForm, nameAr: e.target.value })}
-                placeholder={t('settings.positionNameArPlaceholder') || 'مثال: المدير التنفيذي'}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="position-description">{t('settings.positionDescription')}</Label>
-              <Textarea
-                id="position-description"
-                value={positionForm.description}
-                onChange={(e) => setPositionForm({ ...positionForm, description: e.target.value })}
-                placeholder={t('settings.positionDescriptionPlaceholder')}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="position-level">{t('settings.positionLevel')}</Label>
-              <Input
-                id="position-level"
-                type="number"
-                min="1"
-                value={positionForm.level}
-                onChange={(e) => setPositionForm({ ...positionForm, level: parseInt(e.target.value) || 1 })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="position-active">{t('common.active')}</Label>
-              <Switch
-                id="position-active"
-                checked={positionForm.isActive}
-                onCheckedChange={(checked) => setPositionForm({ ...positionForm, isActive: checked })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleClosePositionDialog}>
-              {t('common.cancel')}
-            </Button>
-            <Button onClick={handleSavePosition} disabled={saving}>
-              {saving ? t('common.saving') : t('common.save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

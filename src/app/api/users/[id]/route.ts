@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { getUserPermissionsContext } from '@/lib/auth/permissions';
-import { hasPermission } from '@/lib/permissions-helper';
+import { UserService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { getUserPermissionsContext, hasPermission } from '@/core/auth/permissions-compat';
 
 const userService = new UserService();
 
@@ -85,10 +84,10 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const { permissionMap } = await getUserPermissionsContext(userId);
     const canUpdateUsers = hasPermission(permissionMap, 'users', 'update');
 
-    if (!canUpdateUsers && !isSuperAdmin) {
+    if (!canUpdateUsers) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -107,7 +106,7 @@ export async function PATCH(
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
     const canManageAllUsers =
-      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+      hasPermission(permissionMap, 'users', 'assign-role');
     
     // Check if user can manage this target user
     // Top-level admins (no managerId) can manage anyone
@@ -170,10 +169,10 @@ export async function DELETE(
     const userId = payload.userId;
     const { id } = await params;
 
-    const { permissionMap, isSuperAdmin } = await getUserPermissionsContext(userId);
+    const { permissionMap } = await getUserPermissionsContext(userId);
     const canDeleteUsers = hasPermission(permissionMap, 'users', 'delete');
 
-    if (!canDeleteUsers && !isSuperAdmin) {
+    if (!canDeleteUsers) {
       return NextResponse.json(
         { success: false, error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
@@ -192,7 +191,7 @@ export async function DELETE(
     // Get current user to check if they're a top-level admin
     const currentUser = await userService.getUserById(userId);
     const canManageAllUsers =
-      isSuperAdmin || hasPermission(permissionMap, 'users', 'assign-role');
+      hasPermission(permissionMap, 'users', 'assign-role');
     
     // Check if user can manage this target user
     // Top-level admins (no managerId) can manage anyone

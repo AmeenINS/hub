@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { RolePermissionService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
-import { logError } from '@/lib/logger';
+import { RolePermissionService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
+import { logError } from '@/core/logging/logger';
 
 const rolePermissionService = new RolePermissionService();
 

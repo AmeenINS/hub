@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { UserService } from '@/lib/db/user-service';
-import { logError } from '@/lib/logger';
+import { JWTService } from '@/core/auth/jwt';
+import { UserService } from '@/core/data/user-service';
+import { logError } from '@/core/logging/logger';
 
 /**
  * GET /api/users/me/subordinates

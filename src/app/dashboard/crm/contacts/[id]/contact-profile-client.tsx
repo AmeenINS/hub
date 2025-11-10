@@ -7,16 +7,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Contact, Company } from '@/types/database';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { useToast } from '@/hooks/use-toast';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Contact, Company } from '@/shared/types/database';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { useToast } from '@/shared/hooks/use-toast';
+import { ConfirmDialog } from '@/shared/components/ui/confirm-dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import { Separator } from '@/shared/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import {
   Mail,
   Phone,

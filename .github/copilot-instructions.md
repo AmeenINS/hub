@@ -65,6 +65,11 @@ async function deleteContact(contactId: string) {
 ```typescript
 import { apiClient, getErrorMessage } from '@/lib/api-client';
 
+
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { apiClient } from '@/core/api/client';
+
+
 // ✅ Correct
 const response = await apiClient.get('/api/users');
 const response = await apiClient.post('/api/users', data);

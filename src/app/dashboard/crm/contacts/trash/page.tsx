@@ -5,17 +5,17 @@ import { useRouter } from 'next/navigation';
 import { Trash2, RotateCcw, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Contact } from '@/types/database';
-import { Button } from '@/components/ui/button';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Contact } from '@/shared/types/database';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,8 +25,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+} from '@/shared/components/ui/alert-dialog';
+import { Badge } from '@/shared/components/ui/badge';
 
 interface ApiResponse<T> {
   success: boolean;

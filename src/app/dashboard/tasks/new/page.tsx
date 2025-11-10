@@ -12,19 +12,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 // Internal utilities
-import { apiClient, getErrorMessage } from '@/lib/api-client';
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { getCombinedUserName } from '@/lib/utils';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { getCombinedUserName } from '@/core/utils';
 
 // Components
-import { Button } from '@/components/ui/button';
+import { Button } from '@/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/shared/components/ui/card';
 import {
   Form,
   FormControl,
@@ -33,20 +33,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { Textarea } from '@/shared/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { RTLChevron } from '@/components/ui/rtl-icon';
+} from '@/shared/components/ui/select';
+import { RTLChevron } from '@/shared/components/ui/rtl-icon';
 
 // Types
-import { TaskPriority } from '@/types/database';
+import { TaskPriority } from '@/shared/types/database';
 
 // Types & Interfaces
 interface User {

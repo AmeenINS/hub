@@ -1,34 +1,66 @@
 'use client';
 
-import { useI18n } from '@/lib/i18n/i18n-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Trash2, Save, Shield } from 'lucide-react';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { ArrowLeft, Trash2, Save, Shield, AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
+import { useAuthStore } from '@/shared/state/auth-store';
 import { toast } from 'sonner';
-import { RTLChevron } from '@/components/ui/rtl-icon';
+import { RTLChevron } from '@/shared/components/ui/rtl-icon';
+import { PermissionLevel, PermissionLevelNames } from '@/core/auth/permission-levels';
+import { apiClient } from '@/core/api/client';
 
 interface Role {
   id: string;
   name: string;
   description: string;
-  permissionIds: string[];
+  isSystemRole: boolean;
+  moduleLevels?: Record<string, number>;
 }
 
-interface Permission {
-  id: string;
-  module: string;
-  action: string;
-  resource?: string;
-  description?: string;
-}
+// Module definitions for permission configuration - Complete list from sidebar
+const MODULES = [
+  // Core System
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'users', label: 'Users Management' },
+  { id: 'roles', label: 'Roles & Permissions' },
+  { id: 'settings', label: 'System Settings' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'support', label: 'Support' },
+  
+  // Business Core
+  { id: 'tracking', label: 'Live Tracking' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'notes', label: 'Notes' },
+  { id: 'scheduler', label: 'Scheduler' },
+  { id: 'reports', label: 'Reports' },
+  
+  // CRM Module
+  { id: 'crm_contacts', label: 'CRM - Contacts' },
+  { id: 'crm_companies', label: 'CRM - Companies' },
+  { id: 'crm_leads', label: 'CRM - Leads' },
+  { id: 'crm_deals', label: 'CRM - Deals' },
+  { id: 'crm_activities', label: 'CRM - Activities' },
+  { id: 'crm_campaigns', label: 'CRM - Campaigns' },
+  
+  // Insurance Modules
+  { id: 'policies', label: 'Policy Management' },
+  { id: 'claims', label: 'Claims Management' },
+  
+  // Business Operations
+  { id: 'accounting', label: 'Finance & Accounting' },
+  { id: 'workflows', label: 'Workflow & Automation' },
+  { id: 'inventory', label: 'Inventory Management' },
+  { id: 'procurement', label: 'Procurement' },
+  // Files & Uploads
+  { id: 'files', label: 'Files & Uploads' },
+];
 
 export default function EditRolePage() {
   const { t } = useI18n();
@@ -38,57 +70,32 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
+  const [justSaved, setJustSaved] = useState(false);
   const [formData, setFormData] = useState<Role>({
     id: '',
     name: '',
     description: '',
-    permissionIds: [],
+    isSystemRole: false,
+    moduleLevels: {},
   });
 
   const fetchRole = async () => {
     try {
       setFetchLoading(true);
+      const response = await apiClient.get<Role>(`/api/roles/${params.id}`);
       
-      // Fetch role and permissions in parallel
-      const [roleResponse, permissionsResponse] = await Promise.all([
-        fetch(`/api/roles/${params.id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }),
-        fetch('/api/permissions', {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }),
-      ]);
-
-      if (roleResponse.ok && permissionsResponse.ok) {
-        const roleData = await roleResponse.json();
-        const permissionsData = await permissionsResponse.json();
-        
-        if (roleData.success && roleData.data) {
-          // Fetch role permissions
-          const rolePermsResponse = await fetch(`/api/roles/${params.id}/permissions`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          
-          let permissionIds: string[] = [];
-          if (rolePermsResponse.ok) {
-            const rolePermsData = await rolePermsResponse.json();
-            if (rolePermsData.success) {
-              permissionIds = rolePermsData.data.map((rp: { permissionId: string }) => rp.permissionId);
-            }
-          }
-          
-          setFormData({
-            id: roleData.data.id,
-            name: roleData.data.name,
-            description: roleData.data.description || '',
-            permissionIds,
-          });
-        }
-        
-        if (permissionsData.success) {
-          setAllPermissions(permissionsData.data || []);
-        }
+      if (response.success && response.data) {
+        const role = response.data as Role & { moduleLevels?: Record<string, number> | string };
+        const normalizedLevels: Record<string, number> = role.moduleLevels
+          ? (typeof role.moduleLevels === 'string' ? JSON.parse(role.moduleLevels) : role.moduleLevels)
+          : {};
+        setFormData({
+          id: role.id,
+          name: role.name,
+          description: role.description,
+          isSystemRole: role.isSystemRole,
+          moduleLevels: normalizedLevels,
+        });
       } else {
         toast.error(t('roles.fetchError'));
         router.push('/dashboard/roles');
@@ -111,43 +118,27 @@ export default function EditRolePage() {
     setLoading(true);
 
     try {
-      // Update role basic info
-      const roleResponse = await fetch(`/api/roles/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-        }),
+      const response = await apiClient.put(`/api/roles/${params.id}`, {
+        name: formData.name,
+        description: formData.description,
+        // Ensure moduleLevels is a plain object with numeric values
+        moduleLevels: Object.fromEntries(
+          Object.entries(formData.moduleLevels || {}).map(([k, v]) => [k, Number(v)])
+        ),
       });
 
-      // Update role permissions
-      const permsResponse = await fetch(`/api/roles/${params.id}/permissions`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          permissionIds: formData.permissionIds,
-        }),
-      });
-
-      if (roleResponse.ok && permsResponse.ok) {
+      if (response.success) {
         toast.success(t('roles.updateSuccess'));
-        router.push('/dashboard/roles');
+        
+        // Show saved indicator
+        setJustSaved(true);
+        setTimeout(() => setJustSaved(false), 3000);
+        
+        // Refresh the form data to show updated values
+        await fetchRole();
+        
       } else {
-        let errorMessage = t('roles.updateError');
-        try {
-          const data = await roleResponse.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
+        toast.error(response.message || t('roles.updateError'));
       }
     } catch (error) {
       console.error('Failed to update role:', error);
@@ -158,29 +149,24 @@ export default function EditRolePage() {
   };
 
   const handleDelete = async () => {
+    if (formData.isSystemRole) {
+      toast.error('Cannot delete system roles');
+      return;
+    }
+
     if (!confirm(t('messages.deleteConfirm') + ' ' + formData.name + '?')) {
       return;
     }
 
     setDeleting(true);
     try {
-      const response = await fetch(`/api/roles/${params.id}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const response = await apiClient.delete(`/api/roles/${params.id}`);
 
-      if (response.ok) {
+      if (response.success) {
         toast.success(t('messages.deleteSuccess'));
         router.push('/dashboard/roles');
       } else {
-        let errorMessage = t('messages.deleteError');
-        try {
-          const data = await response.json();
-          errorMessage = data.message || errorMessage;
-        } catch {
-          // Response has no JSON body, use default error message
-        }
-        toast.error(errorMessage);
+        toast.error(response.message || t('messages.deleteError'));
       }
     } catch (error) {
       console.error('Failed to delete role:', error);
@@ -192,15 +178,18 @@ export default function EditRolePage() {
 
   if (fetchLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <Card className="max-w-2xl animate-pulse">
+      <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
+        <Card className="animate-pulse">
           <CardHeader>
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mt-2"></div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </CardContent>
         </Card>
       </div>
@@ -208,9 +197,9 @@ export default function EditRolePage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/roles">
             <Button variant="ghost" size="sm" className="gap-2">
@@ -221,121 +210,174 @@ export default function EditRolePage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-3xl font-bold tracking-tight">
               {t('roles.edit')}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            </h2>
+            <p className="text-muted-foreground">
               {t('roles.editDescription')}
             </p>
           </div>
         </div>
-        <Button
-          variant="destructive"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="gap-2"
-        >
-          <Trash2 className="h-4 w-4" />
-          {deleting ? t('common.loading') : t('common.delete')}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={fetchRole}
+            disabled={fetchLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${fetchLoading ? 'animate-spin' : ''}`} />
+            {fetchLoading ? t('common.loading') : t('common.refresh')}
+          </Button>
+          {!formData.isSystemRole && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {deleting ? t('common.loading') : t('common.delete')}
+            </Button>
+          )}
+        </div>
       </div>
 
+      {/* System Role Warning */}
+      {formData.isSystemRole && (
+        <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950 dark:border-blue-800">
+          <CardContent className="pt-6 flex gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-900 dark:text-blue-100">
+              <p className="font-semibold">{t('roles.systemRole')}</p>
+              <p className="text-xs mt-1">{t('roles.systemRoleWarning')}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Form */}
-      <Card className="max-w-4xl">
+      <Card>
         <CardHeader>
           <CardTitle>{t('roles.details')}</CardTitle>
           <CardDescription>{t('roles.formDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('roles.name')}</Label>
-              <Input
-                id="name"
-                placeholder={t('roles.namePlaceholder')}
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-              />
+            {/* Name and Description */}
+            <div className="grid gap-4">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('roles.name')}</Label>
+                <Input
+                  id="name"
+                  placeholder={t('roles.namePlaceholder')}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">{t('roles.description')}</Label>
+                <Textarea
+                  id="description"
+                  placeholder={t('roles.descriptionPlaceholder')}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">{t('roles.description')}</Label>
-              <Textarea
-                id="description"
-                placeholder={t('roles.descriptionPlaceholder')}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-              />
-            </div>
+            {/* Permission Levels */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                <Label className="text-lg">{t('roles.permissionLevels')}</Label>
+              </div>
 
-            {/* Permissions */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                {t('roles.permissions')}
-              </Label>
-              <div className="border rounded-lg p-4 space-y-4 max-h-96 overflow-y-auto">
-                {Object.entries(
-                  allPermissions.reduce((acc, perm) => {
-                    const moduleName = perm.module || 'other';
-                    if (!acc[moduleName]) acc[moduleName] = [];
-                    acc[moduleName].push(perm);
-                    return acc;
-                  }, {} as Record<string, Permission[]>)
-                ).map(([moduleName, perms]) => (
-                  <div key={moduleName} className="space-y-2">
-                    <h4 className="font-semibold text-sm capitalize flex items-center gap-2">
-                      <Shield className="h-3 w-3 text-blue-600" />
-                      {moduleName}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-5">
-                      {perms.map((permission) => (
-                        <div key={permission.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={permission.id}
-                            checked={formData.permissionIds.includes(permission.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: [...formData.permissionIds, permission.id],
-                                });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  permissionIds: formData.permissionIds.filter((id) => id !== permission.id),
-                                });
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={permission.id}
-                            className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {permission.action}
-                            {permission.description && (
-                              <span className="text-xs text-gray-500 ml-1">
-                                ({permission.description})
-                              </span>
-                            )}
-                          </label>
-                        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {MODULES.map((module) => (
+                  <div key={module.id} className="space-y-2">
+                    <Label htmlFor={`level-${module.id}`} className="font-medium">
+                      {module.label}
+                    </Label>
+                    <select
+                      id={`level-${module.id}`}
+                      value={formData.moduleLevels?.[module.id] ?? PermissionLevel.NONE}
+                      onChange={(e) => {
+                        const level = parseInt(e.target.value);
+                        setFormData({
+                          ...formData,
+                          moduleLevels: {
+                            ...(formData.moduleLevels || {}),
+                            [module.id]: level,
+                          },
+                        });
+                      }}
+                      aria-label={module.label}
+                      className="w-full px-3 py-2 border rounded-md bg-background text-sm"
+                    >
+                      {Object.entries(PermissionLevelNames).map(([levelValue, levelName]) => (
+                        <option key={levelValue} value={levelValue}>
+                          {levelName}
+                        </option>
                       ))}
-                    </div>
+                    </select>
                   </div>
                 ))}
               </div>
+
+              {/* Permission Level Guide */}
+              <Card className="bg-muted/50 border-dashed">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">{t('roles.permissionLevelGuide')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-xs">
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.NONE]}</span>
+                    <p className="text-muted-foreground">No access to this module</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.READ]}</span>
+                    <p className="text-muted-foreground">View and list data only</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.WRITE]}</span>
+                    <p className="text-muted-foreground">Create and edit records</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.FULL]}</span>
+                    <p className="text-muted-foreground">Full module access including delete</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.ADMIN]}</span>
+                    <p className="text-muted-foreground">Module administration and configuration</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold">{PermissionLevelNames[PermissionLevel.SUPER_ADMIN]}</span>
+                    <p className="text-muted-foreground">Complete control and critical operations</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading}>
+              <Button 
+                type="submit" 
+                disabled={loading}
+                variant={justSaved ? "default" : "default"}
+                className={justSaved ? "bg-green-600 hover:bg-green-700" : ""}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {loading ? t('common.loading') : t('common.save')}
+                {loading 
+                  ? t('common.loading') 
+                  : justSaved 
+                    ? t('common.saved') 
+                    : t('common.save')
+                }
               </Button>
               <Link href="/dashboard/roles">
                 <Button type="button" variant="outline">

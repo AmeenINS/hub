@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { NotesService } from '@/lib/db/notes-service';
-import { getErrorMessage } from '@/lib/api-client';
+import { JWTService } from '@/core/auth/jwt';
+import { NotesService } from '@/core/data/notes-service';
+import { getErrorMessage } from '@/core/api/client';
+import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
+import { PermissionLevel } from '@/core/auth/permission-levels';
 
 /**
  * GET /api/notes - Get all notes for the authenticated user
@@ -21,6 +23,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Invalid token' },
         { status: 401 }
+      );
+    }
+
+    // Check permission level for notes
+    const hasPermission = await AdvancedPermissionService.hasMinimumLevel(
+      decoded.userId, 
+      'notes', 
+      PermissionLevel.READ
+    );
+    
+    if (!hasPermission) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
       );
     }
 
@@ -60,6 +76,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Invalid token' },
         { status: 401 }
+      );
+    }
+
+    // Check permission level for creating notes
+    const hasPermission = await AdvancedPermissionService.hasMinimumLevel(
+      decoded.userId, 
+      'notes', 
+      PermissionLevel.WRITE
+    );
+    
+    if (!hasPermission) {
+      return NextResponse.json(
+        { success: false, message: 'Access denied' },
+        { status: 403 }
       );
     }
 

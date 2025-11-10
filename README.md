@@ -12,6 +12,7 @@
 - **[Soft Delete System](docs/soft-delete/README.md)** - Logical deletion with recovery
 - **[Development Guide](DEVELOPMENT_GUIDE.md)** - Development guidelines
 - **[Copilot Instructions](.github/copilot-instructions.md)** - AI development rules
+- **[Mobile Setup](docs/MOBILE_SETUP.md)** - Build Capacitor Android and iOS shells
 
 ---
 
@@ -140,57 +141,40 @@ Open [http://localhost:3000](http://localhost:3000) and login with:
 ```
 hub/
 ├── src/
-│   ├── app/                    # Next.js App Router
-│   │   ├── api/               # API routes
-│   │   │   ├── auth/         # Authentication endpoints
-│   │   │   ├── crm/          # CRM endpoints
-│   │   │   ├── permissions/  # Permission management
-│   │   │   └── users/        # User management
-│   │   ├── dashboard/        # Protected dashboard pages
-│   │   │   ├── crm/         # CRM pages
-│   │   │   ├── users/       # User management pages
-│   │   │   └── roles/       # Role management pages
-│   │   └── login/           # Login page
+│   ├── app/                     # Next.js App Router (routes + API)
+│   ├── core/                    # Cross-cutting platform services
+│   │   ├── api/                 # Centralized API client
+│   │   ├── auth/                # JWT, middleware, permission gatekeepers
+│   │   ├── data/                # Database services, LMDB, soft-delete helpers
+│   │   ├── logging/             # Winston logger configuration
+│   │   ├── scheduler/           # Scheduler services + bootstrap
+│   │   ├── security/            # Permission utilities & future hardening
+│   │   ├── storage/             # File storage adapters
+│   │   └── utils/               # Framework-agnostic helpers
 │   │
-│   ├── components/            # React components
-│   │   ├── ui/              # shadcn/ui components
-│   │   ├── dashboard/       # Dashboard-specific components
-│   │   └── crm/            # CRM-specific components
+│   ├── features/                # Vertical feature modules (UI + logic)
+│   │   ├── dashboard/           # Shell components (sidebar, nav, org chart)
+│   │   ├── crm/                 # CRM widgets (contacts, avatars, etc.)
+│   │   ├── notes/               # Notes grids/cards
+│   │   ├── scheduler/           # Calendar dialogs & detail views
+│   │   ├── tasks/               # Kanban + task dialogs
+│   │   └── tracking/            # Live location map
 │   │
-│   ├── hooks/                # Custom React hooks
-│   │   ├── use-permissions.ts  # Permission hooks
-│   │   └── use-translation.ts  # Translation hook
-│   │
-│   ├── lib/                  # Utility libraries
-│   │   ├── api-client.ts    # Centralized API client
-│   │   ├── auth/           # Authentication utilities
-│   │   │   ├── jwt.ts      # JWT token management
-│   │   │   └── permissions.ts # Permission checking
-│   │   ├── db/             # Database utilities
-│   │   │   └── prisma.ts   # Prisma client
-│   │   └── i18n/           # Internationalization
-│   │       └── translations.ts # EN/AR translations
-│   │
-│   ├── store/               # Zustand global state
-│   │   └── auth-store.ts   # Authentication state
-│   │
-│   └── types/              # TypeScript type definitions
-│       └── database.ts     # Database types
+│   └── shared/                  # Reusable presentation + state
+│       ├── components/
+│       │   ├── theme/           # Theme & language toggles
+│       │   └── ui/              # shadcn/ui primitives
+│       ├── hooks/               # Global React hooks
+│       ├── i18n/                # Translation context + dictionaries
+│       ├── state/               # Zustand stores
+│       └── types/               # Shared TypeScript contracts
 │
-├── scripts/                # Database and setup scripts
-│   ├── init-db.ts         # Initialize database
-│   ├── add-crm-permissions.ts
-│   └── create-super-admin.ts
-│
-├── docs/                   # Documentation
-│   └── EXAMPLE_NEW_FEATURE.md # Complete feature example
-│
-├── .github/
-│   └── copilot-instructions.md # GitHub Copilot rules
-│
-├── DEVELOPMENT_GUIDE.md   # Comprehensive development guide
-├── QUICK_REFERENCE.md     # Quick reference for common tasks
-└── README.md             # This file
+├── scripts/                     # Database/setup scripts
+├── docs/                        # Detailed documentation
+├── .github/                     # Automation + AI guardrails
+├── DEVELOPMENT_GUIDE.md         # Comprehensive development guide
+├── QUICK_REFERENCE.md           # Quick reference for common tasks
+└── README.md                    # This file
 ```
 
 ## 🎯 Core Development Principles
@@ -201,7 +185,7 @@ hub/
 <Button>Save</Button>
 
 // ✅ Correct
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from '@/shared/hooks/use-translation';
 const { t } = useTranslation();
 <Button>{t('common.save')}</Button>
 ```
@@ -224,7 +208,7 @@ const { permissions } = useModulePermissions('contacts');
 const response = await fetch('/api/contacts');
 
 // ✅ Correct
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/core/api/client';
 const response = await apiClient.get('/api/contacts');
 ```
 
@@ -242,7 +226,7 @@ useEffect(() => {
 
 ### Step 1: Add Translations
 ```typescript
-// src/lib/i18n/translations.ts
+// src/shared/i18n/translations.ts
 export const translations = {
   en: {
     myFeature: {
@@ -268,8 +252,8 @@ npx tsx scripts/add-my-feature-permissions.ts
 ### Step 3: Create API Route
 ```typescript
 // app/api/my-feature/route.ts
-import { verifyToken } from '@/lib/auth/jwt';
-import { checkUserPermission } from '@/lib/auth/permissions';
+import { verifyToken } from '@/core/auth/jwt';
+import { checkUserPermission } from '@/core/auth/permissions';
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
@@ -294,8 +278,8 @@ export async function GET(request: NextRequest) {
 // app/dashboard/my-feature/page.tsx
 'use client';
 
-import { useModulePermissions } from '@/hooks/use-permissions';
-import { useTranslation } from '@/hooks/use-translation';
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
+import { useTranslation } from '@/shared/hooks/use-translation';
 
 export default function MyFeaturePage() {
   const { t } = useTranslation();

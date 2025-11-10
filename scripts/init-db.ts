@@ -4,7 +4,7 @@
  */
 
 import 'dotenv/config';
-import { dbInitializer } from '@/lib/db/initializer';
+import { dbInitializer } from '@/core/data/initializer';
 
 async function main() {
   try {

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { RolePermissionService } from './src/lib/db/user-service';
+import { RolePermissionService } from './src/core/data/user-service';
 
 async function checkPermissions() {
   const rolePermService = new RolePermissionService();

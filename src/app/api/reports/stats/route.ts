@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JWTService } from '@/lib/auth/jwt';
-import { TaskService } from '@/lib/db/task-service';
-import { UserService } from '@/lib/db/user-service';
-import { TaskStatus } from '@/types/database';
+import { JWTService } from '@/core/auth/jwt';
+import { TaskService } from '@/core/data/task-service';
+import { UserService } from '@/core/data/user-service';
+import { TaskStatus } from '@/shared/types/database';
 
 export async function GET(request: NextRequest) {
   try {

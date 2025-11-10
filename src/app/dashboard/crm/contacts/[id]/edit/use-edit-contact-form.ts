@@ -7,11 +7,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useI18n } from "@/lib/i18n/i18n-context";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useI18n } from "@/shared/i18n/i18n-context";
 import { contactFormSchema, ContactFormData, defaultContactFormValues } from "../../new/contact-schema";
-import { apiClient, getErrorMessage } from "@/lib/api-client";
-import { Contact } from "@/types/database";
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { Contact } from "@/shared/types/database";
 
 interface UseEditContactFormProps {
   contactId: string;

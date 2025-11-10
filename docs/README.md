@@ -5,13 +5,15 @@ Welcome to the Ameen INS Hub technical documentation.
 ## 📚 Documentation Index
 
 ### Core Systems
-- [Soft Delete System](./soft-delete/README.md) - Logical deletion with recovery capabilities
-  - [Implementation Checklist](./soft-delete/CHECKLIST.md)
+- [Permission Level System](./PERMISSION_LEVELS_QUICK_START.md) - ⭐ NEW! Hierarchical permission system
+  - [Full Architecture](./architecture/PERMISSION_LEVEL_SYSTEM.md) - Complete technical documentation
+- [Project Structure](./STRUCTURE.md) - Project organization and file structure
 
 ### Development Guidelines
 - [Language Policy](./LANGUAGE_POLICY.md) - **English-only code enforcement**
 - [Copilot Instructions](../.github/copilot-instructions.md) - AI-assisted development rules
 - [Development Guide](../DEVELOPMENT_GUIDE.md) - Complete development guidelines
+- [Quick Reference](./QUICK_REFERENCE.md) - Common patterns and examples
 
 ### Architecture
 - API Client patterns
@@ -85,18 +87,42 @@ async function حذف_مخاطب(شناسه: string) {
 Centralized HTTP client for all API requests.
 
 ```typescript
-import { apiClient, getErrorMessage } from '@/lib/api-client';
+import { apiClient, getErrorMessage } from '@/core/api/client';
 
 // Always use apiClient, never fetch directly
 const response = await apiClient.get('/api/users');
 const response = await apiClient.post('/api/users', data);
 ```
 
-### 2. Permission System
-Role-based access control on all features.
+### 2. Permission Level System (NEW!)
+**Hierarchical 6-level permission system: NONE → READ → WRITE → FULL → ADMIN → SUPER_ADMIN**
 
 ```typescript
-import { useModulePermissions } from '@/hooks/use-permissions';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { PermissionLevel } from '@/core/auth/permission-levels';
+
+function MyComponent() {
+  const { level, canWrite, canAdmin, isLoading } = usePermissionLevel('contacts');
+
+  if (isLoading) return <Loader />;
+
+  return (
+    <div>
+      {canWrite && <button>Create Contact</button>}
+      {canAdmin && <button>Configure Module</button>}
+    </div>
+  );
+}
+```
+
+**Quick Start:** See [Permission Levels Quick Start](./PERMISSION_LEVELS_QUICK_START.md)  
+**Full Docs:** See [Permission Level System Architecture](./architecture/PERMISSION_LEVEL_SYSTEM.md)
+
+### 3. Legacy Permission System
+Old boolean permission checks (being phased out).
+
+```typescript
+import { useModulePermissions } from '@/shared/hooks/use-permissions';
 
 const { permissions, isLoading } = useModulePermissions('crm_contacts');
 
@@ -107,7 +133,7 @@ if (!permissions.canView) return null;
 Bilingual support (English/Arabic) for all UI text.
 
 ```typescript
-import { useI18n } from '@/lib/i18n/i18n-context';
+import { useI18n } from '@/shared/i18n/i18n-context';
 
 const { t } = useI18n();
 
@@ -118,7 +144,7 @@ const { t } = useI18n();
 Logical deletion with full recovery capabilities.
 
 ```typescript
-import { ContactService } from '@/lib/db/crm-service';
+import { ContactService } from '@/core/data/crm-service';
 
 // Soft delete (recommended)
 await contactService.softDeleteContact(id, userId);

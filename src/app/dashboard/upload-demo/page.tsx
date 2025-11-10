@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileUpload, UploadedFile } from '@/components/ui/file-upload';
-import { ImageUpload, UploadedImage } from '@/components/ui/image-upload';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { FileUpload, UploadedFile } from '@/shared/components/ui/file-upload';
+import { ImageUpload, UploadedImage } from '@/shared/components/ui/image-upload';
+import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
 import { toast } from 'sonner';
 import { CheckCircle2, XCircle, FileIcon, Image as ImageIcon, Users, Briefcase } from 'lucide-react';
 

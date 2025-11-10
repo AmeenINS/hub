@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { TaskService, TaskAssignmentService, TaskActivityService } from '@/lib/db/task-service';
-import { UserService } from '@/lib/db/user-service';
-import { JWTService } from '@/lib/auth/jwt';
-import { checkPermission } from '@/lib/auth/middleware';
-import { logError } from '@/lib/logger';
-import { TaskActivityType, TaskStatus, TaskPriority, Task } from '@/types/database';
+import { TaskService, TaskAssignmentService, TaskActivityService } from '@/core/data/task-service';
+import { UserService } from '@/core/data/user-service';
+import { JWTService } from '@/core/auth/jwt';
+import { checkPermission } from '@/core/auth/middleware';
+import { logError } from '@/core/logging/logger';
+import { TaskActivityType, TaskStatus, TaskPriority, Task } from '@/shared/types/database';
 
 const taskService = new TaskService();
 const taskAssignmentService = new TaskAssignmentService();
