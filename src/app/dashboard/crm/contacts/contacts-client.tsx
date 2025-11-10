@@ -312,6 +312,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/crm/contacts/${contact.id}`}>
+                            <User className="mr-2 h-4 w-4" />
                             {t('crm.viewProfile')}
                           </Link>
                         </DropdownMenuItem>
