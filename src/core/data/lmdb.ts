@@ -118,10 +118,12 @@ class LMDBManager {
 
     // Notes
     this.databases.set('notes', this.db.openDB({ name: 'notes', encoding: 'json' }));
-    this.databases.set('contactNotes', this.db.openDB({ name: 'contactNotes', encoding: 'json' }));
 
     // Geolocation / Tracking
     this.databases.set('userLocations', this.db.openDB({ name: 'userLocations', encoding: 'json' }));
+
+    // Insurance Products
+    this.databases.set('insuranceProducts', this.db.openDB({ name: 'insuranceProducts', encoding: 'json' }));
   }
 
   /**

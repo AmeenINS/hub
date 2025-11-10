@@ -56,6 +56,7 @@ const MODULES = [
   // Insurance Modules
   { id: 'policies', label: 'Policy Management' },
   { id: 'claims', label: 'Claims Management' },
+  { id: 'insurance-products', label: 'Insurance Products' },
   { id: 'accounting', label: 'Finance & Accounting' },
   { id: 'workflows', label: 'Workflow' },
   { id: 'inventory', label: 'Inventory' },

@@ -444,6 +444,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
       ],
     },
+    // Insurance Products Module
+    {
+      title: t('modules.insuranceProducts'),
+      url: '/dashboard/insurance-products',
+      icon: FileText,
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      isActive: pathname?.startsWith('/dashboard/insurance-products'),
+      module: 'insurance-products',
+      items: [
+        {
+          title: t('modules.allInsuranceProducts'),
+          url: '/dashboard/insurance-products',
+          icon: FileText,
+          iconColor: 'text-blue-500',
+          module: 'insurance-products',
+        },
+        {
+          title: t('modules.newInsuranceProduct'),
+          url: '/dashboard/insurance-products/new',
+          icon: FileText,
+          iconColor: 'text-blue-600',
+          module: 'insurance-products',
+        },
+      ],
+    },
     // Inventory Module (if applicable for insurance products)
     {
       title: t('modules.inventory'),

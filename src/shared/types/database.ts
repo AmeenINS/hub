@@ -442,17 +442,6 @@ export interface Deal {
   updatedAt: string;
 }
 
-export interface ContactNote {
-  id: string;
-  contactId: string;
-  userId: string; // User who created the note
-  content: string;
-  createdBy: string;
-  createdByName?: string; // Display name of the user who created the note (populated on fetch)
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Activity {
   id: string;
   type: ActivityType;
@@ -657,4 +646,113 @@ export interface UserLocation {
   isBackground?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// ==================== Insurance Products ====================
+
+export enum InsuranceProductStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  DISCONTINUED = 'DISCONTINUED',
+}
+
+export enum InsuranceProductType {
+  MOTOR = 'MOTOR',
+  HEALTH = 'HEALTH',
+  LIFE = 'LIFE',
+  PROPERTY = 'PROPERTY',
+  MARINE = 'MARINE',
+  TRAVEL = 'TRAVEL',
+  GENERAL = 'GENERAL',
+  ENGINEERING = 'ENGINEERING',
+  WORKMEN_COMPENSATION = 'WORKMEN_COMPENSATION',
+  PROFESSIONAL_INDEMNITY = 'PROFESSIONAL_INDEMNITY',
+  PUBLIC_LIABILITY = 'PUBLIC_LIABILITY',
+  CYBER = 'CYBER',
+  OTHER = 'OTHER',
+}
+
+export enum InsuranceProductCategory {
+  INDIVIDUAL = 'INDIVIDUAL',
+  CORPORATE = 'CORPORATE',
+  SME = 'SME',
+  GOVERNMENT = 'GOVERNMENT',
+}
+
+export interface InsuranceProduct {
+  id: string;
+  
+  // Basic Information
+  nameEn: string;
+  nameAr?: string;
+  descriptionEn?: string;
+  descriptionAr?: string;
+  code: string; // Unique product code (e.g., "MOT-001")
+  
+  // Product Classification
+  type: InsuranceProductType;
+  category: InsuranceProductCategory;
+  
+  // Provider Information
+  providerId?: string; // Insurance company/provider
+  providerNameEn?: string;
+  providerNameAr?: string;
+  
+  // Coverage Details
+  coverageDetailsEn?: string;
+  coverageDetailsAr?: string;
+  exclusionsEn?: string;
+  exclusionsAr?: string;
+  
+  // Financial Information
+  basePremium?: number; // Base premium amount
+  currency?: string; // Default: OMR
+  minCoverage?: number; // Minimum coverage amount
+  maxCoverage?: number; // Maximum coverage amount
+  
+  // Commission Structure
+  commissionRate?: number; // Commission percentage
+  commissionType?: 'PERCENTAGE' | 'FIXED'; // Commission calculation type
+  fixedCommission?: number; // Fixed commission amount if applicable
+  
+  // Policy Duration
+  minDuration?: number; // Minimum policy duration in months
+  maxDuration?: number; // Maximum policy duration in months
+  defaultDuration?: number; // Default policy duration in months
+  
+  // Terms & Conditions
+  termsConditionsEn?: string;
+  termsConditionsAr?: string;
+  documentsRequired?: string[]; // Array of required document types
+  
+  // Product Features
+  features?: string[]; // Array of feature keys/descriptions
+  benefits?: string[]; // Array of benefit descriptions
+  
+  // Pricing Configuration
+  pricingFactors?: Record<string, unknown>; // Dynamic pricing factors (JSON)
+  
+  // Additional Information
+  targetAudience?: string; // Who is this product for?
+  keywords?: string[]; // Search keywords
+  iconUrl?: string; // Product icon/image
+  brochureUrl?: string; // Product brochure PDF
+  
+  // Status & Availability
+  status: InsuranceProductStatus;
+  isAvailableOnline?: boolean; // Can be purchased online
+  isPopular?: boolean; // Featured/popular product
+  priority?: number; // Display priority (higher = show first)
+  
+  // Metadata
+  metadata?: Record<string, unknown>; // Additional custom fields
+  tags?: string[]; // Tags for categorization
+  
+  // Audit Fields
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  isDeleted?: boolean;
 }

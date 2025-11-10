@@ -41,6 +41,7 @@ export const translations = {
       more: 'More',
       support: 'Support',
       viewAll: 'View all',
+      view: 'View',
       actions: 'Actions',
       columns: 'Columns',
       of: 'of',
@@ -161,6 +162,13 @@ export const translations = {
       purchaseOrders: 'Purchase Orders',
       suppliers: 'Suppliers',
       requisitions: 'Requisitions',
+      
+      insuranceProducts: 'Insurance Products',
+      insuranceProductsDesc: 'Manage Insurance Products',
+      allInsuranceProducts: 'All Products',
+      newInsuranceProduct: 'New Product',
+      productDetails: 'Product Details',
+      productCategories: 'Product Categories',
     },
     
     // Dashboard
@@ -442,6 +450,7 @@ export const translations = {
         audit: 'Audit Logs',
         positions: 'Positions',
         settings: 'Settings',
+        'insurance-products': 'Insurance Products',
       },
       comments: 'Comments',
       addComment: 'Add Comment',
@@ -690,6 +699,153 @@ export const translations = {
       level: 'Level',
     },
 
+    // Insurance Products
+    insuranceProducts: {
+      title: 'Insurance Products',
+      allProducts: 'All Products',
+      createProduct: 'Create Product',
+      editProduct: 'Edit Product',
+      deleteProduct: 'Delete Product',
+      productDetails: 'Product Details',
+      basicInfo: 'Basic Information',
+      classification: 'Classification',
+      coverage: 'Coverage Details',
+      financial: 'Financial Information',
+      commission: 'Commission Structure',
+      termsConditions: 'Terms & Conditions',
+      features: 'Features & Benefits',
+      
+      // Fields
+      nameEn: 'Product Name (English)',
+      nameAr: 'Product Name (Arabic)',
+      descriptionEn: 'Description (English)',
+      descriptionAr: 'Description (Arabic)',
+      code: 'Product Code',
+      type: 'Product Type',
+      category: 'Category',
+      provider: 'Provider',
+      providerNameEn: 'Provider Name (English)',
+      providerNameAr: 'Provider Name (Arabic)',
+      
+      coverageDetailsEn: 'Coverage Details (English)',
+      coverageDetailsAr: 'Coverage Details (Arabic)',
+      exclusionsEn: 'Exclusions (English)',
+      exclusionsAr: 'Exclusions (Arabic)',
+      
+      basePremium: 'Base Premium',
+      currency: 'Currency',
+      minCoverage: 'Minimum Coverage',
+      maxCoverage: 'Maximum Coverage',
+      
+      commissionRate: 'Commission Rate (%)',
+      commissionType: 'Commission Type',
+      fixedCommission: 'Fixed Commission Amount',
+      
+      minDuration: 'Minimum Duration (months)',
+      maxDuration: 'Maximum Duration (months)',
+      defaultDuration: 'Default Duration (months)',
+      
+      termsConditionsEn: 'Terms & Conditions (English)',
+      termsConditionsAr: 'Terms & Conditions (Arabic)',
+      documentsRequired: 'Required Documents',
+      
+      productFeatures: 'Features',
+      productBenefits: 'Benefits',
+      targetAudience: 'Target Audience',
+      keywords: 'Search Keywords',
+      
+      status: 'Status',
+      isAvailableOnline: 'Available Online',
+      isPopular: 'Featured/Popular',
+      priority: 'Display Priority',
+      
+      // Product Types
+      productTypes: {
+        MOTOR: 'Motor Insurance',
+        HEALTH: 'Health Insurance',
+        LIFE: 'Life Insurance',
+        PROPERTY: 'Property Insurance',
+        MARINE: 'Marine Insurance',
+        TRAVEL: 'Travel Insurance',
+        GENERAL: 'General Insurance',
+        ENGINEERING: 'Engineering Insurance',
+        WORKMEN_COMPENSATION: 'Workmen Compensation',
+        PROFESSIONAL_INDEMNITY: 'Professional Indemnity',
+        PUBLIC_LIABILITY: 'Public Liability',
+        CYBER: 'Cyber Insurance',
+        OTHER: 'Other',
+      },
+      
+      // Categories
+      categories: {
+        INDIVIDUAL: 'Individual',
+        CORPORATE: 'Corporate',
+        SME: 'Small & Medium Enterprise',
+        GOVERNMENT: 'Government',
+      },
+      
+      // Status
+      statuses: {
+        ACTIVE: 'Active',
+        INACTIVE: 'Inactive',
+        DISCONTINUED: 'Discontinued',
+      },
+      
+      // Commission Types
+      commissionTypes: {
+        PERCENTAGE: 'Percentage',
+        FIXED: 'Fixed Amount',
+      },
+      
+      // Actions & Messages
+      search: 'Search products...',
+      searchPlaceholder: 'Search by name, code, or provider...',
+      filterByType: 'Filter by Type',
+      filterByCategory: 'Filter by Category',
+      filterByStatus: 'Filter by Status',
+      allTypes: 'All Types',
+      allCategories: 'All Categories',
+      allStatuses: 'All Statuses',
+      
+      noProducts: 'No insurance products found',
+      noResults: 'No products match your search',
+      
+      createSuccess: 'Insurance product created successfully',
+      createError: 'Failed to create insurance product',
+      updateSuccess: 'Insurance product updated successfully',
+      updateError: 'Failed to update insurance product',
+      deleteSuccess: 'Insurance product deleted successfully',
+      deleteError: 'Failed to delete insurance product',
+      fetchError: 'Failed to fetch insurance products',
+      
+      deleteConfirm: 'Are you sure you want to delete this insurance product?',
+      deleteWarning: 'This action cannot be undone.',
+      
+      codePlaceholder: 'e.g., MOT-001',
+      codeRequired: 'Product code is required',
+      codeUnique: 'Product code must be unique',
+      nameRequired: 'Product name is required',
+      typeRequired: 'Product type is required',
+      categoryRequired: 'Category is required',
+      
+      // Statistics
+      statistics: 'Product Statistics',
+      totalProducts: 'Total Products',
+      activeProducts: 'Active Products',
+      inactiveProducts: 'Inactive Products',
+      discontinuedProducts: 'Discontinued Products',
+      popularProducts: 'Popular Products',
+      onlineProducts: 'Online Available',
+      
+      // Additional
+      addFeature: 'Add Feature',
+      addBenefit: 'Add Benefit',
+      addDocument: 'Add Required Document',
+      addKeyword: 'Add Keyword',
+      viewAll: 'View All Products',
+      backToList: 'Back to Products List',
+    },
+
     // Calculator
     calculator: {
       title: 'Scientific Calculator',
@@ -751,27 +907,6 @@ export const translations = {
       
       notes: 'Notes',
       additionalNotes: 'Add any additional notes about this contact...',
-      
-      // Contact Notes
-      addNote: 'Add Note',
-      editNote: 'Edit Note',
-      deleteNote: 'Delete Note',
-      noteContent: 'Note Content',
-      writeNote: 'Write your note here...',
-      noteCreated: 'Note created successfully',
-      noteUpdated: 'Note updated successfully',
-      noteDeleted: 'Note deleted successfully',
-      failedToCreateNote: 'Failed to create note',
-      failedToUpdateNote: 'Failed to update note',
-      failedToDeleteNote: 'Failed to delete note',
-      deleteNoteTitle: 'Delete Note',
-      deleteNoteDescription: 'Are you sure you want to delete this note? This action cannot be undone.',
-      noNotes: 'No notes yet',
-      startAddingNotes: 'Start adding notes to keep track of important information',
-      noteBy: 'By',
-      notePlaceholder: 'Enter note content...',
-      saveNote: 'Save Note',
-      cancel: 'Cancel',
       
       // Contact types
       lead: 'Lead',
@@ -990,6 +1125,7 @@ export const translations = {
       more: 'المزيد',
       support: 'الدعم',
       viewAll: 'عرض الكل',
+      view: 'عرض',
       actions: 'الإجراءات',
       columns: 'الأعمدة',
       of: 'من',
@@ -1110,6 +1246,13 @@ export const translations = {
       purchaseOrders: 'أوامر الشراء',
       suppliers: 'الموردون',
       requisitions: 'طلبات الشراء',
+      
+      insuranceProducts: 'منتجات التأمين',
+      insuranceProductsDesc: 'إدارة منتجات التأمين',
+      allInsuranceProducts: 'جميع المنتجات',
+      newInsuranceProduct: 'منتج جديد',
+      productDetails: 'تفاصيل المنتج',
+      productCategories: 'فئات المنتجات',
     },
     
     // Dashboard
@@ -1391,6 +1534,7 @@ export const translations = {
         audit: 'سجلات التدقيق',
         positions: 'المناصب',
         settings: 'الإعدادات',
+        'insurance-products': 'منتجات التأمين',
       },
       comments: 'التعليقات',
       addComment: 'إضافة تعليق',
@@ -1548,27 +1692,6 @@ export const translations = {
       
       notes: 'ملاحظات',
       additionalNotes: 'أضف أي ملاحظات إضافية حول جهة الاتصال...',
-      
-      // Contact Notes (Arabic translations)
-      addNote: 'إضافة ملاحظة',
-      editNote: 'تعديل الملاحظة',
-      deleteNote: 'حذف الملاحظة',
-      noteContent: 'محتوى الملاحظة',
-      writeNote: 'اكتب ملاحظتك هنا...',
-      noteCreated: 'تم إنشاء الملاحظة بنجاح',
-      noteUpdated: 'تم تحديث الملاحظة بنجاح',
-      noteDeleted: 'تم حذف الملاحظة بنجاح',
-      failedToCreateNote: 'فشل إنشاء الملاحظة',
-      failedToUpdateNote: 'فشل تحديث الملاحظة',
-      failedToDeleteNote: 'فشل حذف الملاحظة',
-      deleteNoteTitle: 'حذف الملاحظة',
-      deleteNoteDescription: 'هل أنت متأكد من حذف هذه الملاحظة؟ لا يمكن التراجع عن هذا الإجراء.',
-      noNotes: 'لا توجد ملاحظات بعد',
-      startAddingNotes: 'ابدأ بإضافة ملاحظات لتتبع المعلومات المهمة',
-      noteBy: 'بواسطة',
-      notePlaceholder: 'أدخل محتوى الملاحظة...',
-      saveNote: 'حفظ الملاحظة',
-      cancel: 'إلغاء',
       
       // Contact types (Arabic translations)
       lead: 'عميل محتمل',
@@ -1797,6 +1920,153 @@ export const translations = {
       editPositionDescription: 'تحديث تفاصيل المنصب',
       deletePositionConfirm: 'هل أنت متأكد من حذف هذا المنصب؟',
       level: 'المستوى',
+    },
+
+    // Insurance Products
+    insuranceProducts: {
+      title: 'منتجات التأمين',
+      allProducts: 'جميع المنتجات',
+      createProduct: 'إنشاء منتج',
+      editProduct: 'تعديل المنتج',
+      deleteProduct: 'حذف المنتج',
+      productDetails: 'تفاصيل المنتج',
+      basicInfo: 'المعلومات الأساسية',
+      classification: 'التصنيف',
+      coverage: 'تفاصيل التغطية',
+      financial: 'المعلومات المالية',
+      commission: 'هيكل العمولة',
+      termsConditions: 'الشروط والأحكام',
+      features: 'المميزات والفوائد',
+      
+      // Fields
+      nameEn: 'اسم المنتج (بالإنجليزية)',
+      nameAr: 'اسم المنتج (بالعربية)',
+      descriptionEn: 'الوصف (بالإنجليزية)',
+      descriptionAr: 'الوصف (بالعربية)',
+      code: 'رمز المنتج',
+      type: 'نوع المنتج',
+      category: 'الفئة',
+      provider: 'المزود',
+      providerNameEn: 'اسم المزود (بالإنجليزية)',
+      providerNameAr: 'اسم المزود (بالعربية)',
+      
+      coverageDetailsEn: 'تفاصيل التغطية (بالإنجليزية)',
+      coverageDetailsAr: 'تفاصيل التغطية (بالعربية)',
+      exclusionsEn: 'الاستثناءات (بالإنجليزية)',
+      exclusionsAr: 'الاستثناءات (بالعربية)',
+      
+      basePremium: 'القسط الأساسي',
+      currency: 'العملة',
+      minCoverage: 'الحد الأدنى للتغطية',
+      maxCoverage: 'الحد الأقصى للتغطية',
+      
+      commissionRate: 'نسبة العمولة (%)',
+      commissionType: 'نوع العمولة',
+      fixedCommission: 'مبلغ العمولة الثابت',
+      
+      minDuration: 'الحد الأدنى للمدة (شهور)',
+      maxDuration: 'الحد الأقصى للمدة (شهور)',
+      defaultDuration: 'المدة الافتراضية (شهور)',
+      
+      termsConditionsEn: 'الشروط والأحكام (بالإنجليزية)',
+      termsConditionsAr: 'الشروط والأحكام (بالعربية)',
+      documentsRequired: 'المستندات المطلوبة',
+      
+      productFeatures: 'المميزات',
+      productBenefits: 'الفوائد',
+      targetAudience: 'الفئة المستهدفة',
+      keywords: 'كلمات البحث',
+      
+      status: 'الحالة',
+      isAvailableOnline: 'متاح عبر الإنترنت',
+      isPopular: 'مميز/شائع',
+      priority: 'أولوية العرض',
+      
+      // Product Types
+      productTypes: {
+        MOTOR: 'تأمين السيارات',
+        HEALTH: 'التأمين الصحي',
+        LIFE: 'تأمين الحياة',
+        PROPERTY: 'تأمين الممتلكات',
+        MARINE: 'التأمين البحري',
+        TRAVEL: 'تأمين السفر',
+        GENERAL: 'التأمين العام',
+        ENGINEERING: 'التأمين الهندسي',
+        WORKMEN_COMPENSATION: 'تأمين تعويض العمال',
+        PROFESSIONAL_INDEMNITY: 'التأمين ضد الأخطاء المهنية',
+        PUBLIC_LIABILITY: 'التأمين ضد المسؤولية العامة',
+        CYBER: 'التأمين السيبراني',
+        OTHER: 'أخرى',
+      },
+      
+      // Categories
+      categories: {
+        INDIVIDUAL: 'فردي',
+        CORPORATE: 'شركات',
+        SME: 'الشركات الصغيرة والمتوسطة',
+        GOVERNMENT: 'حكومي',
+      },
+      
+      // Status
+      statuses: {
+        ACTIVE: 'نشط',
+        INACTIVE: 'غير نشط',
+        DISCONTINUED: 'متوقف',
+      },
+      
+      // Commission Types
+      commissionTypes: {
+        PERCENTAGE: 'نسبة مئوية',
+        FIXED: 'مبلغ ثابت',
+      },
+      
+      // Actions & Messages
+      search: 'البحث عن المنتجات...',
+      searchPlaceholder: 'البحث بالاسم أو الرمز أو المزود...',
+      filterByType: 'تصفية حسب النوع',
+      filterByCategory: 'تصفية حسب الفئة',
+      filterByStatus: 'تصفية حسب الحالة',
+      allTypes: 'جميع الأنواع',
+      allCategories: 'جميع الفئات',
+      allStatuses: 'جميع الحالات',
+      
+      noProducts: 'لا توجد منتجات تأمين',
+      noResults: 'لا توجد منتجات تطابق البحث',
+      
+      createSuccess: 'تم إنشاء منتج التأمين بنجاح',
+      createError: 'فشل إنشاء منتج التأمين',
+      updateSuccess: 'تم تحديث منتج التأمين بنجاح',
+      updateError: 'فشل تحديث منتج التأمين',
+      deleteSuccess: 'تم حذف منتج التأمين بنجاح',
+      deleteError: 'فشل حذف منتج التأمين',
+      fetchError: 'فشل في جلب منتجات التأمين',
+      
+      deleteConfirm: 'هل أنت متأكد من حذف منتج التأمين هذا؟',
+      deleteWarning: 'لا يمكن التراجع عن هذا الإجراء.',
+      
+      codePlaceholder: 'مثال: MOT-001',
+      codeRequired: 'رمز المنتج مطلوب',
+      codeUnique: 'يجب أن يكون رمز المنتج فريداً',
+      nameRequired: 'اسم المنتج مطلوب',
+      typeRequired: 'نوع المنتج مطلوب',
+      categoryRequired: 'الفئة مطلوبة',
+      
+      // Statistics
+      statistics: 'إحصائيات المنتجات',
+      totalProducts: 'إجمالي المنتجات',
+      activeProducts: 'المنتجات النشطة',
+      inactiveProducts: 'المنتجات غير النشطة',
+      discontinuedProducts: 'المنتجات المتوقفة',
+      popularProducts: 'المنتجات الشائعة',
+      onlineProducts: 'المتاحة عبر الإنترنت',
+      
+      // Additional
+      addFeature: 'إضافة ميزة',
+      addBenefit: 'إضافة فائدة',
+      addDocument: 'إضافة مستند مطلوب',
+      addKeyword: 'إضافة كلمة مفتاحية',
+      viewAll: 'عرض جميع المنتجات',
+      backToList: 'العودة إلى قائمة المنتجات',
     },
 
     // Calculator
