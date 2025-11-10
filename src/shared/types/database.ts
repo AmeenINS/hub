@@ -442,6 +442,17 @@ export interface Deal {
   updatedAt: string;
 }
 
+export interface ContactNote {
+  id: string;
+  contactId: string;
+  userId: string; // User who created the note
+  content: string;
+  createdBy: string;
+  createdByName?: string; // Display name of the user who created the note (populated on fetch)
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Activity {
   id: string;
   type: ActivityType;
