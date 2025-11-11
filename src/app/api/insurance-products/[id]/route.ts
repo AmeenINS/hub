@@ -11,9 +11,10 @@ import { logError } from '@/core/logging/logger';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -31,7 +32,7 @@ export async function GET(
     }
 
     const productService = new InsuranceProductService();
-    const product = await productService.getProductById(params.id);
+    const product = await productService.getProductById(id);
 
     if (!product) {
       return NextResponse.json(
@@ -45,7 +46,7 @@ export async function GET(
       data: product,
     });
   } catch (error) {
-    logError(`GET /api/insurance-products/${params.id}`, error);
+    logError(`GET /api/insurance-products/[id]`, error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -59,9 +60,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -87,7 +89,7 @@ export async function PUT(
       updatedBy: userId,
     };
 
-    const product = await productService.updateProduct(params.id, updateData);
+    const product = await productService.updateProduct(id, updateData);
 
     if (!product) {
       return NextResponse.json(
@@ -98,7 +100,7 @@ export async function PUT(
 
     // Revalidate the insurance products page
     revalidatePath('/dashboard/insurance-products');
-    revalidatePath(`/dashboard/insurance-products/${params.id}`);
+    revalidatePath(`/dashboard/insurance-products/${id}`);
 
     return NextResponse.json({
       success: true,
@@ -106,7 +108,7 @@ export async function PUT(
       message: 'Insurance product updated successfully',
     });
   } catch (error) {
-    logError(`PUT /api/insurance-products/${params.id}`, error);
+    logError(`PUT /api/insurance-products/[id]`, error);
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     const statusCode = errorMessage.includes('already exists') ? 409 : 500;
@@ -124,9 +126,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -144,7 +147,7 @@ export async function DELETE(
     }
 
     const productService = new InsuranceProductService();
-    const success = await productService.deleteProduct(params.id, userId);
+    const success = await productService.deleteProduct(id, userId);
 
     if (!success) {
       return NextResponse.json(
@@ -161,7 +164,7 @@ export async function DELETE(
       message: 'Insurance product deleted successfully',
     });
   } catch (error) {
-    logError(`DELETE /api/insurance-products/${params.id}`, error);
+    logError(`DELETE /api/insurance-products/[id]`, error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

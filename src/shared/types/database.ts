@@ -402,6 +402,16 @@ export interface Company {
   updatedAt: string;
 }
 
+export interface ContactNote {
+  id: string;
+  contactId: string;
+  content: string;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Lead {
   id: string;
   contactId: string;

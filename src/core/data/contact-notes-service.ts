@@ -145,7 +145,6 @@ export class ContactNotesService {
     const note: ContactNote = {
       id: noteId,
       contactId: input.contactId,
-      userId,
       content: input.content,
       createdBy: userId,
       createdByName: await this.getUserDisplayName(userId),
