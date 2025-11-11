@@ -450,7 +450,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       url: '/dashboard/insurance-products',
       icon: FileText,
       iconColor: 'text-blue-600 dark:text-blue-400',
-      isActive: pathname?.startsWith('/dashboard/insurance-products'),
+      isActive: pathname?.startsWith('/dashboard/insurance-products') || pathname?.startsWith('/dashboard/insurance-companies'),
       module: 'insurance-products',
       items: [
         {
@@ -465,6 +465,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: '/dashboard/insurance-products/new',
           icon: FileText,
           iconColor: 'text-blue-600',
+          module: 'insurance-products',
+        },
+        {
+          title: t('modules.insuranceCompanies'),
+          url: '/dashboard/insurance-companies',
+          icon: Building2,
+          iconColor: 'text-blue-700',
           module: 'insurance-products',
         },
       ],

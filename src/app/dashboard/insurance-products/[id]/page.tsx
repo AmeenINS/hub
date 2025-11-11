@@ -65,7 +65,8 @@ export default function InsuranceProductDetailsPage() {
     if (canView) {
       fetchProduct();
     }
-  }, [productId, canView, t, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId, canView]);
 
   const handleDelete = async () => {
     if (!product) return;

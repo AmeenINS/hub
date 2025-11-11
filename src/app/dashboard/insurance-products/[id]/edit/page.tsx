@@ -11,6 +11,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { InsuranceProduct } from '@/shared/types/database';
 import InsuranceProductForm from '../../insurance-product-form';
+import { ProductCompanies } from '@/features/insurance/components/product-companies';
 
 export default function EditInsuranceProductPage() {
   const { t } = useI18n();
@@ -106,6 +107,9 @@ export default function EditInsuranceProductPage() {
           />
         </CardContent>
       </Card>
+
+      {/* Linked Companies Section */}
+      <ProductCompanies productId={productId} canEdit={canWrite} />
     </div>
   );
 }

@@ -689,6 +689,99 @@ export enum InsuranceProductCategory {
   GOVERNMENT = 'GOVERNMENT',
 }
 
+// ==================== Insurance Company Management ====================
+
+export enum InsuranceCompanyStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED',
+}
+
+export interface InsuranceCompany {
+  id: string;
+  
+  // Basic Information
+  nameEn: string;
+  nameAr?: string;
+  code: string; // Unique company code (e.g., "IC-001")
+  licenseNumber?: string; // Company license/registration number
+  
+  // Contact Information
+  email?: string;
+  phone?: string;
+  website?: string;
+  addressEn?: string;
+  addressAr?: string;
+  
+  // Company Details
+  descriptionEn?: string;
+  descriptionAr?: string;
+  logoUrl?: string;
+  
+  // Status
+  status: InsuranceCompanyStatus;
+  
+  // Metadata
+  metadata?: Record<string, unknown>;
+  
+  // Audit Fields
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+  isDeleted?: boolean;
+}
+
+// Many-to-many relationship between products and companies
+export interface ProductCompanyRelation {
+  id: string;
+  productId: string;
+  companyId: string;
+  
+  // Company-specific financial details
+  commissionRate?: number; // Commission percentage for this company
+  commissionType?: 'PERCENTAGE' | 'FIXED';
+  fixedCommission?: number;
+  
+  // Company-specific coverage limits
+  minCoverage?: number;
+  maxCoverage?: number;
+  basePremium?: number;
+  
+  // Company-specific limitations and requirements
+  limitationsEn?: string; // Special limitations for this company
+  limitationsAr?: string;
+  requirementsEn?: string; // Special requirements for this company
+  requirementsAr?: string;
+  documentsRequired?: string[]; // Company-specific required documents
+  
+  // Pricing and terms
+  pricingFactorsOverride?: Record<string, unknown>; // Company-specific pricing factors
+  minDuration?: number; // Company-specific minimum duration
+  maxDuration?: number; // Company-specific maximum duration
+  
+  // Availability
+  isActive: boolean;
+  isPreferred?: boolean; // Mark as preferred company for this product
+  priority?: number; // Display priority for this company
+  
+  // Processing details
+  processingTimeInDays?: number;
+  claimProcessDetailsEn?: string;
+  claimProcessDetailsAr?: string;
+  
+  // Metadata
+  notes?: string; // Internal notes about this product-company relationship
+  metadata?: Record<string, unknown>;
+  
+  // Audit Fields
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface InsuranceProduct {
   id: string;
   

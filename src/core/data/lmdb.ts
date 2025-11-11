@@ -122,8 +122,10 @@ class LMDBManager {
     // Geolocation / Tracking
     this.databases.set('userLocations', this.db.openDB({ name: 'userLocations', encoding: 'json' }));
 
-    // Insurance Products
+    // Insurance Products & Companies
     this.databases.set('insuranceProducts', this.db.openDB({ name: 'insuranceProducts', encoding: 'json' }));
+    this.databases.set('insuranceCompanies', this.db.openDB({ name: 'insuranceCompanies', encoding: 'json' }));
+    this.databases.set('productCompanyRelations', this.db.openDB({ name: 'productCompanyRelations', encoding: 'json' }));
   }
 
   /**

@@ -15,34 +15,40 @@ export default function InsuranceProductsPage() {
   const [products, setProducts] = useState<InsuranceProduct[]>([]);
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
-  // Fetch data function
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [productsResponse, statsResponse] = await Promise.all([
-        apiClient.get('/api/insurance-products'),
-        apiClient.get('/api/insurance-products/stats')
-      ]);
-
-      if (productsResponse.success) {
-        setProducts(productsResponse.data || []);
-      }
-      if (statsResponse.success) {
-        setStats(statsResponse.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch insurance products:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleRefresh = () => {
+    setRefetchTrigger(prev => prev + 1);
   };
 
   useEffect(() => {
+    // Fetch data function inside useEffect
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [productsResponse, statsResponse] = await Promise.all([
+          apiClient.get('/api/insurance-products'),
+          apiClient.get('/api/insurance-products/stats')
+        ]);
+
+        if (productsResponse.success) {
+          setProducts(productsResponse.data || []);
+        }
+        if (statsResponse.success) {
+          setStats(statsResponse.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch insurance products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (canView) {
       fetchData();
     }
-  }, [canView]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canView, refetchTrigger]);
 
   // Check permissions first
   if (permissionsLoading) {
@@ -121,7 +127,7 @@ export default function InsuranceProductsPage() {
       {/* Client Component for Interactive UI */}
       <InsuranceProductsClient
         initialProducts={products}
-        onRefresh={fetchData}
+        onRefresh={handleRefresh}
       />
     </div>
   );

@@ -39,22 +39,10 @@ const insuranceProductSchema = z.object({
   code: z.string().min(1, 'Product code is required'),
   type: z.nativeEnum(InsuranceProductType),
   category: z.nativeEnum(InsuranceProductCategory),
-  providerNameEn: z.string().optional(),
-  providerNameAr: z.string().optional(),
   coverageDetailsEn: z.string().optional(),
   coverageDetailsAr: z.string().optional(),
   exclusionsEn: z.string().optional(),
   exclusionsAr: z.string().optional(),
-  basePremium: z.number().optional(),
-  currency: z.string().optional(),
-  minCoverage: z.number().optional(),
-  maxCoverage: z.number().optional(),
-  commissionRate: z.number().optional(),
-  commissionType: z.enum(['PERCENTAGE', 'FIXED']).optional(),
-  fixedCommission: z.number().optional(),
-  minDuration: z.number().optional(),
-  maxDuration: z.number().optional(),
-  defaultDuration: z.number().optional(),
   termsConditionsEn: z.string().optional(),
   termsConditionsAr: z.string().optional(),
   targetAudience: z.string().optional(),
@@ -98,22 +86,10 @@ export default function InsuranceProductForm({
       code: initialData?.code || '',
       type: initialData?.type || InsuranceProductType.MOTOR,
       category: initialData?.category || InsuranceProductCategory.INDIVIDUAL,
-      providerNameEn: initialData?.providerNameEn || '',
-      providerNameAr: initialData?.providerNameAr || '',
       coverageDetailsEn: initialData?.coverageDetailsEn || '',
       coverageDetailsAr: initialData?.coverageDetailsAr || '',
       exclusionsEn: initialData?.exclusionsEn || '',
       exclusionsAr: initialData?.exclusionsAr || '',
-      basePremium: initialData?.basePremium || undefined,
-      currency: initialData?.currency || 'OMR',
-      minCoverage: initialData?.minCoverage || undefined,
-      maxCoverage: initialData?.maxCoverage || undefined,
-      commissionRate: initialData?.commissionRate || undefined,
-      commissionType: (initialData?.commissionType as 'PERCENTAGE' | 'FIXED') || 'PERCENTAGE',
-      fixedCommission: initialData?.fixedCommission || undefined,
-      minDuration: initialData?.minDuration || undefined,
-      maxDuration: initialData?.maxDuration || undefined,
-      defaultDuration: initialData?.defaultDuration || undefined,
       termsConditionsEn: initialData?.termsConditionsEn || '',
       termsConditionsAr: initialData?.termsConditionsAr || '',
       targetAudience: initialData?.targetAudience || '',
@@ -127,21 +103,12 @@ export default function InsuranceProductForm({
   const watchType = watch('type');
   const watchCategory = watch('category');
   const watchStatus = watch('status');
-  const watchCommissionType = watch('commissionType');
 
   const onSubmit = async (data: InsuranceProductFormData) => {
     setLoading(true);
     try {
       const payload = {
         ...data,
-        basePremium: data.basePremium ? Number(data.basePremium) : undefined,
-        minCoverage: data.minCoverage ? Number(data.minCoverage) : undefined,
-        maxCoverage: data.maxCoverage ? Number(data.maxCoverage) : undefined,
-        commissionRate: data.commissionRate ? Number(data.commissionRate) : undefined,
-        fixedCommission: data.fixedCommission ? Number(data.fixedCommission) : undefined,
-        minDuration: data.minDuration ? Number(data.minDuration) : undefined,
-        maxDuration: data.maxDuration ? Number(data.maxDuration) : undefined,
-        defaultDuration: data.defaultDuration ? Number(data.defaultDuration) : undefined,
         priority: data.priority ? Number(data.priority) : undefined,
       };
 
@@ -179,11 +146,9 @@ export default function InsuranceProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="basic">{t('insuranceProducts.basicInfo')}</TabsTrigger>
           <TabsTrigger value="coverage">{t('insuranceProducts.coverage')}</TabsTrigger>
-          <TabsTrigger value="financial">{t('insuranceProducts.financial')}</TabsTrigger>
-          <TabsTrigger value="commission">{t('insuranceProducts.commission')}</TabsTrigger>
           <TabsTrigger value="terms">{t('insuranceProducts.termsConditions')}</TabsTrigger>
         </TabsList>
 
@@ -306,26 +271,26 @@ export default function InsuranceProductForm({
                 />
               </div>
 
-              {/* Provider Name (English) */}
-              <div className="space-y-2">
-                <Label htmlFor="providerNameEn">{t('insuranceProducts.providerNameEn')}</Label>
-                <Input
-                  id="providerNameEn"
-                  {...register('providerNameEn')}
-                  placeholder="e.g., Dhofar Insurance"
-                />
-              </div>
-
-              {/* Provider Name (Arabic) */}
-              <div className="space-y-2">
-                <Label htmlFor="providerNameAr">{t('insuranceProducts.providerNameAr')}</Label>
-                <Input
-                  id="providerNameAr"
-                  {...register('providerNameAr')}
-                  placeholder="مثال: شركة ظفار للتأمين"
-                  dir="rtl"
-                />
-              </div>
+              {/* Insurance Companies Info */}
+              {!isEdit && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+                  <div className="flex gap-3">
+                    <div className="shrink-0">
+                      <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        {t('insuranceProducts.companiesLinkInfo')}
+                      </h3>
+                      <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                        {t('insuranceProducts.companiesLinkDescription')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Status */}
               <div className="space-y-2">
@@ -452,149 +417,6 @@ export default function InsuranceProductForm({
                 />
               </div>
 
-              {/* Min/Max Coverage */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="minCoverage">{t('insuranceProducts.minCoverage')}</Label>
-                  <Input
-                    id="minCoverage"
-                    type="number"
-                    {...register('minCoverage', { valueAsNumber: true })}
-                    placeholder="1000"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxCoverage">{t('insuranceProducts.maxCoverage')}</Label>
-                  <Input
-                    id="maxCoverage"
-                    type="number"
-                    {...register('maxCoverage', { valueAsNumber: true })}
-                    placeholder="100000"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Financial Tab */}
-        <TabsContent value="financial" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('insuranceProducts.financial')}</CardTitle>
-              <CardDescription>Premium and pricing information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Base Premium */}
-                <div className="space-y-2">
-                  <Label htmlFor="basePremium">{t('insuranceProducts.basePremium')}</Label>
-                  <Input
-                    id="basePremium"
-                    type="number"
-                    step="0.01"
-                    {...register('basePremium', { valueAsNumber: true })}
-                    placeholder="100.00"
-                  />
-                </div>
-
-                {/* Currency */}
-                <div className="space-y-2">
-                  <Label htmlFor="currency">{t('insuranceProducts.currency')}</Label>
-                  <Input id="currency" {...register('currency')} placeholder="OMR" />
-                </div>
-              </div>
-
-              {/* Duration */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="minDuration">{t('insuranceProducts.minDuration')}</Label>
-                  <Input
-                    id="minDuration"
-                    type="number"
-                    {...register('minDuration', { valueAsNumber: true })}
-                    placeholder="1"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxDuration">{t('insuranceProducts.maxDuration')}</Label>
-                  <Input
-                    id="maxDuration"
-                    type="number"
-                    {...register('maxDuration', { valueAsNumber: true })}
-                    placeholder="12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="defaultDuration">{t('insuranceProducts.defaultDuration')}</Label>
-                  <Input
-                    id="defaultDuration"
-                    type="number"
-                    {...register('defaultDuration', { valueAsNumber: true })}
-                    placeholder="12"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Commission Tab */}
-        <TabsContent value="commission" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('insuranceProducts.commission')}</CardTitle>
-              <CardDescription>Commission structure and rates</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Commission Type */}
-              <div className="space-y-2">
-                <Label htmlFor="commissionType">{t('insuranceProducts.commissionType')}</Label>
-                <Select
-                  value={watchCommissionType}
-                  onValueChange={(value) => setValue('commissionType', value as 'PERCENTAGE' | 'FIXED')}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PERCENTAGE">
-                      {t('insuranceProducts.commissionTypes.PERCENTAGE')}
-                    </SelectItem>
-                    <SelectItem value="FIXED">
-                      {t('insuranceProducts.commissionTypes.FIXED')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Commission Rate (if percentage) */}
-              {watchCommissionType === 'PERCENTAGE' && (
-                <div className="space-y-2">
-                  <Label htmlFor="commissionRate">{t('insuranceProducts.commissionRate')}</Label>
-                  <Input
-                    id="commissionRate"
-                    type="number"
-                    step="0.01"
-                    {...register('commissionRate', { valueAsNumber: true })}
-                    placeholder="5.00"
-                  />
-                </div>
-              )}
-
-              {/* Fixed Commission (if fixed) */}
-              {watchCommissionType === 'FIXED' && (
-                <div className="space-y-2">
-                  <Label htmlFor="fixedCommission">{t('insuranceProducts.fixedCommission')}</Label>
-                  <Input
-                    id="fixedCommission"
-                    type="number"
-                    step="0.01"
-                    {...register('fixedCommission', { valueAsNumber: true })}
-                    placeholder="50.00"
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
