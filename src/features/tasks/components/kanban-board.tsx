@@ -97,7 +97,7 @@ export default function KanbanBoard({ tasks, onTaskClick, onStatusChange }: Kanb
         return (
           <Card
             key={column.status}
-            className="flex flex-col py-0"
+            className="flex flex-col"
           >
             <motion.div
               onDragOver={handleDragOver}
@@ -185,7 +185,7 @@ function TaskCard({ task, onClick, onDragStart, onDragEnd, isDragging }: TaskCar
         onDragStart={(e) => onDragStart(e, task)}
         onDragEnd={onDragEnd}
         onClick={onClick}
-        className={`cursor-grab active:cursor-grabbing transition-shadow py-0 ${
+        className={`cursor-grab active:cursor-grabbing transition-shadow ${
           isDragging ? 'opacity-50' : 'hover:shadow-md'
         }`}
       >

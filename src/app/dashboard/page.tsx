@@ -497,7 +497,7 @@ export default function DashboardPage() {
       <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
         {permissionsLoading ? (
           Array.from({ length: 12 }).map((_, index) => (
-            <Card key={`module-skeleton-${index}`} className="animate-pulse py-0">
+            <Card key={`module-skeleton-${index}`} className="animate-pulse">
               <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
                 <div className="p-3 rounded-xl bg-muted shadow-md h-12 w-12" />
                 <div className="h-3 w-16 rounded bg-muted" />
@@ -513,7 +513,7 @@ export default function DashboardPage() {
             <Card 
               key={index}
               onClick={() => handleModuleClick(module)}
-              className="group relative hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/50 overflow-hidden hover:scale-105 py-0"
+              className="group relative hover:shadow-xl transition-all duration-300 cursor-pointer border hover:border-primary/50 overflow-hidden hover:scale-105"
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${module.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
               
@@ -561,7 +561,7 @@ export default function DashboardPage() {
               <Card
                 key={index}
                 onClick={() => handleSubItemClick(item.url)}
-                className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:border-primary/50 hover:scale-105 w-[95px] py-0"
+                className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:border-primary/50 hover:scale-105 w-[95px]"
               >
                 <CardContent className="p-3 flex flex-col items-center justify-center text-center space-y-2">
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${getModuleColor(item.iconColor)} shadow-md group-hover:scale-110 transition-transform duration-300 aspect-square flex items-center justify-center`}>
