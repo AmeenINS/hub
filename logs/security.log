@@ -134,3 +134,7 @@
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-11 10:22:47","userId":"dozLPIR8dhA7gKUmuVtNB"}
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-11 12:04:42","userId":"dozLPIR8dhA7gKUmuVtNB"}
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-11 12:27:05","userId":"dozLPIR8dhA7gKUmuVtNB"}
+{"email":"admin@ameen.me","level":"info","message":"Failed login attempt","timestamp":"2025-11-12 05:46:10"}
+{"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 05:46:15","userId":"dozLPIR8dhA7gKUmuVtNB"}
+{"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 06:04:54","userId":"dozLPIR8dhA7gKUmuVtNB"}
+{"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 09:03:47","userId":"dozLPIR8dhA7gKUmuVtNB"}
