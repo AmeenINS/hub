@@ -12,7 +12,7 @@ import { logSecurity, logError } from '@/core/logging/logger';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, rememberMe = false } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -82,7 +82,11 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _password, ...userWithoutPassword } = user;
 
-    return NextResponse.json({
+    // Set auth token cookie with appropriate expiration
+    // If rememberMe is true, cookie expires in 30 days, otherwise it's a session cookie
+    const cookieMaxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined; // 30 days in seconds or undefined for session
+    
+    const response = NextResponse.json({
       success: true,
       data: {
         user: {
@@ -93,6 +97,26 @@ export async function POST(request: NextRequest) {
         refreshToken,
       },
     });
+
+    // Set auth-token cookie
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: cookieMaxAge, // undefined = session cookie, number = persistent cookie
+    });
+
+    // Set refresh-token cookie with longer expiration
+    response.cookies.set('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60, // 30 days if rememberMe, else 7 days
+    });
+
+    return response;
   } catch (error) {
     logError('Login error', error);
     return NextResponse.json(

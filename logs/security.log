@@ -138,3 +138,8 @@
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 05:46:15","userId":"dozLPIR8dhA7gKUmuVtNB"}
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 06:04:54","userId":"dozLPIR8dhA7gKUmuVtNB"}
 {"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 09:03:47","userId":"dozLPIR8dhA7gKUmuVtNB"}
+{"email":"admin@ameen.me","level":"info","message":"Failed login attempt","timestamp":"2025-11-12 23:33:35"}
+{"email":"admin@ameen.me","level":"info","message":"Failed login attempt","timestamp":"2025-11-12 23:38:20"}
+{"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 23:38:28","userId":"dozLPIR8dhA7gKUmuVtNB"}
+{"email":"miladsoft@yahoo.com","level":"info","message":"Failed login attempt","timestamp":"2025-11-12 23:42:42"}
+{"email":"admin@ameen.me","level":"info","message":"Successful login","timestamp":"2025-11-12 23:43:00","userId":"dozLPIR8dhA7gKUmuVtNB"}

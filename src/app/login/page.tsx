@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { getFullVersionString } from '@/core/utils/version';
+import { Loader2 } from 'lucide-react';
 
 interface LoginResponse {
   user: {
@@ -52,11 +53,12 @@ export default function LoginPage() {
     try {
       const response = await apiClient.post<LoginResponse>('/api/auth/login', { 
         email, 
-        password 
+        password,
+        rememberMe
       });
 
       if (response.success && response.data) {
-        login(response.data.user, response.data.token);
+        login(response.data.user, response.data.token, rememberMe);
         toast.success(t('auth.loginSuccess'));
         router.push('/dashboard');
       } else {
@@ -288,13 +290,7 @@ export default function LoginPage() {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="inline-block"
-                    >
-                      ⟳
-                    </motion.div>
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     mounted ? t('auth.login') : 'Login'
                   )}
