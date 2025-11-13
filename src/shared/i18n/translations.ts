@@ -16,6 +16,7 @@ export const translations = {
       deleting: 'Deleting...',
       edit: 'Edit',
       create: 'Create',
+      add: 'Add',
       search: 'Search',
       filter: 'Filter',
       export: 'Export',
@@ -1097,6 +1098,8 @@ export const translations = {
       fullNameArPlaceholder: 'أحمد العامري',
       emailPlaceholder: 'ahmed.alamri@company.om',
       phonePlaceholder: '+968 9123 4567',
+      phoneNumberPlaceholder: '9123 4567',
+      countryCode: 'Country Code',
       companyPlaceholder: 'Oman Telecom',
       jobTitlePlaceholder: 'Sales Manager',
       departmentPlaceholder: 'Sales',
@@ -1126,6 +1129,7 @@ export const translations = {
       cancel: 'Cancel',
       saveNote: 'Save Note',
       noNotes: 'No notes yet',
+      notesPlaceholder: 'Add any additional notes about this contact...',
       startAddingNotes: 'Start adding notes to keep track of important information',
       
       // Contact profile fields
@@ -1233,6 +1237,7 @@ export const translations = {
       deleting: 'جاري الحذف...',
       edit: 'تعديل',
       create: 'إنشاء',
+      add: 'إضافة',
       search: 'بحث',
       filter: 'تصفية',
       export: 'تصدير',
@@ -1904,9 +1909,11 @@ export const translations = {
       
       // Placeholders (Arabic translations)
       fullNameEnPlaceholder: 'Ahmed Al Amri',
-      fullNameArPlaceholder: 'أحمد العامري',
+      fullNameArPlaceholder: 'أحمد العامری',
       emailPlaceholder: 'ahmed.alamri@company.om',
       phonePlaceholder: '+968 9123 4567',
+      phoneNumberPlaceholder: '9123 4567',
+      countryCode: 'رمز الدولة',
       companyPlaceholder: 'شركة عمان للاتصالات',
       jobTitlePlaceholder: 'مدير المبيعات',
       departmentPlaceholder: 'المبيعات',
@@ -1936,6 +1943,7 @@ export const translations = {
       cancel: 'إلغاء',
       saveNote: 'حفظ الملاحظة',
       noNotes: 'لا توجد ملاحظات بعد',
+      notesPlaceholder: 'أضف أي ملاحظات إضافية حول هذا المخاطب...',
       startAddingNotes: 'ابدأ بإضافة ملاحظات لتتبع المعلومات المهمة',
       
       // Contact profile fields (Arabic translations)
