@@ -34,6 +34,8 @@ const companySchema = z.object({
   licenseNumber: z.string().optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   phone: z.string().optional(),
+  mobile: z.string().optional(),
+  whatsapp: z.string().optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   addressEn: z.string().optional(),
   addressAr: z.string().optional(),
@@ -84,6 +86,8 @@ export default function EditInsuranceCompanyPage({
             licenseNumber: response.data.licenseNumber || '',
             email: response.data.email || '',
             phone: response.data.phone || '',
+            mobile: response.data.mobile || '',
+            whatsapp: response.data.whatsapp || '',
             website: response.data.website || '',
             addressEn: response.data.addressEn || '',
             addressAr: response.data.addressAr || '',
@@ -270,7 +274,17 @@ export default function EditInsuranceCompanyPage({
 
               <div className="space-y-2">
                 <Label htmlFor="phone">{t('insuranceProducts.companyPhone')}</Label>
-                <Input id="phone" {...register('phone')} placeholder="+968 1234 5678" />
+                <Input id="phone" {...register('phone')} placeholder="+968 2412 3456" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mobile">{t('insuranceProducts.companyMobile')}</Label>
+                <Input id="mobile" {...register('mobile')} placeholder="+968 9123 4567" />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp">{t('insuranceProducts.companyWhatsApp')}</Label>
+                <Input id="whatsapp" {...register('whatsapp')} placeholder="+968 9123 4567" />
               </div>
 
               <div className="space-y-2">

@@ -8,7 +8,7 @@ import { InsuranceCompany, InsuranceCompanyStatus } from '@/shared/types/databas
 import { apiClient } from '@/core/api/client';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import { useI18n } from '@/shared/i18n/i18n-context';
-import { Loader2, Plus, Search, Building2, Edit, Trash2, Mail, Phone, Globe, MapPin } from 'lucide-react';
+import { Loader2, Plus, Search, Building2, Edit, Trash2, Mail, Phone, Globe, MapPin, Smartphone, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/use-toast';
@@ -322,6 +322,25 @@ export default function InsuranceCompaniesPage() {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-4 w-4" />
                       <span>{company.phone}</span>
+                    </div>
+                  )}
+                  {company.mobile && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Smartphone className="h-4 w-4" />
+                      <span>{company.mobile}</span>
+                    </div>
+                  )}
+                  {company.whatsapp && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MessageCircle className="h-4 w-4" />
+                      <a
+                        href={`https://wa.me/${company.whatsapp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
+                        {company.whatsapp}
+                      </a>
                     </div>
                   )}
                   {company.website && (

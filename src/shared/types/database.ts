@@ -708,7 +708,9 @@ export interface InsuranceCompany {
   
   // Contact Information
   email?: string;
-  phone?: string;
+  phone?: string; // Office/landline phone number
+  mobile?: string; // Mobile phone number
+  whatsapp?: string; // WhatsApp number
   website?: string;
   addressEn?: string;
   addressAr?: string;
