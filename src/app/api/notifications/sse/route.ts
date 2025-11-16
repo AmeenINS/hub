@@ -5,6 +5,11 @@ import { lmdb } from '@/core/data/lmdb';
 import { User } from '@/shared/types/database';
 import { SSEBroadcast } from '@/core/sse/broadcast';
 
+// Configure route for streaming
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 // Helper function to verify token and get user
 async function verifyToken(token: string): Promise<User | null> {
   const payload = JWTService.verifyToken(token);
@@ -87,11 +92,10 @@ export async function GET(request: NextRequest) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Cache-Control'
+        'X-Accel-Buffering': 'no', // Disable nginx buffering
+        'Transfer-Encoding': 'chunked',
       }
     });
   } catch (error) {

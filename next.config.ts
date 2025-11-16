@@ -49,6 +49,16 @@ const nextConfig: NextConfig = {
     } : false,
   },
   
+  // Rewrites for avatar fallback
+  async rewrites() {
+    return [
+      {
+        source: '/avatars/:filename',
+        destination: '/api/avatars/:filename',
+      },
+    ];
+  },
+  
   // Output optimization
   output: 'standalone',
 };
