@@ -20,12 +20,6 @@ const locationSchema = z.object({
 const locationService = new UserLocationService();
 const userService = new UserService();
 
-function parseAuthorization(request: NextRequest) {
-  const header = request.headers.get('authorization');
-  if (!header) return null;
-  return header.replace('Bearer ', '');
-}
-
 function toIsoTimestamp(input?: string | number): string | undefined {
   if (input === undefined) return undefined;
 
@@ -43,7 +37,8 @@ function toIsoTimestamp(input?: string | number): string | undefined {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = parseAuthorization(request);
+    // Get token from cookie (HttpOnly cookie set by login)
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
@@ -82,7 +77,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = parseAuthorization(request);
+    // Get token from cookie (HttpOnly cookie set by login)
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }

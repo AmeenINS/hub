@@ -82,18 +82,19 @@ export function LiveLocationMap({
   const otherIcon = useMemo(() => createMarkerIcon('#ef4444'), []);
 
   return (
-    <MapContainer
-      center={center}
-      zoom={zoomLevel}
-      scrollWheelZoom
-      style={{ height: typeof mapHeight === 'number' ? `${mapHeight}px` : mapHeight, width: '100%' }}
-      className="rounded-xl"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapAutoFocus focus={center} zoom={zoomLevel} />
+    <div className="relative z-0">
+      <MapContainer
+        center={center}
+        zoom={zoomLevel}
+        scrollWheelZoom
+        style={{ height: typeof mapHeight === 'number' ? `${mapHeight}px` : mapHeight, width: '100%', position: 'relative', zIndex: 0 }}
+        className="rounded-xl"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapAutoFocus focus={center} zoom={zoomLevel} />
 
       {currentLocation && (
         <>
@@ -154,6 +155,7 @@ export function LiveLocationMap({
         </Marker>
       ))}
     </MapContainer>
+    </div>
   );
 }
 
