@@ -13,6 +13,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shar
 import { User, Building2, MapPin, Tag as TagIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ContactFormData, typeOptions, sourceOptions, preferredContactMethodOptions } from "./contact-schema";
+import { useI18n } from "@/shared/i18n/i18n-context";
+import { useState, useEffect } from "react";
 
 interface BasicInformationSectionProps {
   form: UseFormReturn<ContactFormData>;
@@ -22,12 +24,37 @@ interface BasicInformationSectionProps {
  * Basic Information Section (Name, Email, Phone)
  */
 export function BasicInformationSection({ form }: BasicInformationSectionProps) {
+  const { t } = useI18n();
+  const [countryCode, setCountryCode] = useState("+968");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  // Parse existing phone value on mount or when it changes
+  useEffect(() => {
+    const fullPhone = form.watch("phone");
+    if (fullPhone) {
+      // Extract country code and number from full phone
+      const match = fullPhone.match(/^(\+\d+)\s?(.*)$/);
+      if (match) {
+        setCountryCode(match[1]);
+        setPhoneNumber(match[2].trim());
+      } else {
+        setPhoneNumber(fullPhone);
+      }
+    }
+  }, []);
+
+  // Update form value when country code or phone number changes
+  const handlePhoneChange = (code: string, number: string) => {
+    const fullPhone = number ? `${code} ${number}` : "";
+    form.setValue("phone", fullPhone);
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <User className="h-5 w-5" />
-          <span>Basic Information</span>
+          <span>{t('crm.basicInformation')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -37,9 +64,9 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
             name="fullNameEn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name (English) *</FormLabel>
+                <FormLabel>{t('crm.fullNameEn')} *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ahmed Al Amri" {...field} />
+                  <Input placeholder={t('crm.fullNameEnPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -50,9 +77,9 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
             name="fullNameAr"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name (Arabic)</FormLabel>
+                <FormLabel>{t('crm.fullNameAr')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="أحمد العامري" {...field} />
+                  <Input placeholder={t('crm.fullNameArPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -65,9 +92,9 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>{t('crm.email')}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="ahmed.alamri@company.om" {...field} />
+                <Input type="email" placeholder={t('crm.emailPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -79,9 +106,28 @@ export function BasicInformationSection({ form }: BasicInformationSectionProps) 
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number *</FormLabel>
+              <FormLabel>{t('crm.phoneNumber')} *</FormLabel>
               <FormControl>
-                <Input placeholder="+968 9123 4567" {...field} />
+                <div className="flex gap-2">
+                  <Input
+                    className="w-24"
+                    value={countryCode}
+                    onChange={(e) => {
+                      setCountryCode(e.target.value);
+                      handlePhoneChange(e.target.value, phoneNumber);
+                    }}
+                    placeholder="+968"
+                  />
+                  <Input
+                    className="flex-1"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value);
+                      handlePhoneChange(countryCode, e.target.value);
+                    }}
+                    placeholder={t('crm.phoneNumberPlaceholder')}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -100,12 +146,14 @@ interface CompanyInformationSectionProps {
  * Company Information Section (Company, Position, Department)
  */
 export function CompanyInformationSection({ form }: CompanyInformationSectionProps) {
+  const { t } = useI18n();
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Building2 className="h-5 w-5" />
-          <span>Company Information</span>
+          <span>{t('crm.companyInformation')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -114,9 +162,9 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
           name="company"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Company Name</FormLabel>
+              <FormLabel>{t('crm.company')}</FormLabel>
               <FormControl>
-                <Input placeholder="شركة عمان للاتصالات" {...field} />
+                <Input placeholder={t('crm.companyPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,9 +177,9 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
             name="position"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job Title</FormLabel>
+                <FormLabel>{t('crm.jobTitle')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="مدير المبيعات" {...field} />
+                  <Input placeholder={t('crm.jobTitlePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -142,9 +190,9 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
             name="department"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Department</FormLabel>
+                <FormLabel>{t('crm.department')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="المبيعات" {...field} />
+                  <Input placeholder={t('crm.departmentPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -164,12 +212,14 @@ interface AddressInformationSectionProps {
  * Address Information Section
  */
 export function AddressInformationSection({ form }: AddressInformationSectionProps) {
+  const { t } = useI18n();
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <MapPin className="h-5 w-5" />
-          <span>Address Information</span>
+          <span>{t('crm.addressInformation')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -178,9 +228,9 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
           name="address"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Street Address</FormLabel>
+              <FormLabel>{t('crm.address')}</FormLabel>
               <FormControl>
-                <Input placeholder="شارع السلطان قابوس، مسقط" {...field} />
+                <Input placeholder={t('crm.addressPlaceholder')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -193,9 +243,9 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
             name="city"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>City</FormLabel>
+                <FormLabel>{t('crm.city')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Muscat" {...field} />
+                  <Input placeholder={t('crm.cityPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -206,9 +256,9 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
             name="state"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>State</FormLabel>
+                <FormLabel>{t('crm.state')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Muscat Governorate" {...field} />
+                  <Input placeholder={t('crm.statePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -219,9 +269,9 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
             name="zipCode"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>ZIP Code</FormLabel>
+                <FormLabel>{t('crm.zip')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="100" {...field} />
+                  <Input placeholder={t('crm.zipPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -232,9 +282,9 @@ export function AddressInformationSection({ form }: AddressInformationSectionPro
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country</FormLabel>
+                <FormLabel>{t('crm.country')}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Oman" {...field} />
+                  <Input placeholder={t('crm.countryPlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -254,12 +304,14 @@ interface StatusClassificationSectionProps {
  * Status & Classification Section
  */
 export function StatusClassificationSection({ form }: StatusClassificationSectionProps) {
+  const { t } = useI18n();
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <TagIcon className="h-5 w-5" />
-          <span>Status & Classification</span>
+          <span>{t('crm.statusClassification')}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -268,11 +320,11 @@ export function StatusClassificationSection({ form }: StatusClassificationSectio
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Type</FormLabel>
+              <FormLabel>{t('crm.type')}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t('crm.selectType')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -297,11 +349,11 @@ export function StatusClassificationSection({ form }: StatusClassificationSectio
           name="source"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Lead Source</FormLabel>
+              <FormLabel>{t('crm.source')}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select source" />
+                    <SelectValue placeholder={t('crm.selectSource')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -322,11 +374,11 @@ export function StatusClassificationSection({ form }: StatusClassificationSectio
           name="preferredContactMethod"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Preferred Contact Method</FormLabel>
+              <FormLabel>{t('crm.preferredContactMethod')}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select method" />
+                    <SelectValue placeholder={t('crm.selectMethod')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -358,21 +410,23 @@ interface TagsSectionProps {
  * Tags Section
  */
 export function TagsSection({ tags, newTag, setNewTag, onAddTag, onRemoveTag }: TagsSectionProps) {
+  const { t } = useI18n();
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tags</CardTitle>
+        <CardTitle>{t('crm.tags')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex space-x-2">
           <Input
-            placeholder="Add a tag"
+            placeholder={t('crm.addTag')}
             value={newTag}
             onChange={(e) => setNewTag(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), onAddTag())}
           />
           <Button type="button" onClick={onAddTag} size="sm">
-            Add
+            {t('common.add')}
           </Button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -400,10 +454,12 @@ interface NotesSectionProps {
  * Notes Section
  */
 export function NotesSection({ form }: NotesSectionProps) {
+  const { t } = useI18n();
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notes</CardTitle>
+        <CardTitle>{t('crm.notes')}</CardTitle>
       </CardHeader>
       <CardContent>
         <FormField
@@ -413,7 +469,7 @@ export function NotesSection({ form }: NotesSectionProps) {
             <FormItem>
               <FormControl>
                 <Textarea
-                  placeholder="Add any additional notes about this contact..."
+                  placeholder={t('crm.notesPlaceholder')}
                   className="min-h-[120px]"
                   {...field}
                 />
