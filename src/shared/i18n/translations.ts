@@ -860,6 +860,7 @@ export const translations = {
       
       companyNameEn: 'Company Name (English)',
       companyNameAr: 'Company Name (Arabic)',
+      brandName: 'Brand Name',
       companyCode: 'Company Code',
       licenseNumber: 'License Number',
       companyEmail: 'Email',
@@ -872,6 +873,8 @@ export const translations = {
       companyDescriptionEn: 'Description (English)',
       companyDescriptionAr: 'Description (Arabic)',
       companyLogo: 'Company Logo',
+      uploadCompanyLogo: 'Upload company logo or brand image',
+      logoUploaded: 'Logo uploaded successfully',
       companyStatus: 'Company Status',
       
       activeCompanies: 'Active Companies',
@@ -2249,6 +2252,7 @@ export const translations = {
       
       companyNameEn: 'اسم الشركة (بالإنجليزية)',
       companyNameAr: 'اسم الشركة (بالعربية)',
+      brandName: 'اسم العلامة التجارية',
       companyCode: 'رمز الشركة',
       licenseNumber: 'رقم الترخيص',
       companyEmail: 'البريد الإلكتروني',
@@ -2261,6 +2265,8 @@ export const translations = {
       companyDescriptionEn: 'الوصف (بالإنجليزية)',
       companyDescriptionAr: 'الوصف (بالعربية)',
       companyLogo: 'شعار الشركة',
+      uploadCompanyLogo: 'تحميل شعار الشركة أو صورة العلامة التجارية',
+      logoUploaded: 'تم تحميل الشعار بنجاح',
       companyStatus: 'حالة الشركة',
       
       activeCompanies: 'الشركات النشطة',

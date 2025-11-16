@@ -10,6 +10,7 @@ import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { Loader2, Plus, Search, Building2, Edit, Trash2, Mail, Phone, Globe, MapPin, Smartphone, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Badge } from '@/shared/components/ui/badge';
 import { useToast } from '@/shared/hooks/use-toast';
 import {
@@ -97,6 +98,7 @@ export default function InsuranceCompaniesPage() {
         (company) =>
           company.nameEn.toLowerCase().includes(query) ||
           company.nameAr?.toLowerCase().includes(query) ||
+          company.brandName?.toLowerCase().includes(query) ||
           company.code.toLowerCase().includes(query) ||
           company.licenseNumber?.toLowerCase().includes(query)
       );
@@ -285,23 +287,54 @@ export default function InsuranceCompaniesPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredCompanies.map((company) => (
             <Card key={company.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{company.nameEn}</h3>
-                      {company.nameAr && (
-                        <p className="text-sm text-muted-foreground">{company.nameAr}</p>
+              <CardContent className="p-6 flex flex-col h-full">
+                {/* Logo and Brand Section */}
+                <div className="mb-4 border-b pb-4">
+                  {/* Logo and Brand Name - Side by Side */}
+                  <div className="flex items-center gap-3 mb-3">
+                    {/* Logo - Smaller */}
+                    <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 flex items-center justify-center overflow-hidden shadow-sm">
+                      {company.logoUrl ? (
+                        <Image
+                          src={company.logoUrl}
+                          alt={company.brandName || company.nameEn}
+                          width={48}
+                          height={48}
+                          className="object-contain w-full h-full p-1.5"
+                        />
+                      ) : (
+                        <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       )}
                     </div>
+                    
+                    {/* Brand Name with Status Indicator */}
+                    {company.brandName && (
+                      <div className="flex items-center justify-between flex-1 gap-2">
+                        <h3 className="font-bold text-lg text-primary leading-tight">
+                          {company.brandName}
+                        </h3>
+                        {/* Green dot for active status - Right side */}
+                        {company.status === InsuranceCompanyStatus.ACTIVE && (
+                          <div className="h-2 w-2 rounded-full bg-green-500 flex-shrink-0" />
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {getStatusBadge(company.status)}
+                  
+                  {/* Company Names */}
+                  <div className="space-y-1">
+                    <h4 className="font-semibold text-base leading-tight">
+                      {company.nameEn}
+                    </h4>
+                    {company.nameAr && (
+                      <p className="text-sm text-muted-foreground leading-tight">
+                        {company.nameAr}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-4 flex-1">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="font-medium">{t('insuranceProducts.companyCode')}:</span>
                     <span className="text-muted-foreground">{company.code}</span>
@@ -364,7 +397,8 @@ export default function InsuranceCompaniesPage() {
                   )}
                 </div>
 
-                <div className="flex gap-2">
+                {/* Action Buttons - At the bottom */}
+                <div className="flex gap-2 mt-auto pt-4 border-t">
                   {canWrite && (
                     <Link href={`/dashboard/insurance-companies/${company.id}/edit`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">

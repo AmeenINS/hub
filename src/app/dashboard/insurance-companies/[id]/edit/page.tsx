@@ -25,11 +25,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { InsuranceCompany, InsuranceCompanyStatus } from '@/shared/types/database';
 import { Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ImageUpload, UploadedImage } from '@/shared/components/ui/image-upload';
 
 // Validation schema
 const companySchema = z.object({
   nameEn: z.string().min(2, 'Company name in English is required'),
   nameAr: z.string().optional(),
+  brandName: z.string().optional(),
   code: z.string().min(1, 'Company code is required'),
   licenseNumber: z.string().optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -57,6 +59,7 @@ export default function EditInsuranceCompanyPage({
   const { canWrite, isLoading: permissionsLoading } = usePermissionLevel('insurance-products');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const resolvedParams = use(params);
 
   const {
@@ -70,6 +73,22 @@ export default function EditInsuranceCompanyPage({
     resolver: zodResolver(companySchema),
   });
 
+  const handleLogoUpload = (image: UploadedImage) => {
+    setLogoUrl(image.fileUrl);
+    toast({
+      title: t('common.success'),
+      description: t('insuranceProducts.logoUploaded'),
+    });
+  };
+
+  const handleLogoError = (error: string) => {
+    toast({
+      variant: 'destructive',
+      title: t('common.error'),
+      description: error,
+    });
+  };
+
   useEffect(() => {
     const fetchCompany = async () => {
       try {
@@ -82,6 +101,7 @@ export default function EditInsuranceCompanyPage({
           reset({
             nameEn: response.data.nameEn,
             nameAr: response.data.nameAr || '',
+            brandName: response.data.brandName || '',
             code: response.data.code,
             licenseNumber: response.data.licenseNumber || '',
             email: response.data.email || '',
@@ -95,6 +115,7 @@ export default function EditInsuranceCompanyPage({
             descriptionAr: response.data.descriptionAr || '',
             status: response.data.status,
           });
+          setLogoUrl(response.data.logoUrl || '');
         } else {
           toast({
             variant: 'destructive',
@@ -123,7 +144,10 @@ export default function EditInsuranceCompanyPage({
   const onSubmit = async (data: CompanyFormData) => {
     setLoading(true);
     try {
-      const response = await apiClient.put(`/api/insurance-companies/${resolvedParams.id}`, data);
+      const response = await apiClient.put(`/api/insurance-companies/${resolvedParams.id}`, {
+        ...data,
+        logoUrl: logoUrl || undefined,
+      });
 
       if (response.success) {
         toast({
@@ -207,6 +231,11 @@ export default function EditInsuranceCompanyPage({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="brandName">{t('insuranceProducts.brandName')}</Label>
+                <Input id="brandName" {...register('brandName')} placeholder="Liva" />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="code">
                   {t('insuranceProducts.companyCode')} <span className="text-red-500">*</span>
                 </Label>
@@ -256,6 +285,28 @@ export default function EditInsuranceCompanyPage({
                 <Textarea id="descriptionAr" {...register('descriptionAr')} rows={3} />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Company Logo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('insuranceProducts.companyLogo')}</CardTitle>
+            <CardDescription>{t('insuranceProducts.uploadCompanyLogo')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ImageUpload
+              onUploadComplete={handleLogoUpload}
+              onUploadError={handleLogoError}
+              currentImageUrl={logoUrl}
+              entityType="insurance-company-logo"
+              entityId={resolvedParams.id}
+              variant="card"
+              shape="rounded"
+              size="lg"
+              disabled={loading}
+              fallbackText={t('insuranceProducts.companyLogo')}
+            />
           </CardContent>
         </Card>
 

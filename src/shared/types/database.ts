@@ -703,6 +703,7 @@ export interface InsuranceCompany {
   // Basic Information
   nameEn: string;
   nameAr?: string;
+  brandName?: string; // Brand name (e.g., "Liva" for NLGIC)
   code: string; // Unique company code (e.g., "IC-001")
   licenseNumber?: string; // Company license/registration number
   

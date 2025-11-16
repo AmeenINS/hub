@@ -24,11 +24,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { InsuranceCompanyStatus } from '@/shared/types/database';
 import { Save, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ImageUpload, UploadedImage } from '@/shared/components/ui/image-upload';
 
 // Validation schema
 const companySchema = z.object({
   nameEn: z.string().min(2, 'Company name in English is required'),
   nameAr: z.string().optional(),
+  brandName: z.string().optional(),
   code: z.string().min(1, 'Company code is required'),
   licenseNumber: z.string().optional(),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -51,6 +53,7 @@ export default function NewInsuranceCompanyPage() {
   const { toast } = useToast();
   const { canWrite, isLoading: permissionsLoading } = usePermissionLevel('insurance-products');
   const [loading, setLoading] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>('');
 
   const {
     register,
@@ -65,10 +68,29 @@ export default function NewInsuranceCompanyPage() {
     },
   });
 
+  const handleLogoUpload = (image: UploadedImage) => {
+    setLogoUrl(image.fileUrl);
+    toast({
+      title: t('common.success'),
+      description: t('insuranceProducts.logoUploaded'),
+    });
+  };
+
+  const handleLogoError = (error: string) => {
+    toast({
+      variant: 'destructive',
+      title: t('common.error'),
+      description: error,
+    });
+  };
+
   const onSubmit = async (data: CompanyFormData) => {
     setLoading(true);
     try {
-      const response = await apiClient.post('/api/insurance-companies', data);
+      const response = await apiClient.post('/api/insurance-companies', {
+        ...data,
+        logoUrl: logoUrl || undefined,
+      });
 
       if (response.success) {
         toast({
@@ -152,6 +174,11 @@ export default function NewInsuranceCompanyPage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="brandName">{t('insuranceProducts.brandName')}</Label>
+                <Input id="brandName" {...register('brandName')} placeholder="Liva" />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="code">
                   {t('insuranceProducts.companyCode')} <span className="text-red-500">*</span>
                 </Label>
@@ -201,6 +228,27 @@ export default function NewInsuranceCompanyPage() {
                 <Textarea id="descriptionAr" {...register('descriptionAr')} rows={3} />
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Company Logo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('insuranceProducts.companyLogo')}</CardTitle>
+            <CardDescription>{t('insuranceProducts.uploadCompanyLogo')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ImageUpload
+              onUploadComplete={handleLogoUpload}
+              onUploadError={handleLogoError}
+              currentImageUrl={logoUrl}
+              entityType="insurance-company-logo"
+              variant="card"
+              shape="rounded"
+              size="lg"
+              disabled={loading}
+              fallbackText={t('insuranceProducts.companyLogo')}
+            />
           </CardContent>
         </Card>
 
