@@ -21,7 +21,7 @@ export async function GET(
     const { id } = await params;
     
     // Get token from Authorization header
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -105,7 +105,7 @@ export async function PUT(
     const { id } = await params;
     
     // Get token from Authorization header
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -245,7 +245,7 @@ export async function DELETE(
     const { id } = await params;
     
     // Get token from Authorization header
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json(

@@ -18,7 +18,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; noteId: string }> }
 ) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '') || 
+    const token = request.cookies.get('auth-token')?.value || 
                   request.cookies.get('auth-token')?.value;
     
     if (!token) {
@@ -93,7 +93,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; noteId: string }> }
 ) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '') || 
+    const token = request.cookies.get('auth-token')?.value || 
                   request.cookies.get('auth-token')?.value;
     
     if (!token) {

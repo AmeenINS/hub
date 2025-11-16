@@ -3,8 +3,8 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:turbo": "next dev --turbo",
+    "dev": "next dev -p 5050",
+    "dev:turbo": "next dev --turbo -p 5050",
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",

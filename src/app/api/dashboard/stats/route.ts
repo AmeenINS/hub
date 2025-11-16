@@ -12,7 +12,7 @@ import { TaskStatus } from '@/shared/types/database';
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
     
     if (!token) {
       return NextResponse.json(

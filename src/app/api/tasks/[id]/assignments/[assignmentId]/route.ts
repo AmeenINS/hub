@@ -16,7 +16,7 @@ export async function DELETE(
 ) {
   try {
     const { id, assignmentId } = await params;
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

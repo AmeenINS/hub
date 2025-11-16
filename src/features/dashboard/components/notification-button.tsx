@@ -15,7 +15,8 @@ import {
 import { useAuthStore } from '@/shared/state/auth-store';
 import { useRouter } from 'next/navigation';
 import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
-import { apiClient } from '@/core/api/client';
+import { apiClient, ApiClientError } from '@/core/api/client';
+import Cookies from 'js-cookie';
 
 interface Notification {
   id: string;

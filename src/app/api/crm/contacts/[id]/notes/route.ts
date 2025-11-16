@@ -18,7 +18,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '') || 
+    const token = request.cookies.get('auth-token')?.value || 
                   request.cookies.get('auth-token')?.value;
     
     if (!token) {
@@ -73,7 +73,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '') || 
+    const token = request.cookies.get('auth-token')?.value || 
                   request.cookies.get('auth-token')?.value;
     
     if (!token) {

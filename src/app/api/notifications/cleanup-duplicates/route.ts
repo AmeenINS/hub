@@ -18,7 +18,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const title = searchParams.get('title');
 
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

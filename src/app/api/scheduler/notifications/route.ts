@@ -26,7 +26,7 @@ async function verifyToken(token: string): Promise<User | null> {
 // POST - Process notifications (check and send due notifications)
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

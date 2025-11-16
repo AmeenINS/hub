@@ -34,7 +34,7 @@ function formatFileSize(bytes: number): string {
 
 async function ensureAuthorized(request: NextRequest): Promise<AuthResult | NextResponse> {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });

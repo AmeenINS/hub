@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     // Verify JWT token
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -65,7 +65,7 @@ export async function PUT(
 ) {
   try {
     // Verify JWT token
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('auth-token')?.value;
     if (!token) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthStore } from '@/shared/state/auth-store';
-import { apiClient } from '@/core/api/client';
+import { apiClient, ApiClientError } from '@/core/api/client';
 
 interface NotificationUpdate {
   type: 'notification_update';
@@ -23,11 +23,13 @@ export function useRealTimeNotifications() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { token } = useAuthStore();
+  const { token, logout, isLoading } = useAuthStore();
 
   // Fetch notifications function
   const fetchNotifications = useCallback(async () => {
     try {
+      // Check if user is authenticated
+      // Note: auth-token is HttpOnly cookie, so we rely on store token
       if (!token) return;
       
       const response = await apiClient.get<Notification[]>('/api/notifications');
@@ -37,22 +39,32 @@ export function useRealTimeNotifications() {
         setUnreadCount(unreadNotifications.length);
       }
     } catch (error) {
+      // Handle 401 - token expired or invalid, logout user
+      if (error instanceof ApiClientError && error.statusCode === 401) {
+        console.warn('Authentication failed, logging out user');
+        logout();
+        return;
+      }
+      
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching notifications:', error);
       }
     }
-  }, [token]);
+  }, [token, logout]);
 
-  // Initial fetch
+  // Initial fetch - wait for auth store to finish loading
   useEffect(() => {
+    // Don't fetch while auth store is still rehydrating from localStorage
+    if (isLoading) return;
+    
     if (token) {
       fetchNotifications();
     }
-  }, [token, fetchNotifications]);
+  }, [token, isLoading, fetchNotifications]);
 
   // Setup polling as fallback
   useEffect(() => {
-    if (!token || !usePolling) {
+    if (!token || !usePolling || isLoading) {
       // Clear polling if exists
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
@@ -71,10 +83,13 @@ export function useRealTimeNotifications() {
         pollingIntervalRef.current = null;
       }
     };
-  }, [token, usePolling, fetchNotifications]);
+  }, [token, usePolling, isLoading, fetchNotifications]);
 
   // Setup SSE connection
   useEffect(() => {
+    // Wait for auth store to finish loading
+    if (isLoading) return;
+    
     if (!token) {
       setUnreadCount(0);
       setIsConnected(false);
@@ -93,9 +108,8 @@ export function useRealTimeNotifications() {
           eventSourceRef.current = null;
         }
 
-        const eventSource = new EventSource(
-          `/api/notifications/sse?token=${encodeURIComponent(token)}`
-        );
+        // SSE will use cookies automatically - no need to pass token in URL
+        const eventSource = new EventSource(`/api/notifications/sse`);
 
         eventSource.onopen = () => {
           if (process.env.NODE_ENV === 'development') {
@@ -167,7 +181,7 @@ export function useRealTimeNotifications() {
         retryTimeoutRef.current = null;
       }
     };
-  }, [token]);
+  }, [token, isLoading]); // Added isLoading to dependencies
 
   // Mark as read function that updates count immediately
   const markAsRead = async (notificationId: string) => {
@@ -181,6 +195,13 @@ export function useRealTimeNotifications() {
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
     } catch (error) {
+      // Handle 401 - token expired or invalid, logout user
+      if (error instanceof ApiClientError && error.statusCode === 401) {
+        console.warn('Authentication failed, logging out user');
+        logout();
+        return;
+      }
+      
       // Silent error handling
       if (process.env.NODE_ENV === 'development') {
         console.error('Error marking notification as read:', error);
@@ -199,6 +220,13 @@ export function useRealTimeNotifications() {
         setUnreadCount(0);
       }
     } catch (error) {
+      // Handle 401 - token expired or invalid, logout user
+      if (error instanceof ApiClientError && error.statusCode === 401) {
+        console.warn('Authentication failed, logging out user');
+        logout();
+        return;
+      }
+      
       // Silent error handling
       if (process.env.NODE_ENV === 'development') {
         console.error('Error marking all notifications as read:', error);

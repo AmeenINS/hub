@@ -59,13 +59,17 @@ export class ApiClientError extends Error {
 
 /**
  * Get authentication token from cookies
- * @returns {string | null} The authentication token or null if not found
+ * Note: This will return null for HttpOnly cookies (which is expected)
+ * The actual authentication is handled server-side via the cookie
+ * @returns {string | null} The authentication token or null if not found/HttpOnly
  */
 function getAuthToken(): string | null {
   if (typeof document === 'undefined') {
     return null;
   }
 
+  // Note: If auth-token is HttpOnly, this will return null
+  // That's okay - the cookie is still sent automatically to the server
   const token = document.cookie
     .split('; ')
     .find(row => row.startsWith('auth-token='))
@@ -115,20 +119,16 @@ async function request<T = any>(
     ...(headers as Record<string, string>),
   };
 
-  // Add authentication token if not skipped
-  if (!skipAuth) {
-    const token = getAuthToken();
-    if (token) {
-      requestHeaders['Authorization'] = `Bearer ${token}`;
-    }
-  }
+  // Note: Authentication is handled via HttpOnly cookies
+  // No need to manually add Authorization header
+  // Cookies are automatically sent with credentials: 'include'
 
   try {
     // Make the request
     const response = await fetch(fullUrl, {
       ...fetchOptions,
       headers: requestHeaders,
-      // Include cookies for endpoints that rely on cookie-based auth
+      // Include cookies for cookie-based auth (HttpOnly auth-token cookie)
       credentials: 'include',
     });
 
@@ -293,13 +293,9 @@ export const apiClient = {
     // Prepare headers (don't set Content-Type for FormData)
     const requestHeaders: Record<string, string> = {};
 
-    // Add authentication token if not skipped
-    if (!skipAuth) {
-      const token = getAuthToken();
-      if (token) {
-        requestHeaders['Authorization'] = `Bearer ${token}`;
-      }
-    }
+    // Note: Authentication is handled via HttpOnly cookies
+    // No need to manually add Authorization header
+    // Cookies are automatically sent with credentials: 'include'
 
     try {
       const response = await fetch(url, {
@@ -343,10 +339,15 @@ export const apiClient = {
 
 /**
  * Helper function to check if user is authenticated
- * @returns {boolean} True if user has a valid auth token
+ * Note: Since auth token is an HttpOnly cookie, we can't read it from JavaScript
+ * This function will always return false. Use the auth store instead.
+ * @deprecated Use useAuthStore to check authentication status
+ * @returns {boolean} Always returns false due to HttpOnly cookies
  */
 export function isAuthenticated(): boolean {
-  return getAuthToken() !== null;
+  // HttpOnly cookies cannot be read by JavaScript
+  // Use auth store (useAuthStore) to check authentication status
+  return false;
 }
 
 /**
