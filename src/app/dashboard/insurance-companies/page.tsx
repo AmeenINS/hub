@@ -292,15 +292,15 @@ export default function InsuranceCompaniesPage() {
                 <div className="mb-4 border-b pb-4">
                   {/* Logo and Brand Name - Side by Side */}
                   <div className="flex items-center gap-3 mb-3">
-                    {/* Logo - Smaller */}
-                    <div className="h-12 w-12 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 flex items-center justify-center overflow-hidden shadow-sm">
+                    {/* Logo - Auto width */}
+                    <div className="h-12 w-auto max-w-[120px] flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 flex items-center justify-center overflow-hidden shadow-sm px-2">
                       {company.logoUrl ? (
                         <Image
                           src={company.logoUrl}
                           alt={company.brandName || company.nameEn}
                           width={48}
                           height={48}
-                          className="object-contain w-full h-full p-1.5"
+                          className="object-contain h-full w-auto max-h-10"
                         />
                       ) : (
                         <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -401,7 +401,11 @@ export default function InsuranceCompaniesPage() {
                 <div className="flex gap-2 mt-auto pt-4 border-t">
                   {canWrite && (
                     <Link href={`/dashboard/insurance-companies/${company.id}/edit`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:text-white hover:border-yellow-500 dark:hover:border-yellow-600 transition-colors"
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         {t('common.edit')}
                       </Button>
@@ -411,6 +415,7 @@ export default function InsuranceCompaniesPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="hover:bg-red-500 dark:hover:bg-red-600 hover:text-white hover:border-red-500 dark:hover:border-red-600 transition-colors"
                       onClick={() => {
                         setCompanyToDelete(company);
                         setDeleteDialogOpen(true);

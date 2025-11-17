@@ -210,7 +210,7 @@ export function ImageUpload({
               src={previewUrl}
               alt="Preview"
               fill
-              className="object-cover rounded-md"
+              className="object-contain rounded-md"
               unoptimized
             />
             {uploading && (
