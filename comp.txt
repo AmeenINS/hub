@@ -1,0 +1,80 @@
+#	Name	Category	CR Number	License Number	Address	Contact Details
+1	The New India Assurance Company LTD	Insurance Company	1128256	FI/9	Building No.931, Way No.4911,Al Nahdha Street, Next to German Embassy, Hamriyah, P.O.Box No.2907	
+ niamct@omantel.net.om
+ 24838800
+ www.newindiaoman.com
+
+2	Takaful Oman Insurance CO.	Insurance Company	1190750	NI/37	Ground Floor and Sixth Floor ,Taminat Complex, Bousher - Sultanate of Oman P.O.BOX 207 , P.C134	
+ info@takafuloman.om
+ 22303000
+ www.takafuloman.om
+
+3	Sukoon Insurance	Insurance Company	1028010	FI/32	Area: Al Qurum Beside to Mercedes agency( Al Zawawi). Building No.108/1 Plot No.110 Block No.206 Street No.651 Street Name: AL Walag	
+ murtadha.awadh@sukoon.om
+ 24562256
+ www.sukoon.om
+
+4	Saudi Arabian Insurance Company B.S.C.(C)	Insurance Company	1051781	FI/35	Al Rajhi Building No. 1/332, 2nd Floor, Way No.53, Block 237 South Al Ghubrah, Wilyat Boushar, Muscat, Sultanate of Oman P.O Box 839 Jibroo, Postal Code 114	
+ salhajri@damana.com
+ 24863100
+ www.damana.com
+
+5	Orient Insurance Company	Insurance Company	1046697	FI/34	Office No. 100, 1st Floor, Nawras Commercial Center, Al Khuwair Service Road, Al Khuwair, Muscat	
+ orient@alfuttaim.com
+ 24475410
+ www.insuranceuae.com
+
+6	Oman United Insurance Company	Insurance Company	1237250	NI/20	Al-Khuwair P. O. Box: 1522	
+ info@omanutd.com
+ 24477300
+ www.omanutd.com
+
+7	Oman Qatar Insurance Co.	Insurance Company	1760882	NI/32	4th Floor, Al Nawras Commercial Center, Al Khuwair, PC 112, Sultanate of Oman P.O.Box.3660	
+ hasan.allawati@oqic.com
+ 24765222
+ www.oqic.com
+
+8	Muscat Insurance Company (S.A.O.G)	Insurance Company	1452916	NI/38	South Al Khuwair , Wilayat Bousher, Muscat, Building No 233, Street 281, Way 3501, Al Alam Street, next to Majan House Building	
+ info@muscatinsurance.com
+ 22364400
+ www.muscatinsurance.com
+
+9	Liva Insurance CO.	Insurance Company	1754807	NI/31	P.O. Box: 1463 PC 112 Ruwi	
+ liva@livainsurance.com
+ 24766800
+ https://livainsurance.om
+
+10	Iran Insurance Company	Insurance Company	1112210	FI/18	Wattaya P.O.Box 417	
+ bimehiro@bimehir.com.om
+ 24568506
+ www.bimehir.ae; www.iraninsurance.ir
+
+11	Gulf Insurance Group (Gulf) B.S.C(C)	Insurance Company	1112244	FI/6	Muscat Governorate/Bowsher/North AlKhuwair P.O.Box: 1276	
+ hassan.abdulali@gig-gulf.com
+ 24400100
+ www.gig-gulf.com
+
+12	Dhofar Insurance Company	Insurance Company	1318977	NI/21	Dhofar Insurance Bldg next to CBO , MBD Area P. O. Box: 1002 Ruwi Oman	
+ Dhofar@dhofarinsurance.com
+ 24705305
+ www.dhofarinsurance.com
+
+13	Cigna Middle East Insurance Company S.A.L	Insurance Company	1002811	FI/33	AlFardan Heights 7th floor Gala, Muscat	
+ abdullah.alhatmi@cigna.com
+ 22496962
+ www.cigna.com
+
+14	ARABIA FALCON INSURANCE	Insurance Company	1791494	NI/33	AL Kuwair (South)/ Bousher/ Muscat P.O.Box: 2279	
+ malawaisi@afic.om
+ 24660900
+ www.afic.om
+
+15	American Life Insurance Company (MetLife)	Insurance Company	1122495	FI/15	Dar Al Noor Building, Block No.233, Way No. 403 Building No.52, MSQ, Bausher,Office 405 & 406 P.O. Box: 894, PC114, Jibroo	
+ ahmed.b.lawati@metlife.com.om
+ 24770998
+ www.metlife.com.om
+
+16	Al Madina Insurance	Insurance Company	1815008	NI/34	Building No. 6, Office No. 301, Muscat Grand Mall P.O. Box 80	
+ reachus@almadinatakaful.com
+ 22033888
+ www.almadinatakaful.com

@@ -298,9 +298,10 @@ export default function InsuranceCompaniesPage() {
                         <Image
                           src={company.logoUrl}
                           alt={company.brandName || company.nameEn}
-                          width={48}
-                          height={48}
+                          width={96}
+                          height={96}
                           className="object-contain h-full w-auto max-h-10"
+                          quality={100}
                         />
                       ) : (
                         <Building2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />

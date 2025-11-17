@@ -1,0 +1,180 @@
+{
+  "insuranceCompanies": [
+    {
+      "id": 1,
+      "name": "The New India Assurance Company LTD",
+      "category": "Insurance Company",
+      "crNumber": "1128256",
+      "licenseNumber": "FI/9",
+      "address": "Building No.931, Way No.4911,Al Nahdha Street, Next to German Embassy, Hamriyah, P.O.Box No.2907",
+      "email": "niamct@omantel.net.om",
+      "phone": "24838800",
+      "website": "www.newindiaoman.com"
+    },
+    {
+      "id": 2,
+      "name": "Takaful Oman Insurance CO.",
+      "category": "Insurance Company",
+      "crNumber": "1190750",
+      "licenseNumber": "NI/37",
+      "address": "Ground Floor and Sixth Floor ,Taminat Complex, Bousher - Sultanate of Oman P.O.BOX 207 , P.C134",
+      "email": "info@takafuloman.om",
+      "phone": "22303000",
+      "website": "www.takafuloman.om"
+    },
+    {
+      "id": 3,
+      "name": "Sukoon Insurance",
+      "category": "Insurance Company",
+      "crNumber": "1028010",
+      "licenseNumber": "FI/32",
+      "address": "Area: Al Qurum Beside to Mercedes agency( Al Zawawi). Building No.108/1 Plot No.110 Block No.206 Street No.651 Street Name: AL Walag",
+      "email": "murtadha.awadh@sukoon.om",
+      "phone": "24562256",
+      "website": "www.sukoon.om"
+    },
+    {
+      "id": 4,
+      "name": "Saudi Arabian Insurance Company B.S.C.(C)",
+      "category": "Insurance Company",
+      "crNumber": "1051781",
+      "licenseNumber": "FI/35",
+      "address": "Al Rajhi Building No. 1/332, 2nd Floor, Way No.53, Block 237 South Al Ghubrah, Wilyat Boushar, Muscat, Sultanate of Oman P.O Box 839 Jibroo, Postal Code 114",
+      "email": "salhajri@damana.com",
+      "phone": "24863100",
+      "website": "www.damana.com"
+    },
+    {
+      "id": 5,
+      "name": "Orient Insurance Company",
+      "category": "Insurance Company",
+      "crNumber": "1046697",
+      "licenseNumber": "FI/34",
+      "address": "Office No. 100, 1st Floor, Nawras Commercial Center, Al Khuwair Service Road, Al Khuwair, Muscat",
+      "email": "orient@alfuttaim.com",
+      "phone": "24475410",
+      "website": "www.insuranceuae.com"
+    },
+    {
+      "id": 6,
+      "name": "Oman United Insurance Company",
+      "category": "Insurance Company",
+      "crNumber": "1237250",
+      "licenseNumber": "NI/20",
+      "address": "Al-Khuwair P. O. Box: 1522",
+      "email": "info@omanutd.com",
+      "phone": "24477300",
+      "website": "www.omanutd.com"
+    },
+    {
+      "id": 7,
+      "name": "Oman Qatar Insurance Co.",
+      "category": "Insurance Company",
+      "crNumber": "1760882",
+      "licenseNumber": "NI/32",
+      "address": "4th Floor, Al Nawras Commercial Center, Al Khuwair, PC 112, Sultanate of Oman P.O.Box.3660",
+      "email": "hasan.allawati@oqic.com",
+      "phone": "24765222",
+      "website": "www.oqic.com"
+    },
+    {
+      "id": 8,
+      "name": "Muscat Insurance Company (S.A.O.G)",
+      "category": "Insurance Company",
+      "crNumber": "1452916",
+      "licenseNumber": "NI/38",
+      "address": "South Al Khuwair , Wilayat Bousher, Muscat, Building No 233, Street 281, Way 3501, Al Alam Street, next to Majan House Building",
+      "email": "info@muscatinsurance.com",
+      "phone": "22364400",
+      "website": "www.muscatinsurance.com"
+    },
+    {
+      "id": 9,
+      "name": "Liva Insurance CO.",
+      "category": "Insurance Company",
+      "crNumber": "1754807",
+      "licenseNumber": "NI/31",
+      "address": "P.O. Box: 1463 PC 112 Ruwi",
+      "email": "liva@livainsurance.com",
+      "phone": "24766800",
+      "website": "https://livainsurance.om"
+    },
+    {
+      "id": 10,
+      "name": "Iran Insurance Company",
+      "category": "Insurance Company",
+      "crNumber": "1112210",
+      "licenseNumber": "FI/18",
+      "address": "Wattaya P.O.Box 417",
+      "email": "bimehiro@bimehir.com.om",
+      "phone": "24568506",
+      "website": "www.bimehir.ae"
+    },
+    {
+      "id": 11,
+      "name": "Gulf Insurance Group (Gulf) B.S.C(C)",
+      "category": "Insurance Company",
+      "crNumber": "1112244",
+      "licenseNumber": "FI/6",
+      "address": "Muscat Governorate/Bowsher/North AlKhuwair P.O.Box: 1276",
+      "email": "hassan.abdulali@gig-gulf.com",
+      "phone": "24400100",
+      "website": "www.gig-gulf.com"
+    },
+    {
+      "id": 12,
+      "name": "Dhofar Insurance Company",
+      "category": "Insurance Company",
+      "crNumber": "1318977",
+      "licenseNumber": "NI/21",
+      "address": "Dhofar Insurance Bldg next to CBO , MBD Area P. O. Box: 1002 Ruwi Oman",
+      "email": "Dhofar@dhofarinsurance.com",
+      "phone": "24705305",
+      "website": "www.dhofarinsurance.com"
+    },
+    {
+      "id": 13,
+      "name": "Cigna Middle East Insurance Company S.A.L",
+      "category": "Insurance Company",
+      "crNumber": "1002811",
+      "licenseNumber": "FI/33",
+      "address": "AlFardan Heights 7th floor Gala, Muscat",
+      "email": "abdullah.alhatmi@cigna.com",
+      "phone": "22496962",
+      "website": "www.cigna.com"
+    },
+    {
+      "id": 14,
+      "name": "ARABIA FALCON INSURANCE",
+      "category": "Insurance Company",
+      "crNumber": "1791494",
+      "licenseNumber": "NI/33",
+      "address": "AL Kuwair (South)/ Bousher/ Muscat P.O.Box: 2279",
+      "email": "malawaisi@afic.om",
+      "phone": "24660900",
+      "website": "www.afic.om"
+    },
+    {
+      "id": 15,
+      "name": "American Life Insurance Company (MetLife)",
+      "category": "Insurance Company",
+      "crNumber": "1122495",
+      "licenseNumber": "FI/15",
+      "address": "Dar Al Noor Building, Block No.233, Way No. 403 Building No.52, MSQ, Bausher,Office 405 & 406 P.O. Box: 894, PC114, Jibroo",
+      "email": "ahmed.b.lawati@metlife.com.om",
+      "phone": "24770998",
+      "website": "www.metlife.com.om"
+    },
+    {
+      "id": 16,
+      "name": "Al Madina Insurance",
+      "category": "Insurance Company",
+      "crNumber": "1815008",
+      "licenseNumber": "NI/34",
+      "address": "Building No. 6, Office No. 301, Muscat Grand Mall P.O. Box 80",
+      "email": "reachus@almadinatakaful.com",
+      "phone": "22033888",
+      "website": "www.almadinatakaful.com"
+    }
+  ]
+}

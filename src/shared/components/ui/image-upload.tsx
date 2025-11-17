@@ -211,7 +211,8 @@ export function ImageUpload({
               alt="Preview"
               fill
               className="object-contain rounded-md"
-              unoptimized
+              quality={100}
+              priority
             />
             {uploading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-md">
