@@ -5,15 +5,11 @@ import '@/app/sidebar-enhanced.css';
 import {
   Bot,
   ChevronRight,
-  ChevronsUpDown,
   LifeBuoy,
-  Settings2,
-  Users,
   Shield,
   ListTodo,
   BarChart3,
   Bell,
-  LogOut,
   TrendingUp,
   Clock,
   Building2,
@@ -27,6 +23,7 @@ import {
   Wallet,
   Receipt,
   Target,
+  Users,
   Users2,
   UserCheck,
   GitBranch,
@@ -50,24 +47,15 @@ import {
   Layers,
   Lightbulb,
   Radar,
+  Settings2,
 } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Badge } from '@/shared/components/ui/badge';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/shared/components/ui/collapsible';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -85,20 +73,14 @@ import {
   SidebarRail,
 } from '@/shared/components/ui/sidebar';
 import { useI18n } from '@/shared/i18n/i18n-context';
-import { getLocalizedUserName, getUserInitials } from '@/core/utils';
-import { useAuthStore } from '@/shared/state/auth-store';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { ThemeToggle } from '@/shared/components/theme/theme-toggle';
-import { LanguageToggle } from '@/shared/components/theme/language-toggle';
 import { useRealTimeNotifications } from '@/shared/hooks/use-real-time-notifications';
 import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
 import { VersionDisplay } from '@/shared/components/ui/version-display';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { t, dir, locale } = useI18n();
-  const { user, logout } = useAuthStore();
-  const router = useRouter();
+  const { t, dir } = useI18n();
   const pathname = usePathname();
   
   // Use real-time notifications hook
@@ -109,12 +91,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
    * Check if user has access to a module
    * Supports checking parent modules and sub-modules with aliases
    */
-
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
-  };
 
   // Navigation data based on user permissions
   const allNavItems = [
@@ -461,13 +437,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           module: 'insurance-products',
         },
         {
-          title: t('modules.newInsuranceProduct'),
-          url: '/dashboard/insurance-products/new',
-          icon: FileText,
-          iconColor: 'text-blue-600',
-          module: 'insurance-products',
-        },
-        {
           title: t('modules.insuranceCompanies'),
           url: '/dashboard/insurance-companies',
           icon: Building2,
@@ -722,7 +691,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Ameen Hub</span>
-                  <VersionDisplay variant="simple" className="text-xs text-muted-foreground" />
+                  <span className="truncate text-xs text-muted-foreground">Your Trusted Partner</span>
                  </div>
               </Link>
             </SidebarMenuButton>
@@ -831,103 +800,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-       
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage
-                      src={user?.avatarUrl || user?.avatar}
-                      alt={user ? getLocalizedUserName(user, locale) : undefined}
-                    />
-                    <AvatarFallback className="rounded-lg">
-                      {user ? getUserInitials(user) : '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {user ? getLocalizedUserName(user, locale) : 'User'}
-                    </span>
-                    {user && (locale === 'ar' ? user.fullNameEn : user.fullNameAr) && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {locale === 'ar' ? user?.fullNameEn : user?.fullNameAr}
-                      </span>
-                    )}
-                    <span className="truncate text-xs">{user?.email}</span>
-                  </div>
-                  <ChevronsUpDown className={dir === 'rtl' ? 'mr-auto size-4' : 'ml-auto size-4'} />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage
-                        src={user?.avatarUrl || user?.avatar}
-                        alt={user ? getLocalizedUserName(user, locale) : undefined}
-                      />
-                      <AvatarFallback className="rounded-lg">
-                        {user ? getUserInitials(user) : '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {user ? getLocalizedUserName(user, locale) : 'User'}
-                      </span>
-                      {user && (locale === 'ar' ? user.fullNameEn : user.fullNameAr) && (
-                        <span className="truncate text-xs text-muted-foreground">
-                          {locale === 'ar' ? user?.fullNameEn : user?.fullNameAr}
-                        </span>
-                      )}
-                      <span className="truncate text-xs">{user?.email}</span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-                    <Users className="mr-2 h-4 w-4" />
-                    {t('nav.profile')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
-                    <Settings2 className="mr-2 h-4 w-4" />
-                    {t('nav.settings')}
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{t('common.theme')}</span>
-                      <ThemeToggle />
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{t('common.language')}</span>
-                      <LanguageToggle />
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t('auth.logout')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <div className="text-center">
+          <VersionDisplay variant="simple" className="text-xs text-muted-foreground" />
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
