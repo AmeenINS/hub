@@ -102,14 +102,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       isActive: pathname === '/dashboard',
       module: 'dashboard',
     },
-    {
-      title: t('nav.liveTracking'),
-      url: '/dashboard/live-tracking',
-      icon: Radar,
-      iconColor: 'text-sky-600 dark:text-sky-400',
-      isActive: pathname?.startsWith('/dashboard/live-tracking'),
-      module: 'liveTracking',
-    },
     // CRM Module
     {
       title: t('modules.crm'),
@@ -622,6 +614,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: Settings2,
       iconColor: 'text-zinc-600 dark:text-zinc-400',
       module: 'settings', // Settings is always accessible
+    },
+    {
+      title: t('nav.liveTracking'),
+      url: '/dashboard/live-tracking',
+      icon: Radar,
+      iconColor: 'text-sky-600 dark:text-sky-400',
+      module: 'liveTracking',
     },
     {
       title: t('common.support'),
