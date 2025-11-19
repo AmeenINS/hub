@@ -200,15 +200,6 @@ export default function DashboardPage() {
       ],
     },
     {
-      title: t('nav.liveTracking'),
-      icon: Radar,
-      color: 'from-sky-500 to-sky-600',
-      module: 'liveTracking',
-      subItems: [
-        { title: t('nav.liveTracking'), url: '/dashboard/live-tracking', icon: Radar, iconColor: 'text-sky-500' },
-      ],
-    },
-    {
       title: t('modules.crm'),
       icon: Briefcase,
       color: 'from-purple-500 to-purple-600',
@@ -376,6 +367,15 @@ export default function DashboardPage() {
       module: 'settings',
       subItems: [
         { title: t('nav.settings'), url: '/dashboard/settings', icon: Settings2, iconColor: 'text-zinc-500' },
+      ],
+    },
+    {
+      title: t('nav.liveTracking'),
+      icon: Radar,
+      color: 'from-sky-500 to-sky-600',
+      module: 'liveTracking',
+      subItems: [
+        { title: t('nav.liveTracking'), url: '/dashboard/live-tracking', icon: Radar, iconColor: 'text-sky-500' },
       ],
     },
     {
