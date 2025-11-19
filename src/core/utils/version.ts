@@ -1,12 +1,18 @@
 /**
  * Application Version Configuration
  * Centralized version management for the application
+ * Version is automatically synced from package.json
  */
 
+import packageJson from '../../../package.json';
+
+// Parse version from package.json
+const [major, minor, patch] = packageJson.version.split('.').map(Number);
+
 export const APP_VERSION = {
-  major: 0,
-  minor: 1,
-  patch: 1,
+  major,
+  minor,
+  patch,
   build: Date.now(), // Build timestamp
 } as const;
 
