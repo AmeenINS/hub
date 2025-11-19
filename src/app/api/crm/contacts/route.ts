@@ -31,9 +31,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const assigneeId = searchParams.get('assignee');
+    const companyId = searchParams.get('companyId');
 
     let contacts;
-    if (search) {
+    if (companyId) {
+      contacts = await contactService.getContactsByCompany(companyId);
+    } else if (search) {
       contacts = await contactService.searchContacts(search);
     } else if (assigneeId) {
       contacts = await contactService.getContactsByAssignee(assigneeId);

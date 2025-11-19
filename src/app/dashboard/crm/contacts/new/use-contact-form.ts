@@ -3,8 +3,8 @@
  * Custom hook for managing contact form state and submission
  */
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contactFormSchema, type ContactFormData, defaultContactFormValues } from "./contact-schema";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
  */
 export function useContactForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -25,6 +26,14 @@ export function useContactForm() {
     resolver: zodResolver(contactFormSchema),
     defaultValues: defaultContactFormValues,
   });
+
+  // Pre-select company if companyId is in URL
+  useEffect(() => {
+    const companyId = searchParams.get('companyId');
+    if (companyId) {
+      form.setValue('companyId', companyId);
+    }
+  }, [searchParams, form]);
 
   /**
    * Handle form submission
@@ -39,6 +48,7 @@ export function useContactForm() {
         fullNameAr: data.fullNameAr?.trim() || undefined,
         email: data.email,
         phone: data.phone,
+        companyId: data.companyId && data.companyId !== 'none' ? data.companyId : undefined,
         jobTitle: data.position,
         department: data.department,
         avatarUrl: avatarUrl,

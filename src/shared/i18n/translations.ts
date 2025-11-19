@@ -1139,6 +1139,8 @@ export const translations = {
       
       // Contact profile fields
       company: 'Company',
+      selectCompany: 'Select Company',
+      noCompany: 'No Company',
       position: 'Position',
       createdAt: 'Created At',
       updatedAt: 'Updated At',
@@ -1953,6 +1955,8 @@ export const translations = {
       
       // Contact profile fields (Arabic translations)
       company: 'الشركة',
+      selectCompany: 'اختر الشركة',
+      noCompany: 'بدون شركة',
       position: 'المنصب',
       createdAt: 'تاريخ الإنشاء',
       updatedAt: 'تاريخ التحديث',

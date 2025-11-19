@@ -124,6 +124,11 @@ export class ContactService {
     const allContacts = await this.getAllContacts();
     return allContacts.filter((contact: Contact) => contact.assignedTo === userId);
   }
+
+  async getContactsByCompany(companyId: string): Promise<Contact[]> {
+    const allContacts = await this.getAllContacts();
+    return allContacts.filter((contact: Contact) => contact.companyId === companyId);
+  }
 }
 
 // ==================== Company Service ====================
@@ -269,6 +274,11 @@ export class DealService {
   async getDealsByAssignee(userId: string): Promise<Deal[]> {
     const allDeals = await this.getAllDeals();
     return allDeals.filter((deal: Deal) => deal.assignedTo === userId);
+  }
+
+  async getDealsByCompany(companyId: string): Promise<Deal[]> {
+    const allDeals = await this.getAllDeals();
+    return allDeals.filter((deal: Deal) => deal.companyId === companyId);
   }
 }
 

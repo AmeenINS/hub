@@ -27,15 +27,15 @@ interface Contact {
 
 interface Company {
   id: string;
-  nameEn: string;
-  nameAr?: string;
+  name: string;
+  industry?: string;
 }
 
 export default function CompanyContactsPage() {
   const params = useParams();
   const router = useRouter();
   const { t } = useI18n();
-  const companyId = params.id as string;
+  const companyId = params?.id as string;
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [company, setCompany] = useState<Company | null>(null);
@@ -78,22 +78,27 @@ export default function CompanyContactsPage() {
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">
-            {company?.nameEn || 'Company Contacts'}
-          </h1>
-          <p className="text-muted-foreground">
-            {contacts.length} {contacts.length === 1 ? 'contact' : 'contacts'}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">
+              {company?.name || 'Company Contacts'}
+            </h1>
+            <p className="text-muted-foreground">
+              {contacts.length} {contacts.length === 1 ? 'contact' : 'contacts'}
+            </p>
+          </div>
         </div>
+        <Button onClick={() => router.push(`/dashboard/crm/contacts/new?companyId=${companyId}`)}>
+          Add Contact
+        </Button>
       </div>
 
       {/* Contacts Grid */}

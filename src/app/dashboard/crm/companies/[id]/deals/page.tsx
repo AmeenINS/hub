@@ -36,8 +36,8 @@ interface Deal {
 
 interface Company {
   id: string;
-  nameEn: string;
-  nameAr?: string;
+  name: string;
+  industry?: string;
 }
 
 const statusColors = {
@@ -51,7 +51,7 @@ export default function CompanyDealsPage() {
   const params = useParams();
   const router = useRouter();
   const { t } = useI18n();
-  const companyId = params.id as string;
+  const companyId = params?.id as string;
 
   const [deals, setDeals] = useState<Deal[]>([]);
   const [company, setCompany] = useState<Company | null>(null);
@@ -122,7 +122,7 @@ export default function CompanyDealsPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">
-            {company?.nameEn || 'Company Deals'}
+            {company?.name || 'Company Deals'}
           </h1>
           <p className="text-muted-foreground">
             {deals.length} {deals.length === 1 ? 'deal' : 'deals'}

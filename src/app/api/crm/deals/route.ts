@@ -19,9 +19,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const stage = searchParams.get('stage');
     const assigneeId = searchParams.get('assignee');
+    const companyId = searchParams.get('companyId');
 
     let deals;
-    if (stage) {
+    if (companyId) {
+      deals = await dealService.getDealsByCompany(companyId);
+    } else if (stage) {
       deals = await dealService.getDealsByStage(stage as any);
     } else if (assigneeId) {
       deals = await dealService.getDealsByAssignee(assigneeId);

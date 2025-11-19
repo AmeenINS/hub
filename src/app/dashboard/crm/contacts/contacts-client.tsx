@@ -238,7 +238,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
             <div className="space-y-4">
               {filteredContacts.map((contact) => (
                 <div key={contact.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center space-x-4">
+                  <Link href={`/dashboard/crm/contacts/${contact.id}`} className="flex items-center space-x-4 flex-1 cursor-pointer">
                     <Avatar>
                       {contact.avatarUrl && (
                         <AvatarImage src={contact.avatarUrl} alt={contact.fullNameEn || contact.fullNameAr || ''} />
@@ -296,7 +296,7 @@ export default function ContactsClient({ initialContacts, companyMap }: Contacts
                         </div>
                       )}
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-center space-x-2">
                     {contact.email && (
                       <Button variant="ghost" size="sm" asChild>

@@ -147,6 +147,28 @@ interface CompanyInformationSectionProps {
  */
 export function CompanyInformationSection({ form }: CompanyInformationSectionProps) {
   const { t } = useI18n();
+  const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
+
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        setIsLoadingCompanies(true);
+        const response = await fetch('/api/crm/companies');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setCompanies(data.data.map((c: any) => ({ id: c.id, name: c.name })));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load companies:', error);
+      } finally {
+        setIsLoadingCompanies(false);
+      }
+    };
+    loadCompanies();
+  }, []);
   
   return (
     <Card>
@@ -159,13 +181,27 @@ export function CompanyInformationSection({ form }: CompanyInformationSectionPro
       <CardContent className="space-y-4">
         <FormField
           control={form.control}
-          name="company"
+          name="companyId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('crm.company')}</FormLabel>
-              <FormControl>
-                <Input placeholder={t('crm.companyPlaceholder')} {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} value={field.value || "none"}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingCompanies ? "Loading..." : t('crm.selectCompany')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">
+                    {t('crm.noCompany')}
+                  </SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

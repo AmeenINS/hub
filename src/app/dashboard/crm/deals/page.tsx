@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -35,110 +35,32 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { useModuleVisibility } from "@/shared/hooks/use-module-visibility";
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
-
-
-
-// Mock data for demonstration
-const deals = [
-  {
-    id: 1,
-    title: "Enterprise Software License",
-    company: "TechCorp Inc.",
-    contact: "John Smith",
-    value: 45000,
-    stage: "Negotiation",
-    probability: 75,
-    expectedCloseDate: "2024-02-15",
-    createdDate: "2024-01-01",
-    lastActivity: "2024-01-15",
-    owner: "Sarah Johnson",
-    avatar: "/avatars/john.jpg",
-    ownerAvatar: "/avatars/sarah.jpg"
-  },
-  {
-    id: 2,
-    title: "Cloud Migration Project",
-    company: "StartupXYZ",
-    contact: "Mike Chen",
-    value: 28500,
-    stage: "Proposal",
-    probability: 60,
-    expectedCloseDate: "2024-02-28",
-    createdDate: "2024-01-05",
-    lastActivity: "2024-01-14",
-    owner: "David Wilson",
-    avatar: "/avatars/mike.jpg",
-    ownerAvatar: "/avatars/david.jpg"
-  },
-  {
-    id: 3,
-    title: "Annual Support Contract",
-    company: "BigCorp Ltd.",
-    contact: "Emily Davis",
-    value: 120000,
-    stage: "Closed Won",
-    probability: 100,
-    expectedCloseDate: "2024-01-30",
-    createdDate: "2023-12-15",
-    lastActivity: "2024-01-13",
-    owner: "Alex Thompson",
-    avatar: "/avatars/emily.jpg",
-    ownerAvatar: "/avatars/alex.jpg"
-  },
-  {
-    id: 4,
-    title: "Marketing Automation Setup",
-    company: "Innovate Solutions",
-    contact: "Robert Taylor",
-    value: 15000,
-    stage: "Qualification",
-    probability: 40,
-    expectedCloseDate: "2024-03-15",
-    createdDate: "2024-01-10",
-    lastActivity: "2024-01-15",
-    owner: "Lisa Chen",
-    avatar: "/avatars/robert.jpg",
-    ownerAvatar: "/avatars/lisa.jpg"
-  },
-  {
-    id: 5,
-    title: "Custom Development Project",
-    company: "FutureTech",
-    contact: "Maria Garcia",
-    value: 85000,
-    stage: "Discovery",
-    probability: 25,
-    expectedCloseDate: "2024-04-01",
-    createdDate: "2024-01-12",
-    lastActivity: "2024-01-14",
-    owner: "James Wilson",
-    avatar: "/avatars/maria.jpg",
-    ownerAvatar: "/avatars/james.jpg"
-  }
-];
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { Deal } from "@/shared/types/database";
+import { toast } from "sonner";
 
 const stages = [
-  { name: "Discovery", color: "bg-gray-500" },
-  { name: "Qualification", color: "bg-blue-500" },
-  { name: "Proposal", color: "bg-yellow-500" },
-  { name: "Negotiation", color: "bg-orange-500" },
-  { name: "Closed Won", color: "bg-green-500" },
-  { name: "Closed Lost", color: "bg-red-500" }
+  { name: "DISCOVERY", color: "bg-gray-500", display: "Discovery" },
+  { name: "QUALIFICATION", color: "bg-blue-500", display: "Qualification" },
+  { name: "PROPOSAL", color: "bg-yellow-500", display: "Proposal" },
+  { name: "NEGOTIATION", color: "bg-orange-500", display: "Negotiation" },
+  { name: "CLOSED_WON", color: "bg-green-500", display: "Closed Won" },
+  { name: "CLOSED_LOST", color: "bg-red-500", display: "Closed Lost" }
 ];
 
 const getStatusBadgeVariant = (stage: string) => {
   switch (stage) {
-    case "Discovery":
+    case "DISCOVERY":
       return "secondary";
-    case "Qualification":
+    case "QUALIFICATION":
       return "outline";
-    case "Proposal":
+    case "PROPOSAL":
       return "default";
-    case "Negotiation":
+    case "NEGOTIATION":
       return "secondary";
-    case "Closed Won":
+    case "CLOSED_WON":
       return "default";
-    case "Closed Lost":
+    case "CLOSED_LOST":
       return "destructive";
     default:
       return "outline";
@@ -147,10 +69,35 @@ const getStatusBadgeVariant = (stage: string) => {
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('deals');
 
+  // Fetch deals from database
+  useEffect(() => {
+    const fetchDeals = async () => {
+      if (!canView) return;
+      
+      try {
+        setIsLoadingData(true);
+        const response = await apiClient.get<Deal[]>('/api/crm/deals');
+        if (response.success && response.data) {
+          setDeals(response.data);
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, 'Failed to load deals'));
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    if (!isLoading && canView) {
+      fetchDeals();
+    }
+  }, [canView, isLoading]);
+
   // Show loading state
-  if (isLoading) {
+  if (isLoading || isLoadingData) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -203,6 +150,8 @@ export default function DealsPage() {
               <Input
                 placeholder="Search deals..."
                 className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Button variant="outline">
@@ -224,7 +173,7 @@ export default function DealsPage() {
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <div className={`w-3 h-3 rounded-full ${stage.color}`} />
-                  <div className="text-sm font-medium">{stage.name}</div>
+                  <div className="text-sm font-medium">{stage.display}</div>
                 </div>
                 <div className="text-2xl font-bold">{stageDeals.length}</div>
                 <p className="text-xs text-muted-foreground">
@@ -252,112 +201,117 @@ export default function DealsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {deals.map((deal) => (
-              <div key={deal.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <Avatar>
-                    <AvatarImage src={deal.avatar} alt={deal.contact} />
-                    <AvatarFallback>
-                      {deal.contact.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="font-medium">{deal.title}</h3>
-                      <Badge variant={getStatusBadgeVariant(deal.stage)}>
-                        {deal.stage}
-                      </Badge>
-                      <div className="text-sm font-medium text-green-600">
-                        ${deal.value.toLocaleString()}
+          {deals.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No deals found</p>
+              {canCreate && (
+                <Button asChild className="mt-4">
+                  <Link href="/dashboard/crm/deals/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Deal
+                  </Link>
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {deals.map((deal) => {
+                const dealInitials = deal.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+                
+                return (
+                  <div key={deal.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarFallback>
+                          {dealInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-3">
+                          <h3 className="font-medium">{deal.name}</h3>
+                          <Badge variant={getStatusBadgeVariant(deal.stage)}>
+                            {deal.stage}
+                          </Badge>
+                          <div className="text-sm font-medium text-green-600">
+                            ${deal.value.toLocaleString()}
+                          </div>
+                        </div>
+                        {deal.description && (
+                          <p className="text-sm text-muted-foreground">{deal.description}</p>
+                        )}
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                          {deal.expectedCloseDate && (
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3" />
+                              <span>Close: {new Date(deal.expectedCloseDate).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <div className="flex items-center space-x-2">
+                            <span>Probability: {deal.probability}%</span>
+                            <Progress value={deal.probability} className="w-20 h-2" />
+                          </div>
+                          <div className="flex items-center space-x-1 text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>Created: {new Date(deal.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <Building2 className="h-3 w-3" />
-                        <span>{deal.company}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{deal.contact}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>Close: {new Date(deal.expectedCloseDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <span>Probability: {deal.probability}%</span>
-                        <Progress value={deal.probability} className="w-20 h-2" />
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={deal.ownerAvatar} alt={deal.owner} />
-                          <AvatarFallback className="text-xs">
-                            {deal.owner.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-muted-foreground">{deal.owner}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>Last: {new Date(deal.lastActivity).toLocaleDateString()}</span>
-                      </div>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="outline" size="sm">
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Update Stage
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/dashboard/crm/deals/${deal.id}`}>
+                              View Details
+                            </Link>
+                          </DropdownMenuItem>
+                          {canEdit && (
+                            <DropdownMenuItem asChild>
+                              <Link href={`/dashboard/crm/deals/${deal.id}/edit`}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Deal
+                              </Link>
+                            </DropdownMenuItem>
+                          )}
+                          {canCreate && (
+                            <>
+                              <DropdownMenuItem>
+                                Add Activity
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                Clone Deal
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                          {canDelete && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete Deal
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Update Stage
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Proposal
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>
-                        View Details
-                      </DropdownMenuItem>
-                      {canEdit && (
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Deal
-                        </DropdownMenuItem>
-                      )}
-                      {canCreate && (
-                        <>
-                          <DropdownMenuItem>
-                            Add Activity
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            Clone Deal
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {canDelete && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Deal
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -380,7 +334,7 @@ export default function DealsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
-              ${deals.filter(d => d.stage === "Closed Won").reduce((sum, deal) => sum + deal.value, 0).toLocaleString()}
+              ${deals.filter(d => d.stage === "CLOSED_WON").reduce((sum, deal) => sum + deal.value, 0).toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">Won This Month</p>
           </CardContent>
