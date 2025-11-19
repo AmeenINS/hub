@@ -24,6 +24,11 @@ const nextConfig: NextConfig = {
     ],
   },
   
+  // Turbopack configuration
+  turbopack: {
+    root: process.cwd(),
+  },
+  
   // Image configuration
   images: {
     remotePatterns: [
