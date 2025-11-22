@@ -11,6 +11,13 @@ import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/shared/components/ui/card';
 import { Switch } from '@/shared/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/components/ui/select';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { EmailAccount } from '@/shared/types/database';
@@ -40,15 +47,16 @@ export default function EmailSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingAccount, setEditingAccount] = useState<EmailAccount | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<string>('zoho');
   const [formData, setFormData] = useState<EmailAccountFormData>({
     email: '',
     displayName: '',
-    imapHost: '',
+    imapHost: 'imappro.zoho.com',
     imapPort: 993,
     imapUsername: '',
     imapPassword: '',
     imapUseSsl: true,
-    smtpHost: '',
+    smtpHost: 'smtppro.zoho.com',
     smtpPort: 465,
     smtpUsername: '',
     smtpPassword: '',
@@ -119,16 +127,38 @@ export default function EmailSettingsPage() {
     }
   };
 
+  const emailProviders: Record<string, { imapHost: string; imapPort: number; smtpHost: string; smtpPort: number }> = {
+    zoho: { imapHost: 'imappro.zoho.com', imapPort: 993, smtpHost: 'smtppro.zoho.com', smtpPort: 465 },
+    gmail: { imapHost: 'imap.gmail.com', imapPort: 993, smtpHost: 'smtp.gmail.com', smtpPort: 465 },
+    outlook: { imapHost: 'outlook.office365.com', imapPort: 993, smtpHost: 'smtp.office365.com', smtpPort: 587 },
+    custom: { imapHost: '', imapPort: 993, smtpHost: '', smtpPort: 465 }
+  };
+
+  const handleProviderChange = (provider: string) => {
+    setSelectedProvider(provider);
+    const preset = emailProviders[provider];
+    setFormData(prev => ({
+      ...prev,
+      imapHost: preset.imapHost,
+      imapPort: preset.imapPort,
+      smtpHost: preset.smtpHost,
+      smtpPort: preset.smtpPort,
+      imapUseSsl: true,
+      smtpUseSsl: true
+    }));
+  };
+
   const resetForm = () => {
+    setSelectedProvider('zoho');
     setFormData({
       email: '',
       displayName: '',
-      imapHost: '',
+      imapHost: 'imappro.zoho.com',
       imapPort: 993,
       imapUsername: '',
       imapPassword: '',
       imapUseSsl: true,
-      smtpHost: '',
+      smtpHost: 'smtppro.zoho.com',
       smtpPort: 465,
       smtpUsername: '',
       smtpPassword: '',
@@ -243,6 +273,28 @@ export default function EmailSettingsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Provider Selection */}
+              <div className="space-y-4">
+                <h3 className="font-semibold">Email Provider</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="provider">Select Provider</Label>
+                  <Select value={selectedProvider} onValueChange={handleProviderChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select email provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="zoho">Zoho Mail (Default)</SelectItem>
+                      <SelectItem value="gmail">Gmail</SelectItem>
+                      <SelectItem value="outlook">Outlook/Office 365</SelectItem>
+                      <SelectItem value="custom">Custom Server</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Select your email provider. Server settings will be filled automatically.
+                  </p>
+                </div>
+              </div>
+
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="font-semibold">Account Information</h3>
@@ -276,7 +328,7 @@ export default function EmailSettingsPage() {
                     <Label htmlFor="imapHost">IMAP Host *</Label>
                     <Input
                       id="imapHost"
-                      placeholder="imap.gmail.com"
+                      placeholder="imappro.zoho.com"
                       value={formData.imapHost}
                       onChange={(e) => setFormData({ ...formData, imapHost: e.target.value })}
                       required
@@ -330,7 +382,7 @@ export default function EmailSettingsPage() {
                     <Label htmlFor="smtpHost">SMTP Host *</Label>
                     <Input
                       id="smtpHost"
-                      placeholder="smtp.gmail.com"
+                      placeholder="smtppro.zoho.com"
                       value={formData.smtpHost}
                       onChange={(e) => setFormData({ ...formData, smtpHost: e.target.value })}
                       required
