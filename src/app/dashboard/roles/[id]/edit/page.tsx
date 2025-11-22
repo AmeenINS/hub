@@ -59,6 +59,10 @@ const MODULES = [
   { id: 'workflows', label: 'Workflow & Automation' },
   { id: 'inventory', label: 'Inventory Management' },
   { id: 'procurement', label: 'Procurement' },
+  
+  // Communication
+  { id: 'email', label: 'Email' },
+  
   // Files & Uploads
   { id: 'files', label: 'Files & Uploads' },
 ];

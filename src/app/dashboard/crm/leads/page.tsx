@@ -160,7 +160,7 @@ export default function LeadsPage() {
       {/* Lead Pipeline */}
       {leads.length > 0 && (
         <div className="grid gap-4 md:grid-cols-5">
-          {["NEW", "QUALIFIED", "CONTACTED", "NEGOTIATING", "CONVERTED"].map((stage) => {
+          {["NEW", "QUALIFIED", "PROPOSAL", "NEGOTIATION", "CLOSED_WON"].map((stage) => {
             const stageLeads = leads.filter(lead => lead.status === stage);
             const stageValue = stageLeads.reduce((sum, lead) => sum + (lead.value || 0), 0);
             
@@ -357,9 +357,9 @@ export default function LeadsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">
-                {leads.filter(l => l.status === 'CONVERTED').length}
+                {leads.filter(l => l.status === 'CLOSED_WON').length}
               </div>
-              <p className="text-xs text-muted-foreground">Converted Leads</p>
+              <p className="text-xs text-muted-foreground">Won Leads</p>
             </CardContent>
           </Card>
         </div>

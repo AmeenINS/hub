@@ -862,3 +862,133 @@ export interface InsuranceProduct {
   deletedAt?: string;
   isDeleted?: boolean;
 }
+
+// ==================== Email Types ====================
+
+export enum EmailFolderType {
+  INBOX = 'INBOX',
+  SENT = 'SENT',
+  DRAFTS = 'DRAFTS',
+  SPAM = 'SPAM',
+  TRASH = 'TRASH',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum EmailPriority {
+  LOW = 'LOW',
+  NORMAL = 'NORMAL',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT'
+}
+
+export interface EmailAccount {
+  id: string;
+  userId: string;
+  displayName?: string;
+  email: string;
+  
+  // IMAP Settings (Receiving)
+  imapHost: string;
+  imapPort: number;
+  imapUseSsl: boolean; // SSL/TLS
+  imapUsername: string;
+  imapPassword: string; // Encrypted
+  
+  // SMTP Settings (Sending)
+  smtpHost: string;
+  smtpPort: number;
+  smtpUseSsl: boolean;
+  smtpUsername: string;
+  smtpPassword: string; // Encrypted
+  
+  // Settings
+  isDefault: boolean;
+  syncEnabled?: boolean;
+  lastSyncAt?: string;
+  signature?: string;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailFolder {
+  id: string;
+  accountId: string;
+  name: string;
+  type: EmailFolderType;
+  parentId?: string;
+  unreadCount: number;
+  totalCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmailAttachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  url?: string;
+  content?: string; // Base64 for inline attachments
+}
+
+export interface Email {
+  id: string;
+  accountId: string;
+  folderId: string;
+  
+  // Email Headers
+  messageId?: string; // Original message ID from server
+  from: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  replyTo?: string;
+  subject: string;
+  
+  // Content
+  body: string;
+  bodyHtml?: string;
+  bodyText?: string;
+  
+  // Metadata
+  priority: EmailPriority;
+  isRead: boolean;
+  isStarred: boolean;
+  isFlagged: boolean;
+  isDraft: boolean;
+  
+  // Attachments
+  hasAttachments: boolean;
+  attachments?: EmailAttachment[];
+  
+  // Threading
+  inReplyTo?: string;
+  references?: string[];
+  threadId?: string;
+  
+  // Dates
+  sentAt?: string;
+  receivedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  
+  // Soft Delete
+  isDeleted?: boolean;
+  deletedAt?: string;
+}
+
+export interface EmailDraft {
+  id: string;
+  accountId: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  subject: string;
+  body: string;
+  bodyHtml?: string;
+  attachments?: EmailAttachment[];
+  inReplyTo?: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -61,6 +61,9 @@ const MODULES = [
   { id: 'workflows', label: 'Workflow' },
   { id: 'inventory', label: 'Inventory' },
   { id: 'procurement', label: 'Procurement' },
+  
+  // Communication
+  { id: 'email', label: 'Email' },
 ];
 
 export default function RoleDetailsPage() {

@@ -629,6 +629,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       iconColor: 'text-green-600 dark:text-green-400',
       module: 'support',
     },
+    {
+      title: t('email.title'),
+      url: '/dashboard/email',
+      icon: Mail,
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      module: 'email',
+      items: [
+        {
+          title: t('email.inbox'),
+          url: '/dashboard/email',
+          module: 'email',
+        },
+        {
+          title: t('email.settings'),
+          url: '/dashboard/email/settings',
+          module: 'email',
+        },
+      ],
+    },
   ];
 
   /**

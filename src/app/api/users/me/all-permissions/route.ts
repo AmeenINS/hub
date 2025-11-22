@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
       'settings',
       'support',
       'permissions',
+      'email',
     ];
 
     const permissions = await getUserModulePermissions(payload.userId, modules);

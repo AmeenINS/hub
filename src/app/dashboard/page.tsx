@@ -284,6 +284,16 @@ export default function DashboardPage() {
       ],
     },
     {
+      title: t('email.title'),
+      icon: Mail,
+      color: 'from-blue-500 to-blue-600',
+      module: 'email',
+      subItems: [
+        { title: t('email.inbox'), url: '/dashboard/email', icon: Mail, iconColor: 'text-blue-500' },
+        { title: t('email.settings'), url: '/dashboard/email/settings', icon: Settings2, iconColor: 'text-blue-600' },
+      ],
+    },
+    {
       title: t('modules.workflows'),
       icon: GitBranch,
       color: 'from-indigo-500 to-indigo-600',

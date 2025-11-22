@@ -32,7 +32,7 @@ class LMDBManager {
     }
 
     const dbPath = process.env.LMDB_PATH || './data/lmdb';
-    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '35');
+    const maxDbs = parseInt(process.env.LMDB_MAX_DBS || '50'); // Increased for email module
     const mapSize = parseInt(process.env.LMDB_MAP_SIZE || '10485760');
 
     const initialization = (async () => {
@@ -127,6 +127,12 @@ class LMDBManager {
     this.databases.set('insuranceProducts', this.db.openDB({ name: 'insuranceProducts', encoding: 'json' }));
     this.databases.set('insuranceCompanies', this.db.openDB({ name: 'insuranceCompanies', encoding: 'json' }));
     this.databases.set('productCompanyRelations', this.db.openDB({ name: 'productCompanyRelations', encoding: 'json' }));
+
+    // Email Module
+    this.databases.set('email_accounts', this.db.openDB({ name: 'email_accounts', encoding: 'json' }));
+    this.databases.set('email_folders', this.db.openDB({ name: 'email_folders', encoding: 'json' }));
+    this.databases.set('emails', this.db.openDB({ name: 'emails', encoding: 'json' }));
+    this.databases.set('email_drafts', this.db.openDB({ name: 'email_drafts', encoding: 'json' }));
   }
 
   /**
