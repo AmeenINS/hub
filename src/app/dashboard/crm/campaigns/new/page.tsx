@@ -1,613 +1,412 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Textarea } from "@/shared/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { Switch } from "@/shared/components/ui/switch";
-import { 
-  ArrowLeft,
-  Send,
-  Users,
-  Mail,
-  MessageSquare,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Target,
-  Settings
-} from "lucide-react";
-import Link from "next/link";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { toast } from 'sonner';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { CampaignType, CampaignStatus, User } from '@/shared/types/database';
 
-const campaignSchema = z.object({
-  name: z.string().min(2, "Campaign name must be at least 2 characters"),
-  type: z.enum(["Email", "SMS", "Social Media", "Multi-channel", "Direct Mail"]),
-  description: z.string().optional(),
-  startDate: z.string().min(1, "Please select start date"),
-  endDate: z.string().min(1, "Please select end date"),
-  budget: z.string().min(1, "Please enter budget amount"),
-  audienceType: z.enum(["All Contacts", "Segmented", "Custom List"]),
-  segmentCriteria: z.string().optional(),
-  emailSubject: z.string().optional(),
-  emailContent: z.string().optional(),
-  smsContent: z.string().optional(),
-  socialPlatforms: z.array(z.string()).optional(),
-  socialContent: z.string().optional(),
-  automatedFollowUp: z.boolean(),
-  trackConversions: z.boolean(),
-  sendTestCampaign: z.boolean(),
-});
+interface CampaignFormData {
+  name: string;
+  description?: string;
+  type: CampaignType;
+  status: CampaignStatus;
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  actualCost?: number;
+  actualRevenue?: number;
+  targetAudience?: string;
+  targetLeads?: number;
+  targetRevenue?: number;
+  leadsGenerated?: number;
+  dealsGenerated?: number;
+  ownerId?: string;
+}
 
-type CampaignFormData = z.infer<typeof campaignSchema>;
-
-const campaignTypes = [
-  { value: "Email", label: "Email Marketing", icon: Mail },
-  { value: "SMS", label: "SMS Marketing", icon: MessageSquare },
-  { value: "Social Media", label: "Social Media", icon: Facebook },
-  { value: "Multi-channel", label: "Multi-channel", icon: Target },
-  { value: "Direct Mail", label: "Direct Mail", icon: Send }
+const CAMPAIGN_TYPES: CampaignType[] = [
+  CampaignType.EMAIL,
+  CampaignType.SMS,
+  CampaignType.SOCIAL_MEDIA,
+  CampaignType.EVENT,
+  CampaignType.WEBINAR,
+  CampaignType.ADVERTISING
 ];
 
-const audienceTypes = [
-  "All Contacts", "Segmented", "Custom List"
-];
-
-const socialPlatforms = [
-  { value: "facebook", label: "Facebook", icon: Facebook },
-  { value: "twitter", label: "Twitter", icon: Twitter },
-  { value: "instagram", label: "Instagram", icon: Instagram },
-  { value: "linkedin", label: "LinkedIn", icon: Linkedin }
+const CAMPAIGN_STATUSES: CampaignStatus[] = [
+  CampaignStatus.DRAFT,
+  CampaignStatus.SCHEDULED,
+  CampaignStatus.ACTIVE,
+  CampaignStatus.PAUSED,
+  CampaignStatus.COMPLETED,
+  CampaignStatus.CANCELLED
 ];
 
 export default function NewCampaignPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const { t } = useI18n();
+  const { hasAccess, level } = usePermissionLevel('crm_campaigns');
 
-  const form = useForm<CampaignFormData>({
-    resolver: zodResolver(campaignSchema),
-    defaultValues: {
-      name: "",
-      type: "Email",
-      description: "",
-      startDate: "",
-      endDate: "",
-      budget: "",
-      audienceType: "All Contacts",
-      segmentCriteria: "",
-      emailSubject: "",
-      emailContent: "",
-      smsContent: "",
-      socialPlatforms: [],
-      socialContent: "",
-      automatedFollowUp: false,
-      trackConversions: true,
-      sendTestCampaign: false
-    }
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+
+  const [formData, setFormData] = useState<CampaignFormData>({
+    name: '',
+    type: CampaignType.EMAIL,
+    status: CampaignStatus.DRAFT
   });
 
-  const selectedType = form.watch("type");
-  const selectedAudience = form.watch("audienceType");
+  useEffect(() => {
+    if (!hasAccess) {
+      router.push('/dashboard/access-denied');
+      return;
+    }
 
-  const onSubmit = async (data: CampaignFormData) => {
-    setIsLoading(true);
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await apiClient.get('/api/users');
+        if (response.success && response.data) {
+          setUsers(Array.isArray(response.data) ? response.data : []);
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, t('crm.campaigns.errorLoadingData')));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [hasAccess, level, router, t]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim()) {
+      toast.error(t('crm.campaigns.nameRequired'));
+      return;
+    }
+
+    setIsSaving(true);
     try {
-      // Here you would typically send the data to your API
-      console.log("Campaign data:", { ...data, socialPlatforms: selectedPlatforms });
+      const response = await apiClient.post('/api/crm/campaigns', formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      router.push("/dashboard/crm/campaigns");
+      if (response.success) {
+        toast.success(t('crm.campaigns.createSuccess'));
+        router.push('/dashboard/crm/campaigns');
+      } else {
+        toast.error(response.message || t('crm.campaigns.createError'));
+      }
     } catch (error) {
-      console.error("Error creating campaign:", error);
+      toast.error(getErrorMessage(error, t('crm.campaigns.createError')));
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
-  const togglePlatform = (platform: string) => {
-    setSelectedPlatforms(prev =>
-      prev.includes(platform)
-        ? prev.filter(p => p !== platform)
-        : [...prev, platform]
-    );
+  const handleInputChange = (field: keyof CampaignFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  if (!hasAccess) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/crm/campaigns">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Campaigns
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Create New Campaign</h1>
-          <p className="text-muted-foreground">
-            Design and launch your marketing campaign
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{t('crm.campaigns.createNew')}</h1>
+            <p className="text-muted-foreground">{t('crm.campaigns.createNewDescription')}</p>
+          </div>
         </div>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Main Campaign Setup */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5" />
-                    <span>Campaign Details</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Basic campaign information and settings
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Campaign Name *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Q1 Product Launch" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.campaigns.basicInfo')}</CardTitle>
+            <CardDescription>{t('crm.campaigns.basicInfoDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="name">{t('crm.campaigns.name')} *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder={t('crm.campaigns.namePlaceholder')}
+                  required
+                />
+              </div>
 
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Campaign Type *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select campaign type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {campaignTypes.map((type) => (
-                              <SelectItem key={type.value} value={type.value}>
-                                <div className="flex items-center space-x-2">
-                                  <type.icon className="h-4 w-4" />
-                                  <span>{type.label}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="type">{t('crm.campaigns.type')}</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(value) => handleInputChange('type', value as CampaignType)}
+                >
+                  <SelectTrigger id="type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAMPAIGN_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>
+                        {t(`crm.campaigns.type${type.charAt(0) + type.slice(1).toLowerCase()}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Campaign Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe your campaign objectives and key messages..."
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="status">{t('crm.campaigns.status')}</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleInputChange('status', value as CampaignStatus)}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAMPAIGN_STATUSES.map(status => (
+                      <SelectItem key={status} value={status}>
+                        {t(`crm.campaigns.status${status.charAt(0) + status.slice(1).toLowerCase()}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Date *</FormLabel>
-                          <FormControl>
-                            <Input type="datetime-local" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div className="space-y-2">
+                <Label htmlFor="startDate">{t('crm.campaigns.startDate')}</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate || ''}
+                  onChange={(e) => handleInputChange('startDate', e.target.value)}
+                />
+              </div>
 
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>End Date *</FormLabel>
-                          <FormControl>
-                            <Input type="datetime-local" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="budget"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Budget *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="15000" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Audience Selection */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Users className="h-5 w-5" />
-                    <span>Target Audience</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Define who will receive your campaign
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="audienceType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Audience Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select audience type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {audienceTypes.map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {selectedAudience === "Segmented" && (
-                    <FormField
-                      control={form.control}
-                      name="segmentCriteria"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Segment Criteria</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Define your audience segment criteria (e.g., location, age, interests, etc.)"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Campaign Content */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Mail className="h-5 w-5" />
-                    <span>Campaign Content</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Create your campaign messages and content
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {(selectedType === "Email" || selectedType === "Multi-channel") && (
-                    <>
-                      <FormField
-                        control={form.control}
-                        name="emailSubject"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Subject Line</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="Your compelling subject line..." 
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="emailContent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email Content</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Write your email content here..."
-                                className="min-h-[200px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </>
-                  )}
-
-                  {(selectedType === "SMS" || selectedType === "Multi-channel") && (
-                    <FormField
-                      control={form.control}
-                      name="smsContent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>SMS Content</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Write your SMS message (160 characters recommended)..."
-                              maxLength={160}
-                              {...field}
-                            />
-                          </FormControl>
-                          <div className="text-xs text-muted-foreground">
-                            {field.value?.length || 0}/160 characters
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-
-                  {(selectedType === "Social Media" || selectedType === "Multi-channel") && (
-                    <>
-                      <div className="space-y-3">
-                        <Label>Social Media Platforms</Label>
-                        <div className="grid grid-cols-2 gap-3">
-                          {socialPlatforms.map((platform) => (
-                            <div key={platform.value} 
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedPlatforms.includes(platform.value) 
-                                  ? 'border-primary bg-primary/10' 
-                                  : 'border-border hover:bg-muted'
-                              }`}
-                              onClick={() => togglePlatform(platform.value)}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <platform.icon className="h-5 w-5" />
-                                <span className="font-medium">{platform.label}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="socialContent"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Social Media Content</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Write your social media post content..."
-                                className="min-h-[120px]"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="space-y-2">
+                <Label htmlFor="endDate">{t('crm.campaigns.endDate')}</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formData.endDate || ''}
+                  onChange={(e) => handleInputChange('endDate', e.target.value)}
+                />
+              </div>
             </div>
 
-            {/* Sidebar Settings */}
-            <div className="space-y-6">
-              {/* Campaign Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Target className="h-5 w-5" />
-                    <span>Campaign Settings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="trackConversions"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div>
-                          <FormLabel className="text-base">Track Conversions</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Monitor campaign ROI and conversions
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="automatedFollowUp"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div>
-                          <FormLabel className="text-base">Automated Follow-up</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Send automated follow-up messages
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sendTestCampaign"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div>
-                          <FormLabel className="text-base">Send Test Campaign</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Send test before launching
-                          </p>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Campaign Preview */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Campaign Preview</CardTitle>
-                  <CardDescription>
-                    Preview how your campaign will look
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-4 border rounded-lg bg-muted/50">
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Campaign: {form.watch("name") || "Untitled Campaign"}
-                    </div>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Type: {selectedType}
-                    </div>
-                    {form.watch("emailSubject") && (
-                      <div className="text-sm">
-                        <strong>Subject:</strong> {form.watch("emailSubject")}
-                      </div>
-                    )}
-                    {form.watch("budget") && (
-                      <div className="text-sm text-muted-foreground">
-                        Budget: ${form.watch("budget")}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Stats */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Estimated Reach</CardTitle>
-                  <CardDescription>
-                    Projected campaign statistics
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm">Estimated Audience</span>
-                    <span className="font-semibold">2,847</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Expected Open Rate</span>
-                    <span className="font-semibold">25-35%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Expected Click Rate</span>
-                    <span className="font-semibold">3-8%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">Projected ROI</span>
-                    <span className="font-semibold text-green-600">200-400%</span>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="space-y-2">
+              <Label htmlFor="description">{t('crm.campaigns.description')}</Label>
+              <Textarea
+                id="description"
+                rows={3}
+                value={formData.description || ''}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder={t('crm.campaigns.descriptionPlaceholder')}
+              />
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-4">
-            <Button type="button" variant="outline" asChild>
-              <Link href="/dashboard/crm/campaigns">
-                Cancel
-              </Link>
-            </Button>
-            <Button type="button" variant="outline">
-              Save as Draft
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Send className="h-4 w-4 mr-2" />
-                  Create & Launch
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+        {/* Budget & Targets */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.campaigns.budgetAndTargets')}</CardTitle>
+            <CardDescription>{t('crm.campaigns.budgetAndTargetsDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="budget">{t('crm.campaigns.budget')} (OMR)</Label>
+                <Input
+                  id="budget"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.budget || ''}
+                  onChange={(e) => handleInputChange('budget', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="targetLeads">{t('crm.campaigns.targetLeads')}</Label>
+                <Input
+                  id="targetLeads"
+                  type="number"
+                  min="0"
+                  value={formData.targetLeads || ''}
+                  onChange={(e) => handleInputChange('targetLeads', parseInt(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="targetRevenue">{t('crm.campaigns.targetRevenue')} (OMR)</Label>
+                <Input
+                  id="targetRevenue"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.targetRevenue || ''}
+                  onChange={(e) => handleInputChange('targetRevenue', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="targetAudience">{t('crm.campaigns.targetAudience')}</Label>
+                <Input
+                  id="targetAudience"
+                  value={formData.targetAudience || ''}
+                  onChange={(e) => handleInputChange('targetAudience', e.target.value)}
+                  placeholder={t('crm.campaigns.targetAudiencePlaceholder')}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actual Performance (Optional) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.campaigns.actualPerformance')}</CardTitle>
+            <CardDescription>{t('crm.campaigns.actualPerformanceDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="actualCost">{t('crm.campaigns.actualCost')} (OMR)</Label>
+                <Input
+                  id="actualCost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.actualCost || ''}
+                  onChange={(e) => handleInputChange('actualCost', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="actualRevenue">{t('crm.campaigns.actualRevenue')} (OMR)</Label>
+                <Input
+                  id="actualRevenue"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.actualRevenue || ''}
+                  onChange={(e) => handleInputChange('actualRevenue', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="leadsGenerated">{t('crm.campaigns.leadsGenerated')}</Label>
+                <Input
+                  id="leadsGenerated"
+                  type="number"
+                  min="0"
+                  value={formData.leadsGenerated || ''}
+                  onChange={(e) => handleInputChange('leadsGenerated', parseInt(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dealsGenerated">{t('crm.campaigns.dealsGenerated')}</Label>
+                <Input
+                  id="dealsGenerated"
+                  type="number"
+                  min="0"
+                  value={formData.dealsGenerated || ''}
+                  onChange={(e) => handleInputChange('dealsGenerated', parseInt(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Assignment */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.assignment')}</CardTitle>
+            <CardDescription>{t('crm.assignmentDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="ownerId">{t('crm.campaigns.owner')}</Label>
+              <Select
+                value={formData.ownerId}
+                onValueChange={(value) => handleInputChange('ownerId', value)}
+              >
+                <SelectTrigger id="ownerId">
+                  <SelectValue placeholder={t('crm.selectUser')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map(user => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.fullNameEn || user.fullNameAr}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSaving}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t('crm.campaigns.creating')}
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                {t('crm.campaigns.create')}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

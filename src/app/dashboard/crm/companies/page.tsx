@@ -34,6 +34,12 @@ import { apiClient, getErrorMessage } from "@/core/api/client";
 import { Company } from "@/shared/types/database";
 import { toast } from "sonner";
 
+// Format currency in OMR
+const formatOMR = (amount: number | undefined | null): string => {
+  if (!amount) return '0.000 OMR';
+  return `${amount.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} OMR`;
+};
+
 const getStatusBadgeVariant = (status: string) => {
   switch (status) {
     case "Active Customer":
@@ -185,6 +191,7 @@ export default function CompaniesPage() {
                   <div className="flex items-start justify-between" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
+                        <AvatarImage src={company.logoUrl} alt={company.name} />
                         <AvatarFallback className="bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold">
                           {companyInitials}
                         </AvatarFallback>
@@ -211,7 +218,7 @@ export default function CompaniesPage() {
                         </DropdownMenuItem>
                         {company.website && (
                           <DropdownMenuItem asChild>
-                            <a href={`https://${company.website}`} target="_blank" rel="noopener noreferrer">
+                            <a href={company.website.includes('://') ? company.website : `https://${company.website}`} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="mr-2 h-4 w-4" />
                               Visit Website
                             </a>
@@ -248,47 +255,81 @@ export default function CompaniesPage() {
                     </DropdownMenu>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
+                  {/* Description */}
                   {company.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {company.description}
                     </p>
                   )}
                   
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  {/* Main Info Grid */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {/* Company Size */}
                     {company.size && (
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span>{company.size} employees</span>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <div className="font-medium">{company.size}</div>
+                          <div className="text-xs text-muted-foreground">Employees</div>
+                        </div>
                       </div>
                     )}
+                    
+                    {/* Annual Revenue */}
                     {company.revenue && (
-                      <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span>${company.revenue.toLocaleString()}</span>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-green-500" />
+                        <div>
+                          <div className="font-medium">{formatOMR(company.revenue)}</div>
+                          <div className="text-xs text-muted-foreground">Annual Revenue</div>
+                        </div>
                       </div>
                     )}
                   </div>
                   
+                  {/* Location */}
                   {location && (
-                    <div className="flex items-center space-x-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{location}</span>
+                    <div className="flex items-start gap-2 text-sm p-2 bg-muted/50 rounded-md">
+                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <span className="text-muted-foreground">{location}</span>
                     </div>
                   )}
 
-                  {(company.phone || company.email) && (
-                    <div className="space-y-1 text-sm">
-                      {company.phone && (
-                        <div className="text-muted-foreground">📞 {company.phone}</div>
-                      )}
-                      {company.email && (
-                        <div className="text-muted-foreground">📧 {company.email}</div>
-                      )}
-                    </div>
-                  )}
+                  {/* Contact Information */}
+                  <div className="space-y-2 text-sm border-t pt-3">
+                    {company.phone && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">📞</span>
+                        <a href={`tel:${company.phone}`} className="text-blue-600 hover:underline">
+                          {company.phone}
+                        </a>
+                      </div>
+                    )}
+                    {company.email && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">📧</span>
+                        <a href={`mailto:${company.email}`} className="text-blue-600 hover:underline">
+                          {company.email}
+                        </a>
+                      </div>
+                    )}
+                    {company.website && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">🌐</span>
+                        <a 
+                          href={company.website.includes('://') ? company.website : `https://${company.website}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline truncate"
+                        >
+                          {company.website}
+                        </a>
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="flex space-x-2 pt-2 border-t">
+                  <div className="flex space-x-2 pt-3 border-t">
                     <Button variant="outline" size="sm" className="flex-1" asChild>
                       <Link href={`/dashboard/crm/contacts?companyId=${company.id}`}>
                         View Contacts
@@ -335,7 +376,7 @@ export default function CompaniesPage() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">
-                ${companies.reduce((sum, c) => sum + (c.revenue || 0), 0).toLocaleString()}
+                {formatOMR(companies.reduce((sum, c) => sum + (c.revenue || 0), 0))}
               </div>
               <p className="text-xs text-muted-foreground">Total Revenue</p>
             </CardContent>

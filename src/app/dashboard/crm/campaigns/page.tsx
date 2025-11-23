@@ -1,522 +1,403 @@
-import { Metadata } from "next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Badge } from "@/shared/components/ui/badge";
-import { Progress } from "@/shared/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
+import { Input } from '@/shared/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { 
-  Search, 
-  Filter, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/shared/components/ui/table';
+import { toast } from 'sonner';
+import { 
+  BarChart3, 
+  DollarSign, 
+  Loader2, 
+  Mail, 
+  MessageSquare, 
   Plus, 
-  MoreHorizontal,
-  Send,
-  Users,
-  Mail,
-  Eye,
-  MousePointer,
-  TrendingUp,
-  Calendar,
-  Edit,
-  Trash2,
-  Play,
-  Pause,
-  Copy
-} from "lucide-react";
-import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
+  Search, 
+  Share2, 
+  Target, 
+  TrendingUp, 
+  Users 
+} from 'lucide-react';
+import { Campaign, CampaignType, CampaignStatus } from '@/shared/types/database';
 
-export const metadata: Metadata = {
-  title: "Marketing Campaigns - CRM",
-  description: "Manage your marketing campaigns and track performance"
-};
-
-// Mock data for demonstration
-const campaigns = [
-  {
-    id: 1,
-    name: "Q1 Product Launch",
-    type: "Email",
-    status: "Active",
-    startDate: "2024-01-01",
-    endDate: "2024-03-31",
-    budget: 15000,
-    spent: 8500,
-    audienceSize: 2847,
-    sent: 2500,
-    delivered: 2456,
-    opened: 1234,
-    clicked: 567,
-    conversions: 89,
-    revenue: 125000,
-    openRate: 50.2,
-    clickRate: 23.1,
-    conversionRate: 15.7
-  },
-  {
-    id: 2,
-    name: "Summer Sale 2024",
-    type: "Multi-channel",
-    status: "Scheduled",
-    startDate: "2024-06-01",
-    endDate: "2024-08-31",
-    budget: 25000,
-    spent: 0,
-    audienceSize: 4521,
-    sent: 0,
-    delivered: 0,
-    opened: 0,
-    clicked: 0,
-    conversions: 0,
-    revenue: 0,
-    openRate: 0,
-    clickRate: 0,
-    conversionRate: 0
-  },
-  {
-    id: 3,
-    name: "Customer Retention",
-    type: "Email",
-    status: "Completed",
-    startDate: "2024-01-15",
-    endDate: "2024-02-15",
-    budget: 8000,
-    spent: 7800,
-    audienceSize: 1245,
-    sent: 1200,
-    delivered: 1185,
-    opened: 890,
-    clicked: 345,
-    conversions: 124,
-    revenue: 89000,
-    openRate: 75.1,
-    clickRate: 38.8,
-    conversionRate: 35.9
-  },
-  {
-    id: 4,
-    name: "New Feature Announcement",
-    type: "Social Media",
-    status: "Draft",
-    startDate: "2024-02-01",
-    endDate: "2024-02-28",
-    budget: 12000,
-    spent: 0,
-    audienceSize: 8934,
-    sent: 0,
-    delivered: 0,
-    opened: 0,
-    clicked: 0,
-    conversions: 0,
-    revenue: 0,
-    openRate: 0,
-    clickRate: 0,
-    conversionRate: 0
-  },
-  {
-    id: 5,
-    name: "Holiday Promotion",
-    type: "Email",
-    status: "Paused",
-    startDate: "2023-12-01",
-    endDate: "2023-12-31",
-    budget: 20000,
-    spent: 15600,
-    audienceSize: 3456,
-    sent: 3200,
-    delivered: 3145,
-    opened: 1876,
-    clicked: 734,
-    conversions: 198,
-    revenue: 156000,
-    openRate: 59.6,
-    clickRate: 39.1,
-    conversionRate: 27.0
-  }
+const CAMPAIGN_TYPES: CampaignType[] = [
+  CampaignType.EMAIL,
+  CampaignType.SMS,
+  CampaignType.SOCIAL_MEDIA,
+  CampaignType.EVENT,
+  CampaignType.WEBINAR,
+  CampaignType.ADVERTISING
 ];
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status) {
-    case "Active":
-      return "default";
-    case "Completed":
-      return "secondary";
-    case "Scheduled":
-      return "outline";
-    case "Draft":
-      return "outline";
-    case "Paused":
-      return "destructive";
-    default:
-      return "outline";
-  }
-};
-
-const getTypeColor = (type: string) => {
-  switch (type) {
-    case "Email":
-      return "text-blue-600";
-    case "Social Media":
-      return "text-purple-600";
-    case "Multi-channel":
-      return "text-green-600";
-    default:
-      return "text-gray-600";
-  }
-};
+const CAMPAIGN_STATUSES: CampaignStatus[] = [
+  CampaignStatus.DRAFT,
+  CampaignStatus.SCHEDULED,
+  CampaignStatus.ACTIVE,
+  CampaignStatus.PAUSED,
+  CampaignStatus.COMPLETED,
+  CampaignStatus.CANCELLED
+];
 
 export default function CampaignsPage() {
+  const router = useRouter();
+  const { t } = useI18n();
+  const { hasAccess, level, canWrite } = usePermissionLevel('crm_campaigns');
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
+  
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<CampaignType | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'ALL'>('ALL');
+
+  // Stats
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    totalBudget: 0,
+    totalLeads: 0,
+    averageROI: 0
+  });
+
+  useEffect(() => {
+    if (!hasAccess) {
+      router.push('/dashboard/access-denied');
+      return;
+    }
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [campaignsRes, statsRes] = await Promise.all([
+          apiClient.get('/api/crm/campaigns'),
+          apiClient.get('/api/crm/campaigns/stats')
+        ]);
+        
+        if (campaignsRes.success && campaignsRes.data) {
+          const campaignList = Array.isArray(campaignsRes.data) ? campaignsRes.data : [];
+          setCampaigns(campaignList);
+          setFilteredCampaigns(campaignList);
+        }
+
+        if (statsRes.success && statsRes.data) {
+          setStats(statsRes.data);
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, t('crm.campaigns.errorLoading')));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [hasAccess, level, router, t]);
+
+  useEffect(() => {
+    let filtered = [...campaigns];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(campaign => 
+        campaign.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        campaign.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Type filter
+    if (typeFilter !== 'ALL') {
+      filtered = filtered.filter(campaign => campaign.type === typeFilter);
+    }
+
+    // Status filter
+    if (statusFilter !== 'ALL') {
+      filtered = filtered.filter(campaign => campaign.status === statusFilter);
+    }
+
+    setFilteredCampaigns(filtered);
+  }, [campaigns, searchTerm, typeFilter, statusFilter]);
+
+  const getCampaignIcon = (type: CampaignType) => {
+    switch (type) {
+      case CampaignType.EMAIL: return <Mail className="h-4 w-4" />;
+      case CampaignType.SMS: return <MessageSquare className="h-4 w-4" />;
+      case CampaignType.SOCIAL_MEDIA: return <Share2 className="h-4 w-4" />;
+      case CampaignType.EVENT: return <Users className="h-4 w-4" />;
+      case CampaignType.WEBINAR: return <Users className="h-4 w-4" />;
+      case CampaignType.ADVERTISING: return <Target className="h-4 w-4" />;
+      default: return <Target className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusBadge = (status: CampaignStatus) => {
+    const variants: Record<CampaignStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+      [CampaignStatus.DRAFT]: 'outline',
+      [CampaignStatus.SCHEDULED]: 'secondary',
+      [CampaignStatus.ACTIVE]: 'default',
+      [CampaignStatus.PAUSED]: 'secondary',
+      [CampaignStatus.COMPLETED]: 'outline',
+      [CampaignStatus.CANCELLED]: 'destructive'
+    };
+
+    return (
+      <Badge variant={variants[status]}>
+        {t(`crm.campaigns.status${status.charAt(0) + status.slice(1).toLowerCase()}`)}
+      </Badge>
+    );
+  };
+
+  const formatCurrency = (value: number | undefined) => {
+    if (!value) return 'ر.ع 0';
+    return `ر.ع ${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 })}`;
+  };
+
+  const formatDate = (date: string | Date | undefined) => {
+    if (!date) return '-';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const calculateROI = (campaign: Campaign) => {
+    if (!campaign.actualCost || campaign.actualCost === 0) return 0;
+    const revenue = campaign.metrics?.revenue || 0;
+    const cost = campaign.actualCost;
+    return ((revenue - cost) / cost) * 100;
+  };
+
+  if (!hasAccess) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Marketing Campaigns</h1>
-          <p className="text-muted-foreground">
-            Create, manage and track your marketing campaigns
-          </p>
+          <h1 className="text-3xl font-bold">{t('crm.campaigns.title')}</h1>
+          <p className="text-muted-foreground">{t('crm.campaigns.description')}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/dashboard/crm/campaigns/templates">
-              Templates
-            </Link>
+        {canWrite && (
+          <Button onClick={() => router.push('/dashboard/crm/campaigns/new')}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('crm.campaigns.createNew')}
           </Button>
-          <Button asChild>
-            <Link href="/dashboard/crm/campaigns/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Campaign
-            </Link>
-          </Button>
-        </div>
+        )}
       </div>
 
-      {/* Search and Filter */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search campaigns..."
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalCampaigns')}</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
 
-      {/* Campaign Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{campaigns.length}</div>
-            <p className="text-xs text-muted-foreground">Total Campaigns</p>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('crm.campaigns.activeCampaigns')}</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {campaigns.filter(c => c.status === "Active").length}
-            </div>
-            <p className="text-xs text-muted-foreground">Active Campaigns</p>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalBudget')}</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              ${campaigns.reduce((sum, c) => sum + c.revenue, 0).toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">Total Revenue</p>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalLeads')}</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalLeads}</div>
           </CardContent>
         </Card>
+
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {campaigns.reduce((sum, c) => sum + c.conversions, 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">Total Conversions</p>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t('crm.campaigns.averageROI')}</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.averageROI.toFixed(1)}%</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Campaigns List */}
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>All Campaigns</CardTitle>
-              <CardDescription>
-                Manage and monitor your marketing campaigns
-              </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                Export
-              </Button>
-              <Button variant="outline" size="sm">
-                Bulk Actions
-              </Button>
-            </div>
-          </div>
+          <CardTitle>{t('crm.filters')}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {campaigns.map((campaign) => (
-              <div key={campaign.id} className="border rounded-lg p-6 hover:bg-muted/50 transition-colors">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="text-lg font-semibold">{campaign.name}</h3>
-                      <Badge variant={getStatusBadgeVariant(campaign.status)}>
-                        {campaign.status}
-                      </Badge>
-                      <span className={`text-sm font-medium ${getTypeColor(campaign.type)}`}>
-                        {campaign.type}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{new Date(campaign.startDate).toLocaleDateString()} - {new Date(campaign.endDate).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-3 w-3" />
-                        <span>{campaign.audienceSize.toLocaleString()} contacts</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    {campaign.status === "Active" && (
-                      <Button variant="outline" size="sm">
-                        <Pause className="h-4 w-4 mr-2" />
-                        Pause
-                      </Button>
-                    )}
-                    {campaign.status === "Paused" && (
-                      <Button variant="outline" size="sm">
-                        <Play className="h-4 w-4 mr-2" />
-                        Resume
-                      </Button>
-                    )}
-                    {campaign.status === "Draft" && (
-                      <Button variant="outline" size="sm">
-                        <Send className="h-4 w-4 mr-2" />
-                        Launch
-                      </Button>
-                    )}
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit Campaign
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Duplicate
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete Campaign
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-
-                {/* Campaign Metrics */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Budget</div>
-                    <div className="font-medium">${campaign.budget.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Spent: ${campaign.spent.toLocaleString()}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Delivered</div>
-                    <div className="font-medium">{campaign.delivered.toLocaleString()}</div>
-                    <div className="text-xs text-green-600">
-                      {campaign.sent > 0 ? `${((campaign.delivered / campaign.sent) * 100).toFixed(1)}%` : '0%'} delivery rate
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Opened</div>
-                    <div className="font-medium">{campaign.opened.toLocaleString()}</div>
-                    <div className="text-xs text-blue-600">
-                      {campaign.openRate.toFixed(1)}% open rate
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Clicked</div>
-                    <div className="font-medium">{campaign.clicked.toLocaleString()}</div>
-                    <div className="text-xs text-purple-600">
-                      {campaign.clickRate.toFixed(1)}% click rate
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Conversions</div>
-                    <div className="font-medium">{campaign.conversions.toLocaleString()}</div>
-                    <div className="text-xs text-orange-600">
-                      {campaign.conversionRate.toFixed(1)}% conversion rate
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="text-sm text-muted-foreground">Revenue</div>
-                    <div className="font-medium text-green-600">${campaign.revenue.toLocaleString()}</div>
-                    <div className="text-xs text-muted-foreground">
-                      ROI: {campaign.spent > 0 ? `${(((campaign.revenue - campaign.spent) / campaign.spent) * 100).toFixed(0)}%` : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Performance Progress Bars */}
-                {campaign.status !== "Draft" && campaign.status !== "Scheduled" && (
-                  <div className="mt-4 space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Open Rate</span>
-                        <span>{campaign.openRate.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={campaign.openRate} className="h-2" />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Click Rate</span>
-                        <span>{campaign.clickRate.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={campaign.clickRate} className="h-2" />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span>Conversion Rate</span>
-                        <span>{campaign.conversionRate.toFixed(1)}%</span>
-                      </div>
-                      <Progress value={campaign.conversionRate} className="h-2" />
-                    </div>
-                  </div>
-                )}
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Search */}
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('crm.campaigns.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
               </div>
-            ))}
+            </div>
+
+            {/* Type Filter */}
+            <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as CampaignType | 'ALL')}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('crm.filterByType')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('crm.showAll')}</SelectItem>
+                {CAMPAIGN_TYPES.map(type => (
+                  <SelectItem key={type} value={type}>
+                    {t(`crm.campaigns.type${type.charAt(0) + type.slice(1).toLowerCase()}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Status Filter */}
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as CampaignStatus | 'ALL')}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('crm.filterByStatus')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t('crm.showAll')}</SelectItem>
+                {CAMPAIGN_STATUSES.map(status => (
+                  <SelectItem key={status} value={status}>
+                    {t(`crm.campaigns.status${status.charAt(0) + status.slice(1).toLowerCase()}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Performance Overview */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Campaign Performance</CardTitle>
-            <CardDescription>
-              Overview of campaign metrics and trends
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Average Open Rate</span>
-                <span className="font-semibold">
-                  {(campaigns.reduce((sum, c) => sum + c.openRate, 0) / campaigns.length).toFixed(1)}%
-                </span>
+      {/* Campaigns Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('crm.campaigns.title')}</CardTitle>
+          <CardDescription>
+            {filteredCampaigns.length} {t('crm.campaigns.found')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {filteredCampaigns.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <Target className="h-12 w-12 text-muted-foreground" />
+              <div className="text-center">
+                <h3 className="text-lg font-semibold">{t('crm.campaigns.noCampaigns')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.campaigns.noCampaignsDescription')}</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Average Click Rate</span>
-                <span className="font-semibold">
-                  {(campaigns.reduce((sum, c) => sum + c.clickRate, 0) / campaigns.length).toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Average Conversion Rate</span>
-                <span className="font-semibold">
-                  {(campaigns.reduce((sum, c) => sum + c.conversionRate, 0) / campaigns.length).toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Total ROI</span>
-                <span className="font-semibold text-green-600">
-                  {(() => {
-                    const totalSpent = campaigns.reduce((sum, c) => sum + c.spent, 0);
-                    const totalRevenue = campaigns.reduce((sum, c) => sum + c.revenue, 0);
-                    return totalSpent > 0 ? `${(((totalRevenue - totalSpent) / totalSpent) * 100).toFixed(0)}%` : 'N/A';
-                  })()}
-                </span>
-              </div>
+              {canWrite && (
+                <Button onClick={() => router.push('/dashboard/crm/campaigns/new')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('crm.campaigns.createNew')}
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Latest campaign activities and updates
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-green-600" />
-                <div>
-                  <p className="text-sm font-medium">Q1 Product Launch completed</p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-blue-600" />
-                <div>
-                  <p className="text-sm font-medium">Summer Sale 2024 scheduled</p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-orange-600" />
-                <div>
-                  <p className="text-sm font-medium">Holiday Promotion paused</p>
-                  <p className="text-xs text-muted-foreground">3 days ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 rounded-full bg-purple-600" />
-                <div>
-                  <p className="text-sm font-medium">New Feature Announcement created</p>
-                  <p className="text-xs text-muted-foreground">1 week ago</p>
-                </div>
-              </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('crm.campaigns.name')}</TableHead>
+                    <TableHead>{t('crm.campaigns.type')}</TableHead>
+                    <TableHead>{t('crm.campaigns.status')}</TableHead>
+                    <TableHead>{t('crm.campaigns.budget')}</TableHead>
+                    <TableHead>{t('crm.campaigns.leads')}</TableHead>
+                    <TableHead>{t('crm.campaigns.roi')}</TableHead>
+                    <TableHead>{t('crm.campaigns.startDate')}</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCampaigns.map((campaign) => (
+                    <TableRow key={campaign.id}>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="font-medium">{campaign.name}</div>
+                          {campaign.description && (
+                            <div className="text-sm text-muted-foreground line-clamp-1">
+                              {campaign.description}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getCampaignIcon(campaign.type)}
+                          <span className="text-sm">
+                            {t(`crm.campaigns.type${campaign.type.charAt(0) + campaign.type.slice(1).toLowerCase()}`)}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(campaign.status)}</TableCell>
+                      <TableCell>{formatCurrency(campaign.budget)}</TableCell>
+                      <TableCell>{campaign.metrics?.leads || 0}</TableCell>
+                      <TableCell>
+                        <span className={calculateROI(campaign) >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          {calculateROI(campaign).toFixed(1)}%
+                        </span>
+                      </TableCell>
+                      <TableCell>{formatDate(campaign.startDate)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/crm/campaigns/${campaign.id}`)}
+                        >
+                          {t('crm.viewDetails')}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

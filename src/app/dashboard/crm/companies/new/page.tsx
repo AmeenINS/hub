@@ -27,6 +27,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { CompanyLogoUpload } from "@/features/crm/components/company-logo-upload";
+import { apiClient, getErrorMessage } from "@/core/api/client";
+import { toast } from "sonner";
 
 const companySchema = z.object({
   name: z.string().min(2, "Company name must be at least 2 characters"),
@@ -72,6 +75,7 @@ export default function NewCompanyPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string>("");
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -98,14 +102,20 @@ export default function NewCompanyPage() {
   const onSubmit = async (data: CompanyFormData) => {
     setIsLoading(true);
     try {
-      // Here you would typically send the data to your API
-      console.log("Company data:", { ...data, tags });
+      const companyData = {
+        ...data,
+        tags,
+        logoUrl: logoUrl || undefined,
+      };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await apiClient.post('/api/crm/companies', companyData);
       
-      router.push("/dashboard/crm/companies");
+      if (response.success) {
+        toast.success('Company created successfully');
+        router.push("/dashboard/crm/companies");
+      }
     } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to create company'));
       console.error("Error creating company:", error);
     } finally {
       setIsLoading(false);
@@ -411,6 +421,14 @@ export default function NewCompanyPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Company Logo */}
+              <CompanyLogoUpload
+                companyName={form.watch('name') || 'New Company'}
+                currentLogoUrl={logoUrl}
+                onLogoChange={setLogoUrl}
+                variant="card"
+              />
+
               {/* Company Status */}
               <Card>
                 <CardHeader>

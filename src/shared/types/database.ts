@@ -395,6 +395,7 @@ export interface Company {
   zipCode?: string;
   country?: string;
   description?: string;
+  logoUrl?: string; // URL to uploaded company logo image
   tags?: string[];
   assignedTo?: string; // User ID
   createdBy: string;
@@ -420,13 +421,29 @@ export interface Lead {
   description?: string;
   status: LeadStatus;
   source: LeadSource;
-  value?: number;
+  value?: number; // Estimated value in OMR
   probability?: number; // 0-100
   expectedCloseDate?: string;
   actualCloseDate?: string;
+  
+  // Insurance-specific fields
+  insuranceProductIds?: string[]; // Products interested in
+  insuranceCompanyIds?: string[]; // Insurance companies to consider
+  insuranceType?: string; // e.g., 'Health', 'Motor', 'Property', 'Life'
+  currentInsuranceProvider?: string;
+  currentPremium?: number; // Current premium in OMR
+  renewalDate?: string;
+  
+  // Assignment and tracking
   assignedTo?: string; // User ID
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  lastContactedAt?: string;
+  nextFollowUpDate?: string;
+  
   tags?: string[];
   notes?: string;
+  customFields?: Record<string, any>;
+  
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -440,13 +457,38 @@ export interface Deal {
   name: string;
   description?: string;
   stage: DealStage;
-  value: number;
+  value: number; // Deal value in OMR
   probability: number; // 0-100
   expectedCloseDate?: string;
   actualCloseDate?: string;
+  
+  // Insurance-specific fields
+  insuranceProductId?: string; // Selected insurance product
+  insuranceCompanyId?: string; // Selected insurance company
+  insuranceType: string; // 'Health', 'Motor', 'Property', 'Life', etc.
+  policyNumber?: string;
+  policyStartDate?: string;
+  policyEndDate?: string;
+  premium: number; // Premium amount in OMR
+  premiumFrequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUAL' | 'ANNUAL';
+  coverageAmount?: number; // Coverage amount in OMR
+  deductible?: number; // Deductible in OMR
+  commission?: number; // Commission in OMR
+  commissionPercentage?: number;
+  
+  // Policy details (flexible for different insurance types)
+  policyDetails?: Record<string, any>; // Vehicle details, health info, property info, etc.
+  
+  // Assignment and tracking
   assignedTo?: string; // User ID
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  lostReason?: string; // If CLOSED_LOST
+  competitorInfo?: string;
+  
   tags?: string[];
   notes?: string;
+  customFields?: Record<string, any>;
+  
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -462,12 +504,28 @@ export interface Activity {
   endDate?: string;
   duration?: number; // in minutes
   location?: string;
+  
+  // Meeting/Call details
+  outcome?: string; // Result of the activity
   attendees?: string[]; // User IDs
+  isReminder?: boolean;
+  reminderDate?: string;
+  
+  // Related entities
   contactId?: string;
   companyId?: string;
   leadId?: string;
   dealId?: string;
+  campaignId?: string;
+  
+  // Assignment
   assignedTo?: string; // User ID
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  
+  // Tracking
+  completedAt?: string;
+  customFields?: Record<string, any>;
+  
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -496,18 +554,70 @@ export interface PipelineStage {
   isActive: boolean;
 }
 
+export enum CampaignType {
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  ADVERTISING = 'ADVERTISING',
+  EVENT = 'EVENT',
+  WEBINAR = 'WEBINAR',
+  DIRECT_MAIL = 'DIRECT_MAIL',
+  REFERRAL = 'REFERRAL',
+  OTHER = 'OTHER',
+}
+
+export enum CampaignStatus {
+  DRAFT = 'DRAFT',
+  SCHEDULED = 'SCHEDULED',
+  ACTIVE = 'ACTIVE',
+  PAUSED = 'PAUSED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 export interface Campaign {
   id: string;
   name: string;
   description?: string;
-  type: string; // Email, Social, Ad, etc.
-  status: string; // Draft, Active, Paused, Completed
+  type: CampaignType;
+  status: CampaignStatus;
+  
+  // Dates and budget
   startDate?: string;
   endDate?: string;
-  budget?: number;
+  budget?: number; // Budget in OMR
+  actualCost?: number; // Actual cost in OMR
+  
+  // Insurance-specific
+  insuranceProductIds?: string[]; // Products being promoted
+  insuranceType?: string; // Target insurance type
   targetAudience?: string;
+  
+  // Goals and metrics
   goals?: string;
-  metrics?: Record<string, number>;
+  targetLeads?: number;
+  targetDeals?: number;
+  targetRevenue?: number; // in OMR
+  
+  // Performance metrics
+  metrics?: {
+    leads?: number;
+    deals?: number;
+    revenue?: number; // in OMR
+    clicks?: number;
+    impressions?: number;
+    conversions?: number;
+    roi?: number; // Return on investment percentage
+    [key: string]: any;
+  };
+  
+  // Assignment
+  assignedTo?: string; // Campaign manager
+  teamMembers?: string[]; // User IDs
+  
+  tags?: string[];
+  customFields?: Record<string, any>;
+  
   createdBy: string;
   createdAt: string;
   updatedAt: string;

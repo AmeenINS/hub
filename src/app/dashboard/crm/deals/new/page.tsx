@@ -1,534 +1,564 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { Textarea } from "@/shared/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { Badge } from "@/shared/components/ui/badge";
-import { Slider } from "@/shared/components/ui/slider";
-import { 
-  ArrowLeft,
-  Save,
-  Handshake,
-  User,
-  Building2,
-  DollarSign,
-  Calendar,
-  TrendingUp,
-  Tag,
-  Target
-} from "lucide-react";
-import Link from "next/link";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useI18n } from '@/shared/i18n/i18n-context';
+import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
+import { apiClient, getErrorMessage } from '@/core/api/client';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Textarea } from '@/shared/components/ui/textarea';
+import { toast } from 'sonner';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { DealStage, Contact, Company, User, Lead } from '@/shared/types/database';
 
-const dealSchema = z.object({
-  title: z.string().min(2, "Deal title must be at least 2 characters"),
-  contactId: z.string().optional(),
-  companyId: z.string().optional(),
-  contactName: z.string().optional(),
-  companyName: z.string().optional(),
-  value: z.string().min(1, "Please enter deal value"),
-  stage: z.enum(["Discovery", "Qualification", "Proposal", "Negotiation", "Closed Won", "Closed Lost"]),
-  probability: z.number().min(0).max(100),
-  expectedCloseDate: z.string().min(1, "Please select expected close date"),
-  actualCloseDate: z.string().optional(),
-  source: z.enum(["Inbound", "Outbound", "Referral", "Partner", "Marketing", "Other"]),
-  priority: z.enum(["Low", "Medium", "High", "Critical"]),
-  description: z.string().optional(),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-});
+interface DealFormData {
+  title: string;
+  leadId?: string;
+  contactId?: string;
+  companyId?: string;
+  insuranceType: string;
+  stage: DealStage;
+  value: number;
+  probability: number;
+  expectedCloseDate?: string;
+  description?: string;
+  assignedToUserId?: string;
+  policyNumber?: string;
+  premium?: number;
+  paymentFrequency?: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY' | 'ONE_TIME';
+  policyStartDate?: string;
+  policyEndDate?: string;
+  coverageAmount?: number;
+  deductible?: number;
+  commissionRate?: number;
+  commissionAmount?: number;
+  policyDetails?: string;
+}
 
-type DealFormData = z.infer<typeof dealSchema>;
-
-const stageOptions = [
-  { value: "Discovery", label: "Discovery", color: "secondary" },
-  { value: "Qualification", label: "Qualification", color: "outline" },
-  { value: "Proposal", label: "Proposal", color: "default" },
-  { value: "Negotiation", label: "Negotiation", color: "secondary" },
-  { value: "Closed Won", label: "Closed Won", color: "default" },
-  { value: "Closed Lost", label: "Closed Lost", color: "destructive" }
+const INSURANCE_TYPES = [
+  'AUTO',
+  'HEALTH',
+  'LIFE',
+  'PROPERTY',
+  'TRAVEL',
+  'MARINE',
+  'OTHER'
 ];
 
-const sourceOptions = [
-  "Inbound", "Outbound", "Referral", "Partner", "Marketing", "Other"
+const DEAL_STAGES: DealStage[] = [
+  DealStage.PROSPECTING,
+  DealStage.QUALIFICATION,
+  DealStage.PROPOSAL,
+  DealStage.NEGOTIATION,
+  DealStage.CLOSED_WON,
+  DealStage.CLOSED_LOST
 ];
 
-const priorityOptions = [
-  { value: "Low", label: "Low", color: "outline" },
-  { value: "Medium", label: "Medium", color: "secondary" },
-  { value: "High", label: "High", color: "default" },
-  { value: "Critical", label: "Critical", color: "destructive" }
+const PAYMENT_FREQUENCIES = [
+  'MONTHLY',
+  'QUARTERLY',
+  'SEMI_ANNUALLY',
+  'ANNUALLY',
+  'ONE_TIME'
 ];
 
 export default function NewDealPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [tags, setTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState("");
+  const { t, locale } = useI18n();
+  const { hasAccess, level } = usePermissionLevel('crm_deals');
 
-  const form = useForm<DealFormData>({
-    resolver: zodResolver(dealSchema),
-    defaultValues: {
-      title: "",
-      contactId: "",
-      companyId: "",
-      contactName: "",
-      companyName: "",
-      value: "",
-      stage: "Discovery",
-      probability: 25,
-      expectedCloseDate: "",
-      actualCloseDate: "",
-      source: "Inbound",
-      priority: "Medium",
-      description: "",
-      notes: "",
-      tags: []
-    }
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
+  const [formData, setFormData] = useState<DealFormData>({
+    title: '',
+    insuranceType: 'AUTO',
+    stage: DealStage.PROSPECTING,
+    value: 0,
+    probability: 10,
+    paymentFrequency: 'ANNUALLY'
   });
 
-  const onSubmit = async (data: DealFormData) => {
-    setIsLoading(true);
-    try {
-      // Here you would typically send the data to your API
-      console.log("Deal data:", { ...data, tags });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      router.push("/dashboard/crm/deals");
-    } catch (error) {
-      console.error("Error creating deal:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addTag = () => {
-    if (newTag && !tags.includes(newTag)) {
-      setTags([...tags, newTag]);
-      setNewTag("");
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const probability = form.watch("probability");
-  const stage = form.watch("stage");
-
-  // Auto-update probability based on stage
   useEffect(() => {
-    const stageToProb = {
-      "Discovery": 10,
-      "Qualification": 25,
-      "Proposal": 50,
-      "Negotiation": 75,
-      "Closed Won": 100,
-      "Closed Lost": 0
+    if (!hasAccess) {
+      router.push('/dashboard/access-denied');
+      return;
+    }
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const [leadsRes, contactsRes, companiesRes, usersRes] = await Promise.all([
+          apiClient.get('/api/crm/leads'),
+          apiClient.get('/api/crm/contacts'),
+          apiClient.get('/api/crm/companies'),
+          apiClient.get('/api/users')
+        ]);
+
+        if (leadsRes.success && leadsRes.data) {
+          // Filter qualified leads only
+          const qualifiedLeads = Array.isArray(leadsRes.data) 
+            ? leadsRes.data.filter((l: Lead) => l.status === 'QUALIFIED')
+            : [];
+          setLeads(qualifiedLeads);
+        }
+        if (contactsRes.success && contactsRes.data) {
+          setContacts(Array.isArray(contactsRes.data) ? contactsRes.data : []);
+        }
+        if (companiesRes.success && companiesRes.data) {
+          setCompanies(Array.isArray(companiesRes.data) ? companiesRes.data : []);
+        }
+        if (usersRes.success && usersRes.data) {
+          setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, 'Failed to load data'));
+      } finally {
+        setIsLoading(false);
+      }
     };
-    form.setValue("probability", stageToProb[stage as keyof typeof stageToProb]);
-  }, [stage, form]);
+
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAccess]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim()) {
+      toast.error(t('crm.deals.titleRequired'));
+      return;
+    }
+
+    if (formData.value <= 0) {
+      toast.error(t('crm.deals.valueRequired'));
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await apiClient.post('/api/crm/deals', formData);
+      
+      if (response.success) {
+        toast.success(t('crm.deals.createSuccess'));
+        router.push('/dashboard/crm/deals');
+      } else {
+        toast.error(response.message || t('crm.deals.createError'));
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('crm.deals.createError')));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof DealFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Auto-calculate commission amount if rate changes
+    if (field === 'commissionRate' && formData.premium) {
+      const rate = parseFloat(value) || 0;
+      const commissionAmount = (formData.premium * rate) / 100;
+      setFormData(prev => ({ ...prev, commissionRate: rate, commissionAmount }));
+    }
+
+    // Auto-calculate commission amount if premium changes
+    if (field === 'premium' && formData.commissionRate) {
+      const premium = parseFloat(value) || 0;
+      const commissionAmount = (premium * formData.commissionRate) / 100;
+      setFormData(prev => ({ ...prev, premium, commissionAmount }));
+    }
+  };
+
+  if (!hasAccess) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/crm/deals">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Deals
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add New Deal</h1>
-          <p className="text-muted-foreground">
-            Create a new deal in your sales pipeline
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{t('crm.deals.createNew')}</h1>
+            <p className="text-muted-foreground">{t('crm.deals.createNewDescription')}</p>
+          </div>
         </div>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Main Information */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Deal Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Handshake className="h-5 w-5" />
-                    <span>Deal Information</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Essential deal details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deal Title *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enterprise Software License" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.deals.basicInfo')}</CardTitle>
+            <CardDescription>{t('crm.deals.basicInfoDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">{t('crm.deals.title')} *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder={t('crm.deals.titlePlaceholder')}
+                  required
+                />
+              </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="value"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deal Value *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="45000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="expectedCloseDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Expected Close Date *</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deal Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe the deal opportunity..."
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Contact & Company */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <User className="h-5 w-5" />
-                    <span>Contact & Company</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Associated contact and company information
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="contactName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Primary Contact</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John Smith" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company</FormLabel>
-                          <FormControl>
-                            <Input placeholder="TechCorp Inc." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Deal Timeline */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5" />
-                    <span>Deal Timeline</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Important dates and milestones
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="actualCloseDate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Actual Close Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Deal Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Target className="h-5 w-5" />
-                    <span>Deal Status</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="stage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deal Stage</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select stage" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {stageOptions.map((stage) => (
-                              <SelectItem key={stage.value} value={stage.value}>
-                                <div className="flex items-center space-x-2">
-                                  <Badge variant={stage.color as any} className="text-xs">
-                                    {stage.label}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Priority</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {priorityOptions.map((priority) => (
-                              <SelectItem key={priority.value} value={priority.value}>
-                                <div className="flex items-center space-x-2">
-                                  <Badge variant={priority.color as any} className="text-xs">
-                                    {priority.label}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="source"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deal Source</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select source" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {sourceOptions.map((source) => (
-                              <SelectItem key={source} value={source}>
-                                {source}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Win Probability */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Win Probability</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Likelihood of closing this deal
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="probability"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Probability: {probability}%</FormLabel>
-                        <FormControl>
-                          <Slider
-                            min={0}
-                            max={100}
-                            step={5}
-                            value={[field.value]}
-                            onValueChange={(value) => field.onChange(value[0])}
-                            className="w-full"
-                          />
-                        </FormControl>
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>0%</span>
-                          <span>100%</span>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Tags */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tags</CardTitle>
-                  <CardDescription>
-                    Add tags to categorize this deal
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Add a tag"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                    />
-                    <Button type="button" onClick={addTag} size="sm">
-                      Add
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="cursor-pointer" onClick={() => removeTag(tag)}>
-                        {tag} ×
-                      </Badge>
+              <div className="space-y-2">
+                <Label htmlFor="insuranceType">{t('crm.selectInsuranceType')}</Label>
+                <Select
+                  value={formData.insuranceType}
+                  onValueChange={(value) => handleInputChange('insuranceType', value)}
+                >
+                  <SelectTrigger id="insuranceType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INSURANCE_TYPES.map(type => (
+                      <SelectItem key={type} value={type}>
+                        {t(`crm.insurance${type.charAt(0) + type.slice(1).toLowerCase()}`)}
+                      </SelectItem>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Notes */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notes</CardTitle>
-                  <CardDescription>
-                    Additional information about this deal
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <FormField
-                    control={form.control}
-                    name="notes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Add any additional notes about this deal..."
-                            className="min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </CardContent>
-              </Card>
+              <div className="space-y-2">
+                <Label htmlFor="stage">{t('crm.deals.stage')}</Label>
+                <Select
+                  value={formData.stage}
+                  onValueChange={(value) => handleInputChange('stage', value as DealStage)}
+                >
+                  <SelectTrigger id="stage">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEAL_STAGES.map(stage => (
+                      <SelectItem key={stage} value={stage}>
+                        {t(`crm.deals.stage${stage.charAt(0) + stage.slice(1).toLowerCase()}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="value">{t('crm.deals.value')} (OMR) *</Label>
+                <Input
+                  id="value"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.value}
+                  onChange={(e) => handleInputChange('value', parseFloat(e.target.value) || 0)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="probability">{t('crm.deals.probability')} (%)</Label>
+                <Input
+                  id="probability"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.probability}
+                  onChange={(e) => handleInputChange('probability', parseInt(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expectedCloseDate">{t('crm.deals.expectedCloseDate')}</Label>
+                <Input
+                  id="expectedCloseDate"
+                  type="date"
+                  value={formData.expectedCloseDate || ''}
+                  onChange={(e) => handleInputChange('expectedCloseDate', e.target.value)}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-4">
-            <Button type="button" variant="outline" asChild>
-              <Link href="/dashboard/crm/deals">
-                Cancel
-              </Link>
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Create Deal
-                </>
+            <div className="space-y-2">
+              <Label htmlFor="description">{t('crm.deals.description')}</Label>
+              <Textarea
+                id="description"
+                rows={3}
+                value={formData.description || ''}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder={t('crm.deals.descriptionPlaceholder')}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Policy Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.deals.policyDetails')}</CardTitle>
+            <CardDescription>{t('crm.deals.policyDetailsDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="policyNumber">{t('crm.deals.policyNumber')}</Label>
+                <Input
+                  id="policyNumber"
+                  value={formData.policyNumber || ''}
+                  onChange={(e) => handleInputChange('policyNumber', e.target.value)}
+                  placeholder={t('crm.deals.policyNumberPlaceholder')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="premium">{t('crm.deals.premium')} (OMR)</Label>
+                <Input
+                  id="premium"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.premium || ''}
+                  onChange={(e) => handleInputChange('premium', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentFrequency">{t('crm.deals.paymentFrequency')}</Label>
+                <Select
+                  value={formData.paymentFrequency}
+                  onValueChange={(value) => handleInputChange('paymentFrequency', value)}
+                >
+                  <SelectTrigger id="paymentFrequency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_FREQUENCIES.map(freq => (
+                      <SelectItem key={freq} value={freq}>
+                        {t(`crm.deals.frequency${freq.charAt(0) + freq.slice(1).toLowerCase().replace(/_/g, '')}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="coverageAmount">{t('crm.deals.coverage')} (OMR)</Label>
+                <Input
+                  id="coverageAmount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.coverageAmount || ''}
+                  onChange={(e) => handleInputChange('coverageAmount', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="policyStartDate">{t('crm.deals.policyStartDate')}</Label>
+                <Input
+                  id="policyStartDate"
+                  type="date"
+                  value={formData.policyStartDate || ''}
+                  onChange={(e) => handleInputChange('policyStartDate', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="policyEndDate">{t('crm.deals.policyEndDate')}</Label>
+                <Input
+                  id="policyEndDate"
+                  type="date"
+                  value={formData.policyEndDate || ''}
+                  onChange={(e) => handleInputChange('policyEndDate', e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="deductible">{t('crm.deals.deductible')} (OMR)</Label>
+                <Input
+                  id="deductible"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.deductible || ''}
+                  onChange={(e) => handleInputChange('deductible', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="commissionRate">{t('crm.deals.commission')} (%)</Label>
+                <Input
+                  id="commissionRate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={formData.commissionRate || ''}
+                  onChange={(e) => handleInputChange('commissionRate', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+
+              {formData.commissionAmount !== undefined && formData.commissionAmount > 0 && (
+                <div className="space-y-2">
+                  <Label>{t('crm.deals.commissionAmount')} (OMR)</Label>
+                  <Input
+                    value={formData.commissionAmount.toFixed(3)}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
               )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="policyDetails">{t('crm.deals.additionalPolicyDetails')}</Label>
+              <Textarea
+                id="policyDetails"
+                rows={3}
+                value={formData.policyDetails || ''}
+                onChange={(e) => handleInputChange('policyDetails', e.target.value)}
+                placeholder={t('crm.deals.additionalPolicyDetailsPlaceholder')}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Assignment & Relations */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.assignment')}</CardTitle>
+            <CardDescription>{t('crm.assignmentDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="assignedToUserId">{t('crm.assignTo')}</Label>
+                <Select
+                  value={formData.assignedToUserId}
+                  onValueChange={(value) => handleInputChange('assignedToUserId', value)}
+                >
+                  <SelectTrigger id="assignedToUserId">
+                    <SelectValue placeholder={t('crm.selectUser')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.fullNameEn || user.fullNameAr}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="leadId">{t('crm.selectLead')}</Label>
+                <Select
+                  value={formData.leadId}
+                  onValueChange={(value) => handleInputChange('leadId', value)}
+                >
+                  <SelectTrigger id="leadId">
+                    <SelectValue placeholder={t('crm.selectLead')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leads.map(lead => (
+                      <SelectItem key={lead.id} value={lead.id}>
+                        {lead.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contactId">{t('crm.selectContact')}</Label>
+                <Select
+                  value={formData.contactId}
+                  onValueChange={(value) => handleInputChange('contactId', value)}
+                >
+                  <SelectTrigger id="contactId">
+                    <SelectValue placeholder={t('crm.selectContact')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contacts.map(contact => (
+                      <SelectItem key={contact.id} value={contact.id}>
+                        {contact.fullNameEn || contact.fullNameAr || t('crm.unnamed')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyId">{t('crm.selectCompany')}</Label>
+                <Select
+                  value={formData.companyId}
+                  onValueChange={(value) => handleInputChange('companyId', value)}
+                >
+                  <SelectTrigger id="companyId">
+                    <SelectValue placeholder={t('crm.selectCompany')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies.map(company => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isSaving}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" disabled={isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {t('crm.deals.creating')}
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                {t('crm.deals.create')}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

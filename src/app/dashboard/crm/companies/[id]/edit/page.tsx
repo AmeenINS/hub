@@ -25,6 +25,7 @@ import { apiClient, getErrorMessage } from "@/core/api/client";
 import { toast } from "sonner";
 import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
 import { Company } from "@/shared/types/database";
+import { CompanyLogoUpload } from "@/features/crm/components/company-logo-upload";
 
 type CompanyFormData = {
   name: string;
@@ -59,6 +60,7 @@ export default function EditCompanyPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>("");
   const { canWrite, isLoading: permLoading } = usePermissionLevel('companies');
 
   const form = useForm<CompanyFormData>({
@@ -87,6 +89,7 @@ export default function EditCompanyPage() {
         if (response.success && response.data) {
           const companyData = response.data;
           setCompany(companyData);
+          setLogoUrl(companyData.logoUrl || "");
           
           form.reset({
             name: companyData.name || "",
@@ -422,6 +425,14 @@ export default function EditCompanyPage() {
             </div>
 
             <div className="space-y-6">
+              <CompanyLogoUpload
+                companyId={companyId}
+                companyName={company?.name || 'Company'}
+                currentLogoUrl={logoUrl}
+                onLogoChange={setLogoUrl}
+                variant="card"
+              />
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">

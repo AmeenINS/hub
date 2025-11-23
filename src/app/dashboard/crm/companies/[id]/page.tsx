@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { 
   ArrowLeft,
@@ -19,7 +20,9 @@ import {
   Mail,
   Loader2,
   Briefcase,
-  User as UserIcon
+  User as UserIcon,
+  Calendar,
+  Tag
 } from "lucide-react";
 import Link from "next/link";
 import { apiClient, getErrorMessage } from "@/core/api/client";
@@ -119,11 +122,22 @@ export default function CompanyDetailsPage() {
               Back
             </Link>
           </Button>
+          <Avatar className="h-16 w-16">
+            <AvatarImage src={company.logoUrl} alt={company.name} />
+            <AvatarFallback className="text-xl bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold">
+              {company.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h1 className="text-3xl font-bold">{company.name}</h1>
-            {company.industry && (
-              <p className="text-muted-foreground">{company.industry}</p>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              {company.industry && (
+                <Badge variant="secondary">{company.industry}</Badge>
+              )}
+              {company.size && (
+                <Badge variant="outline">{company.size} employees</Badge>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -161,9 +175,18 @@ export default function CompanyDetailsPage() {
               )}
 
               <div className="grid gap-4 md:grid-cols-2">
+                {company.industry && (
+                  <div className="flex items-start space-x-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Industry</p>
+                      <p className="font-medium">{company.industry}</p>
+                    </div>
+                  </div>
+                )}
                 {company.size && (
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-start space-x-2">
+                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Company Size</p>
                       <p className="font-medium">{company.size} employees</p>
@@ -171,15 +194,38 @@ export default function CompanyDetailsPage() {
                   </div>
                 )}
                 {company.revenue && (
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-start space-x-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Annual Revenue</p>
-                      <p className="font-medium">${company.revenue.toLocaleString()}</p>
+                      <p className="font-medium">{company.revenue.toLocaleString()} OMR</p>
+                    </div>
+                  </div>
+                )}
+                {company.createdAt && (
+                  <div className="flex items-start space-x-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Created Date</p>
+                      <p className="font-medium">{new Date(company.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                   </div>
                 )}
               </div>
+
+              {company.tags && company.tags.length > 0 && (
+                <div className="flex items-start space-x-2">
+                  <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground mb-2">Tags</p>
+                    <div className="flex flex-wrap gap-2">
+                      {company.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {location && (
                 <div className="flex items-start space-x-2">
@@ -233,7 +279,7 @@ export default function CompanyDetailsPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-green-600">
-                              ${deal.value.toLocaleString()}
+                              {deal.value.toLocaleString()} OMR
                             </p>
                             <p className="text-sm text-muted-foreground">
                               {deal.probability}% probability
@@ -312,7 +358,7 @@ export default function CompanyDetailsPage() {
                   <div className="flex-1">
                     <p className="text-sm text-muted-foreground">Website</p>
                     <a 
-                      href={`https://${company.website}`} 
+                      href={company.website.includes('://') ? company.website : `https://${company.website}`}
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline break-all"
@@ -350,6 +396,23 @@ export default function CompanyDetailsPage() {
             </CardContent>
           </Card>
 
+          {/* Company Logo */}
+          {company.logoUrl && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Company Logo</CardTitle>
+              </CardHeader>
+              <CardContent className="flex justify-center">
+                <Avatar className="h-32 w-32">
+                  <AvatarImage src={company.logoUrl} alt={company.name} />
+                  <AvatarFallback className="text-4xl bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                    {company.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Stats */}
           <Card>
             <CardHeader>
@@ -367,9 +430,15 @@ export default function CompanyDetailsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Pipeline Value</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${totalDealsValue.toLocaleString()}
+                  {totalDealsValue.toLocaleString()} OMR
                 </p>
               </div>
+              {company.updatedAt && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Last Updated</p>
+                  <p className="text-sm font-medium">{new Date(company.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
