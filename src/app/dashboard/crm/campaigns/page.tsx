@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -54,7 +54,7 @@ const CAMPAIGN_STATUSES: CampaignStatus[] = [
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { hasAccess, level, canWrite } = usePermissionLevel('crm_campaigns');
 
   const [isLoading, setIsLoading] = useState(true);
@@ -75,11 +75,16 @@ export default function CampaignsPage() {
     averageROI: 0
   });
 
+  const hasFetchedRef = useRef(false);
+
   useEffect(() => {
     if (!hasAccess) {
       router.push('/dashboard/access-denied');
       return;
     }
+
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     const fetchData = async () => {
       setIsLoading(true);
@@ -99,14 +104,14 @@ export default function CampaignsPage() {
           setStats(statsRes.data);
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, t('crm.campaigns.errorLoading')));
+        toast.error(getErrorMessage(error, 'Failed to load campaigns'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [hasAccess, level, router, t]);
+  }, [hasAccess, router]);
 
   useEffect(() => {
     let filtered = [...campaigns];
@@ -162,8 +167,9 @@ export default function CampaignsPage() {
   };
 
   const formatCurrency = (value: number | undefined) => {
-    if (!value) return 'ر.ع 0';
-    return `ر.ع ${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 })}`;
+    if (!value) return locale === 'ar' ? 'ر.ع 0' : '0 OMR';
+    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
   };
 
   const formatDate = (date: string | Date | undefined) => {
@@ -202,7 +208,7 @@ export default function CampaignsPage() {
         {canWrite && (
           <Button onClick={() => router.push('/dashboard/crm/campaigns/new')}>
             <Plus className="h-4 w-4 mr-2" />
-            {t('crm.campaigns.createNew')}
+            {t('crm.campaigns.campaignsCreateNew')}
           </Button>
         )}
       </div>
@@ -215,7 +221,7 @@ export default function CampaignsPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-bold">{stats?.total ?? 0}</div>
           </CardContent>
         </Card>
 
@@ -225,7 +231,7 @@ export default function CampaignsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active}</div>
+            <div className="text-2xl font-bold">{stats?.active ?? 0}</div>
           </CardContent>
         </Card>
 
@@ -235,7 +241,7 @@ export default function CampaignsPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats?.totalBudget ?? 0)}</div>
           </CardContent>
         </Card>
 
@@ -245,7 +251,7 @@ export default function CampaignsPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalLeads}</div>
+            <div className="text-2xl font-bold">{stats?.totalLeads ?? 0}</div>
           </CardContent>
         </Card>
 
@@ -255,7 +261,7 @@ export default function CampaignsPage() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageROI.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">{(stats?.averageROI ?? 0).toFixed(1)}%</div>
           </CardContent>
         </Card>
       </div>
@@ -272,7 +278,7 @@ export default function CampaignsPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t('crm.campaigns.searchPlaceholder')}
+                  placeholder={t('crm.campaigns.campaignsSearchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -318,7 +324,7 @@ export default function CampaignsPage() {
         <CardHeader>
           <CardTitle>{t('crm.campaigns.title')}</CardTitle>
           <CardDescription>
-            {filteredCampaigns.length} {t('crm.campaigns.found')}
+            {filteredCampaigns.length} {t('crm.campaigns.campaignsFound')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -332,7 +338,7 @@ export default function CampaignsPage() {
               {canWrite && (
                 <Button onClick={() => router.push('/dashboard/crm/campaigns/new')}>
                   <Plus className="h-4 w-4 mr-2" />
-                  {t('crm.campaigns.createNew')}
+                  {t('crm.campaigns.campaignsCreateNew')}
                 </Button>
               )}
             </div>

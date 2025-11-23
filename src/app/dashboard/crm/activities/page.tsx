@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -62,12 +62,16 @@ export default function ActivitiesPage() {
   const [typeFilter, setTypeFilter] = useState<ActivityType | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
   const [dateFilter, setDateFilter] = useState<'upcoming' | 'overdue' | 'all'>('all');
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     if (!hasAccess) {
       router.push('/dashboard/access-denied');
       return;
     }
+
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     const fetchActivities = async () => {
       setIsLoading(true);
@@ -80,14 +84,14 @@ export default function ActivitiesPage() {
           setFilteredActivities(activityList);
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, t('crm.activities.errorLoading')));
+        toast.error(getErrorMessage(error, 'Failed to load activities'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchActivities();
-  }, [hasAccess, level, router, t]);
+  }, [hasAccess, router]);
 
   useEffect(() => {
     let filtered = [...activities];
@@ -195,7 +199,7 @@ export default function ActivitiesPage() {
         {canWrite && (
           <Button onClick={() => router.push('/dashboard/crm/activities/new')}>
             <Plus className="h-4 w-4 mr-2" />
-            {t('crm.activities.new')}
+            {t('crm.activities.activitiesNew')}
           </Button>
         )}
       </div>
@@ -212,7 +216,7 @@ export default function ActivitiesPage() {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t('crm.activities.searchPlaceholder')}
+                  placeholder={t('crm.activities.activitiesSearchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -270,7 +274,7 @@ export default function ActivitiesPage() {
         <CardHeader>
           <CardTitle>{t('crm.activities.title')}</CardTitle>
           <CardDescription>
-            {filteredActivities.length} {t('crm.activities.found')}
+            {filteredActivities.length} {t('crm.activities.activitiesFound')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -284,7 +288,7 @@ export default function ActivitiesPage() {
               {canWrite && (
                 <Button onClick={() => router.push('/dashboard/crm/activities/new')}>
                   <Plus className="h-4 w-4 mr-2" />
-                  {t('crm.activities.createNew')}
+                  {t('crm.activities.activitiesCreateNew')}
                 </Button>
               )}
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -55,6 +55,7 @@ export default function NewCampaignPage() {
   const router = useRouter();
   const { t } = useI18n();
   const { hasAccess, level } = usePermissionLevel('crm_campaigns');
+  const hasFetchedRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -72,6 +73,9 @@ export default function NewCampaignPage() {
       return;
     }
 
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     const fetchUsers = async () => {
       setIsLoading(true);
       try {
@@ -80,14 +84,14 @@ export default function NewCampaignPage() {
           setUsers(Array.isArray(response.data) ? response.data : []);
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, t('crm.campaigns.errorLoadingData')));
+        toast.error(getErrorMessage(error, 'Failed to load users'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUsers();
-  }, [hasAccess, level, router, t]);
+  }, [hasAccess, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

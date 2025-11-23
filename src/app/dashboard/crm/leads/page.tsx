@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { useI18n } from '@/shared/i18n/i18n-context';
@@ -25,7 +25,7 @@ interface LeadStats {
 }
 
 export default function LeadsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [stats, setStats] = useState<LeadStats | null>(null);
@@ -34,13 +34,21 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL');
   const [insuranceTypeFilter, setInsuranceTypeFilter] = useState<string>('ALL');
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_leads');
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    if (!isLoading && canView) {
+    if (!isLoading && canView && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchLeads();
       fetchStats();
     }
-  }, [statusFilter, insuranceTypeFilter, searchQuery, canView, isLoading]);
+  }, [canView, isLoading]);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) {
+      fetchLeads();
+    }
+  }, [statusFilter, insuranceTypeFilter, searchQuery]);
 
   const fetchLeads = async () => {
     try {
@@ -123,7 +131,8 @@ export default function LeadsPage() {
   };
 
   const formatCurrency = (value: number) => {
-    return `${t('crm.omr')} ${value.toLocaleString()}`;
+    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
   };
 
   if (isLoading || loading) {

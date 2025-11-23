@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -56,6 +56,7 @@ export default function EditCampaignPage({ params }: { params: Promise<{ id: str
   const router = useRouter();
   const { t } = useI18n();
   const { hasAccess, level } = usePermissionLevel('crm_campaigns');
+  const hasFetchedRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -115,8 +116,11 @@ export default function EditCampaignPage({ params }: { params: Promise<{ id: str
       }
     };
 
-    fetchData();
-  }, [hasAccess, level, router, resolvedParams.id, t]);
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      fetchData();
+    }
+  }, [hasAccess, router, resolvedParams.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

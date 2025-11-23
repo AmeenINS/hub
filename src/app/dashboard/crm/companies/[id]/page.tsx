@@ -28,12 +28,14 @@ import Link from "next/link";
 import { apiClient, getErrorMessage } from "@/core/api/client";
 import { toast } from "sonner";
 import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
+import { useI18n } from "@/shared/i18n/i18n-context";
 import { Company, Deal, Contact } from "@/shared/types/database";
 
 export default function CompanyDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const companyId = params?.id as string;
+  const { locale } = useI18n();
   
   const [company, setCompany] = useState<Company | null>(null);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -198,7 +200,7 @@ export default function CompanyDetailsPage() {
                     <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-sm text-muted-foreground">Annual Revenue</p>
-                      <p className="font-medium">{company.revenue.toLocaleString()} OMR</p>
+                      <p className="font-medium">{locale === 'ar' ? `${company.revenue.toLocaleString()} ر.ع` : `${company.revenue.toLocaleString()} OMR`}</p>
                     </div>
                   </div>
                 )}
@@ -279,7 +281,7 @@ export default function CompanyDetailsPage() {
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-green-600">
-                              {deal.value.toLocaleString()} OMR
+                              {locale === 'ar' ? `${deal.value.toLocaleString()} ر.ع` : `${deal.value.toLocaleString()} OMR`}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               {deal.probability}% probability
@@ -430,7 +432,7 @@ export default function CompanyDetailsPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Pipeline Value</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {totalDealsValue.toLocaleString()} OMR
+                  {locale === 'ar' ? `${totalDealsValue.toLocaleString()} ر.ع` : `${totalDealsValue.toLocaleString()} OMR`}
                 </p>
               </div>
               {company.updatedAt && (

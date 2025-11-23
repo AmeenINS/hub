@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { useI18n } from '@/shared/i18n/i18n-context';
@@ -28,7 +28,7 @@ interface DealStats {
 }
 
 export default function DealsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<DealStats | null>(null);
@@ -37,6 +37,7 @@ export default function DealsPage() {
   const [stageFilter, setStageFilter] = useState<DealStage | 'ALL'>('ALL');
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_deals');
+  const hasFetchedRef = useRef(false);
 
   const stages: { name: DealStage; label: string; color: string }[] = [
     { name: DealStage.PROSPECTING, label: t('crm.stageProspecting'), color: 'bg-slate-500' },
@@ -47,11 +48,18 @@ export default function DealsPage() {
   ];
 
   useEffect(() => {
-    if (!isLoading && canView) {
+    if (!isLoading && canView && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchDeals();
       fetchStats();
     }
-  }, [stageFilter, searchQuery, canView, isLoading]);
+  }, [canView, isLoading]);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) {
+      fetchDeals();
+    }
+  }, [stageFilter, searchQuery]);
 
   const fetchDeals = async () => {
     try {
@@ -115,7 +123,8 @@ export default function DealsPage() {
   };
 
   const formatCurrency = (value: number) => {
-    return `${t('crm.omr')} ${value.toLocaleString()}`;
+    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
   };
 
   if (isLoading || loading) {

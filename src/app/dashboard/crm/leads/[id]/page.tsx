@@ -16,7 +16,7 @@ import type { Lead, Activity } from '@/shared/types/database';
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const [lead, setLead] = useState<Lead | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -109,7 +109,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   const formatCurrency = (value: number) => {
-    return `${t('crm.omr')} ${value.toLocaleString()}`;
+    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
   };
 
   if (isLoading || loading) {

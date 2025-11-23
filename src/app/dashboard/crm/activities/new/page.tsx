@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -50,6 +50,7 @@ export default function NewActivityPage() {
   const router = useRouter();
   const { t } = useI18n();
   const { hasAccess, level } = usePermissionLevel('crm_activities');
+  const hasFetchedRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -69,6 +70,9 @@ export default function NewActivityPage() {
       router.push('/dashboard/access-denied');
       return;
     }
+
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     const fetchData = async () => {
       setIsLoading(true);
@@ -93,14 +97,14 @@ export default function NewActivityPage() {
           setContacts(Array.isArray(contactsRes.data) ? contactsRes.data : []);
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, t('crm.activities.errorLoadingData')));
+        toast.error(getErrorMessage(error, 'Failed to load data'));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [hasAccess, level, router, t]);
+  }, [hasAccess, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +132,9 @@ export default function NewActivityPage() {
   };
 
   const handleInputChange = (field: keyof ActivityFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    // Convert 'none' to undefined for optional fields
+    const finalValue = value === 'none' ? undefined : value;
+    setFormData(prev => ({ ...prev, [field]: finalValue }));
   };
 
   if (!hasAccess) {
@@ -284,7 +290,7 @@ export default function NewActivityPage() {
                     <SelectValue placeholder={t('crm.selectLead')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {leads.map(lead => (
                       <SelectItem key={lead.id} value={lead.id}>
                         {lead.title || t('crm.unnamed')}
@@ -304,7 +310,7 @@ export default function NewActivityPage() {
                     <SelectValue placeholder={t('crm.selectDeal')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {deals.map(deal => (
                       <SelectItem key={deal.id} value={deal.id}>
                         {deal.name || t('crm.unnamed')}
@@ -324,7 +330,7 @@ export default function NewActivityPage() {
                     <SelectValue placeholder={t('crm.selectContact')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {contacts.map(contact => (
                       <SelectItem key={contact.id} value={contact.id}>
                         {contact.fullNameEn || contact.fullNameAr || t('crm.unnamed')}

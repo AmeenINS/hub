@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -68,8 +68,9 @@ const PAYMENT_FREQUENCIES = [
 
 export default function NewDealPage() {
   const router = useRouter();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const { hasAccess, level } = usePermissionLevel('crm_deals');
+  const hasFetchedRef = useRef(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -92,6 +93,9 @@ export default function NewDealPage() {
       router.push('/dashboard/access-denied');
       return;
     }
+
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     const fetchData = async () => {
       setIsLoading(true);
@@ -127,19 +131,18 @@ export default function NewDealPage() {
     };
 
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasAccess]);
+  }, [hasAccess, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title.trim()) {
-      toast.error(t('crm.deals.titleRequired'));
+      toast.error(t('crm.dealTitleRequired'));
       return;
     }
 
     if (formData.value <= 0) {
-      toast.error(t('crm.deals.valueRequired'));
+      toast.error(t('crm.dealValueRequired'));
       return;
     }
 
@@ -148,13 +151,13 @@ export default function NewDealPage() {
       const response = await apiClient.post('/api/crm/deals', formData);
       
       if (response.success) {
-        toast.success(t('crm.deals.createSuccess'));
+        toast.success(t('crm.dealCreateSuccess'));
         router.push('/dashboard/crm/deals');
       } else {
-        toast.error(response.message || t('crm.deals.createError'));
+        toast.error(response.message || t('crm.dealCreateError'));
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, t('crm.deals.createError')));
+      toast.error(getErrorMessage(error, t('crm.dealCreateError')));
     } finally {
       setIsSaving(false);
     }
@@ -203,8 +206,8 @@ export default function NewDealPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{t('crm.deals.createNew')}</h1>
-            <p className="text-muted-foreground">{t('crm.deals.createNewDescription')}</p>
+            <h1 className="text-3xl font-bold">{t('crm.dealsCreateNew')}</h1>
+            <p className="text-muted-foreground">{t('crm.dealsCreateNewDescription')}</p>
           </div>
         </div>
       </div>
@@ -213,18 +216,18 @@ export default function NewDealPage() {
         {/* Basic Information */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('crm.deals.basicInfo')}</CardTitle>
-            <CardDescription>{t('crm.deals.basicInfoDescription')}</CardDescription>
+            <CardTitle>{t('crm.dealsBasicInfo')}</CardTitle>
+            <CardDescription>{t('crm.dealsBasicInfoDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="title">{t('crm.deals.title')} *</Label>
+                <Label htmlFor="title">{t('crm.dealTitle')} *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
-                  placeholder={t('crm.deals.titlePlaceholder')}
+                  placeholder={t('crm.dealTitlePlaceholder')}
                   required
                 />
               </div>
@@ -249,7 +252,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="stage">{t('crm.deals.stage')}</Label>
+                <Label htmlFor="stage">{t('crm.dealStage')}</Label>
                 <Select
                   value={formData.stage}
                   onValueChange={(value) => handleInputChange('stage', value as DealStage)}
@@ -260,7 +263,7 @@ export default function NewDealPage() {
                   <SelectContent>
                     {DEAL_STAGES.map(stage => (
                       <SelectItem key={stage} value={stage}>
-                        {t(`crm.deals.stage${stage.charAt(0) + stage.slice(1).toLowerCase()}`)}
+                        {t(`crm.stage${stage.charAt(0) + stage.slice(1).toLowerCase().replace(/_/g, '')}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -268,7 +271,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="value">{t('crm.deals.value')} (OMR) *</Label>
+                <Label htmlFor="value">{t('crm.dealValue')} (OMR) *</Label>
                 <Input
                   id="value"
                   type="number"
@@ -281,7 +284,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="probability">{t('crm.deals.probability')} (%)</Label>
+                <Label htmlFor="probability">{t('crm.dealProbability')} (%)</Label>
                 <Input
                   id="probability"
                   type="number"
@@ -293,7 +296,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expectedCloseDate">{t('crm.deals.expectedCloseDate')}</Label>
+                <Label htmlFor="expectedCloseDate">{t('crm.dealExpectedCloseDate')}</Label>
                 <Input
                   id="expectedCloseDate"
                   type="date"
@@ -304,13 +307,13 @@ export default function NewDealPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t('crm.deals.description')}</Label>
+              <Label htmlFor="description">{t('crm.dealDescription')}</Label>
               <Textarea
                 id="description"
                 rows={3}
                 value={formData.description || ''}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder={t('crm.deals.descriptionPlaceholder')}
+                placeholder={t('crm.dealDescriptionPlaceholder')}
               />
             </div>
           </CardContent>
@@ -319,23 +322,23 @@ export default function NewDealPage() {
         {/* Policy Details */}
         <Card>
           <CardHeader>
-            <CardTitle>{t('crm.deals.policyDetails')}</CardTitle>
-            <CardDescription>{t('crm.deals.policyDetailsDescription')}</CardDescription>
+            <CardTitle>{t('crm.dealPolicyDetails')}</CardTitle>
+            <CardDescription>{t('crm.dealPolicyDetailsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="policyNumber">{t('crm.deals.policyNumber')}</Label>
+                <Label htmlFor="policyNumber">{t('crm.dealPolicyNumber')}</Label>
                 <Input
                   id="policyNumber"
                   value={formData.policyNumber || ''}
                   onChange={(e) => handleInputChange('policyNumber', e.target.value)}
-                  placeholder={t('crm.deals.policyNumberPlaceholder')}
+                  placeholder={t('crm.dealPolicyNumberPlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="premium">{t('crm.deals.premium')} (OMR)</Label>
+                <Label htmlFor="premium">{t('crm.premium')} (OMR)</Label>
                 <Input
                   id="premium"
                   type="number"
@@ -347,7 +350,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="paymentFrequency">{t('crm.deals.paymentFrequency')}</Label>
+                <Label htmlFor="paymentFrequency">{t('crm.premiumFrequency')}</Label>
                 <Select
                   value={formData.paymentFrequency}
                   onValueChange={(value) => handleInputChange('paymentFrequency', value)}
@@ -358,7 +361,7 @@ export default function NewDealPage() {
                   <SelectContent>
                     {PAYMENT_FREQUENCIES.map(freq => (
                       <SelectItem key={freq} value={freq}>
-                        {t(`crm.deals.frequency${freq.charAt(0) + freq.slice(1).toLowerCase().replace(/_/g, '')}`)}
+                        {t(`crm.frequency${freq.charAt(0) + freq.slice(1).toLowerCase().replace(/_/g, '')}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -366,7 +369,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="coverageAmount">{t('crm.deals.coverage')} (OMR)</Label>
+                <Label htmlFor="coverageAmount">{t('crm.coverageAmount')} (OMR)</Label>
                 <Input
                   id="coverageAmount"
                   type="number"
@@ -378,7 +381,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="policyStartDate">{t('crm.deals.policyStartDate')}</Label>
+                <Label htmlFor="policyStartDate">{t('crm.policyStartDate')}</Label>
                 <Input
                   id="policyStartDate"
                   type="date"
@@ -388,7 +391,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="policyEndDate">{t('crm.deals.policyEndDate')}</Label>
+                <Label htmlFor="policyEndDate">{t('crm.policyEndDate')}</Label>
                 <Input
                   id="policyEndDate"
                   type="date"
@@ -398,7 +401,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="deductible">{t('crm.deals.deductible')} (OMR)</Label>
+                <Label htmlFor="deductible">{t('crm.deductible')} (OMR)</Label>
                 <Input
                   id="deductible"
                   type="number"
@@ -410,7 +413,7 @@ export default function NewDealPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="commissionRate">{t('crm.deals.commission')} (%)</Label>
+                <Label htmlFor="commissionRate">{t('crm.commission')} (%)</Label>
                 <Input
                   id="commissionRate"
                   type="number"
@@ -424,7 +427,7 @@ export default function NewDealPage() {
 
               {formData.commissionAmount !== undefined && formData.commissionAmount > 0 && (
                 <div className="space-y-2">
-                  <Label>{t('crm.deals.commissionAmount')} (OMR)</Label>
+                  <Label>{t('crm.commission')} (OMR)</Label>
                   <Input
                     value={formData.commissionAmount.toFixed(3)}
                     disabled
@@ -435,13 +438,13 @@ export default function NewDealPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="policyDetails">{t('crm.deals.additionalPolicyDetails')}</Label>
+              <Label htmlFor="policyDetails">{t('crm.dealAdditionalPolicyDetails')}</Label>
               <Textarea
                 id="policyDetails"
                 rows={3}
                 value={formData.policyDetails || ''}
                 onChange={(e) => handleInputChange('policyDetails', e.target.value)}
-                placeholder={t('crm.deals.additionalPolicyDetailsPlaceholder')}
+                placeholder={t('crm.dealAdditionalPolicyDetailsPlaceholder')}
               />
             </div>
           </CardContent>
@@ -548,12 +551,12 @@ export default function NewDealPage() {
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t('crm.deals.creating')}
+                {t('crm.dealCreating')}
               </>
             ) : (
               <>
                 <Save className="h-4 w-4 mr-2" />
-                {t('crm.deals.create')}
+                {t('crm.dealCreate')}
               </>
             )}
           </Button>

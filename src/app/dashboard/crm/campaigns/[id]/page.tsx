@@ -31,7 +31,7 @@ import { Campaign, CampaignType, CampaignStatus, Lead, Deal } from '@/shared/typ
 export default function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { hasAccess, level, canWrite, canFull } = usePermissionLevel('crm_campaigns');
 
   const [isLoading, setIsLoading] = useState(true);
@@ -130,8 +130,9 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
   };
 
   const formatCurrency = (value: number | undefined) => {
-    if (!value) return 'ر.ع 0';
-    return `ر.ع ${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 })}`;
+    if (!value) return locale === 'ar' ? '0 ر.ع' : 'OMR 0';
+    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
   };
 
   const formatDate = (date: string | Date | undefined) => {

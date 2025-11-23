@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { useI18n } from '@/shared/i18n/i18n-context';
@@ -22,6 +22,7 @@ export default function NewLeadPage() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const { canWrite, isLoading } = usePermissionLevel('crm_leads');
+  const hasFetchedRef = useRef(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -41,7 +42,8 @@ export default function NewLeadPage() {
   });
 
   useEffect(() => {
-    if (!isLoading && canWrite) {
+    if (!isLoading && canWrite && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       fetchContacts();
       fetchCompanies();
       fetchUsers();

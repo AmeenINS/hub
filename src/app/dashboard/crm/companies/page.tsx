@@ -18,7 +18,10 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  Loader2
+  Loader2,
+  Phone,
+  Mail,
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -30,15 +33,10 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
+import { useI18n } from "@/shared/i18n/i18n-context";
 import { apiClient, getErrorMessage } from "@/core/api/client";
 import { Company } from "@/shared/types/database";
 import { toast } from "sonner";
-
-// Format currency in OMR
-const formatOMR = (amount: number | undefined | null): string => {
-  if (!amount) return '0.000 OMR';
-  return `${amount.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} OMR`;
-};
 
 const getStatusBadgeVariant = (status: string) => {
   switch (status) {
@@ -57,10 +55,18 @@ const getStatusBadgeVariant = (status: string) => {
 
 export default function CompaniesPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('companies');
+
+  // Format currency in OMR
+  const formatOMR = (amount: number | undefined | null): string => {
+    if (!amount) return locale === 'ar' ? '0.000 ر.ع' : 'OMR 0.000';
+    const formatted = amount.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
+  };
 
   // Fetch companies from database
   const fetchCompanies = async () => {
@@ -152,7 +158,7 @@ export default function CompaniesPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search companies..."
+                placeholder={t('crm.companiesSearchPlaceholder')}
                 className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,12 +176,12 @@ export default function CompaniesPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {companies.length === 0 ? (
           <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">No companies found</p>
+            <p className="text-muted-foreground">{t('crm.noCompaniesFound')}</p>
             {canCreate && (
               <Button asChild className="mt-4">
                 <Link href="/dashboard/crm/companies/new">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Company
+                  {t('crm.addYourFirstCompany')}
                 </Link>
               </Button>
             )}
@@ -300,7 +306,7 @@ export default function CompaniesPage() {
                   <div className="space-y-2 text-sm border-t pt-3">
                     {company.phone && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">📞</span>
+                        <Phone className="h-4 w-4 text-muted-foreground" />
                         <a href={`tel:${company.phone}`} className="text-blue-600 hover:underline">
                           {company.phone}
                         </a>
@@ -308,7 +314,7 @@ export default function CompaniesPage() {
                     )}
                     {company.email && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">📧</span>
+                        <Mail className="h-4 w-4 text-muted-foreground" />
                         <a href={`mailto:${company.email}`} className="text-blue-600 hover:underline">
                           {company.email}
                         </a>
@@ -316,7 +322,7 @@ export default function CompaniesPage() {
                     )}
                     {company.website && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">🌐</span>
+                        <Globe className="h-4 w-4 text-muted-foreground" />
                         <a 
                           href={company.website.includes('://') ? company.website : `https://${company.website}`} 
                           target="_blank" 
