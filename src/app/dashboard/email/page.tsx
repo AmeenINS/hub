@@ -39,6 +39,8 @@ export default function EmailPage() {
   useEffect(() => {
     if (selectedAccount) {
       loadFolders(selectedAccount.id);
+      // Don't auto-sync on load - let user click sync button manually
+      // This prevents hanging on timeout errors
     }
   }, [selectedAccount]);
 
@@ -68,30 +70,89 @@ export default function EmailPage() {
 
   const loadFolders = async (accountId: string) => {
     try {
+      console.log('[EMAIL PAGE] Loading folders for account:', accountId);
       const response = await apiClient.get<EmailFolder[]>(`/api/email/folders?accountId=${accountId}`);
+      console.log('[EMAIL PAGE] Folders response:', response);
       if (response.success && response.data) {
+        console.log('[EMAIL PAGE] Loaded', response.data.length, 'folders');
         setFolders(response.data);
         const inbox = response.data.find(f => f.type === EmailFolderType.INBOX);
         if (inbox) {
+          console.log('[EMAIL PAGE] Setting inbox folder:', inbox.id);
           setSelectedFolder(inbox);
+        } else {
+          console.log('[EMAIL PAGE] No inbox folder found!');
         }
       }
     } catch (error) {
+      console.error('[EMAIL PAGE] Error loading folders:', error);
       toast.error(getErrorMessage(error, 'Failed to load folders'));
     }
   };
 
   const loadEmails = async (folderId: string) => {
     try {
+      console.log('[EMAIL PAGE] Loading emails for folder:', folderId);
       setIsLoading(true);
       const response = await apiClient.get<Email[]>(`/api/email?folderId=${folderId}`);
+      console.log('[EMAIL PAGE] Response received:', response);
       if (response.success && response.data) {
+        console.log('[EMAIL PAGE] Loaded', response.data.length, 'emails');
         setEmails(response.data);
+      } else {
+        console.log('[EMAIL PAGE] No emails or unsuccessful response');
+        setEmails([]);
       }
     } catch (error) {
+      console.error('[EMAIL PAGE] Error loading emails:', error);
       toast.error(getErrorMessage(error, 'Failed to load emails'));
+      setEmails([]); // Set empty array on error
     } finally {
+      console.log('[EMAIL PAGE] Finished loading emails');
       setIsLoading(false);
+    }
+  };
+
+  const syncEmails = async () => {
+    if (!selectedAccount) return;
+
+    const syncToastId = toast.loading('Syncing emails from server...');
+    
+    try {
+      console.log('[EMAIL PAGE] Starting sync for account:', selectedAccount.id);
+      
+      const response = await apiClient.post('/api/email/sync', {
+        accountId: selectedAccount.id
+      });
+
+      console.log('[EMAIL PAGE] Sync response:', response);
+
+      if (response.success) {
+        toast.success(response.message || 'Emails synced successfully', { id: syncToastId });
+        
+        // Reload current folder
+        if (selectedFolder) {
+          await loadEmails(selectedFolder.id);
+          await loadFolders(selectedAccount.id);
+        }
+      }
+    } catch (error) {
+      console.error('[EMAIL PAGE] Sync error:', error);
+      const errorMsg = getErrorMessage(error, 'Failed to sync emails');
+      
+      if (errorMsg.includes('Timed out') || errorMsg.includes('timeout')) {
+        toast.error('Connection timeout. Please check: 1) Email credentials are correct, 2) IMAP is enabled, 3) Using App Password if required', {
+          id: syncToastId,
+          duration: 8000,
+        });
+      } else if (errorMsg.includes('AUTHENTICATIONFAILED') || errorMsg.includes('Invalid credentials')) {
+        toast.error('Authentication failed. Please verify your email and password (use App Password for Gmail/Zoho)', {
+          id: syncToastId,
+          duration: 8000,
+        });
+      } else {
+        toast.error(errorMsg, { id: syncToastId, duration: 5000 });
+      }
     }
   };
 
@@ -171,9 +232,9 @@ export default function EmailPage() {
           <p className="text-muted-foreground">{selectedAccount?.email}</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => selectedFolder && loadEmails(selectedFolder.id)}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+          <Button variant="outline" size="sm" onClick={syncEmails} disabled={isLoading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Sync from Server
           </Button>
           <Button size="sm" onClick={() => { setReplyTo(undefined); setComposeOpen(true); }}>
             <Plus className="h-4 w-4 mr-2" />

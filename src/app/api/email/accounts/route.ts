@@ -80,12 +80,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('[CREATE ACCOUNT] Email:', body.email);
+    console.log('[CREATE ACCOUNT] IMAP password received?', !!body.imapPassword);
+    console.log('[CREATE ACCOUNT] IMAP password length:', body.imapPassword?.length || 0);
+    
     const account = await accountService.createAccount({
       ...body,
       userId: payload.userId,
       isDefault,
       syncEnabled: body.syncEnabled !== false,
     });
+    
+    console.log('[CREATE ACCOUNT] Account created with ID:', account.id);
 
     // Remove sensitive info
     const sanitizedAccount = {

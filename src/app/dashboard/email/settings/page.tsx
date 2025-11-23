@@ -94,16 +94,56 @@ export default function EmailSettingsPage() {
     }
 
     try {
-      const response = await apiClient.post<EmailAccount>('/api/email/accounts', formData);
-      if (response.success) {
-        toast.success('Email account added successfully');
-        loadAccounts();
-        setShowForm(false);
-        resetForm();
+      if (editingAccount) {
+        // Update existing account
+        const response = await apiClient.put<EmailAccount>(`/api/email/accounts/${editingAccount.id}`, formData);
+        if (response.success) {
+          toast.success('Email account updated successfully');
+          loadAccounts();
+          setShowForm(false);
+          resetForm();
+        }
+      } else {
+        // Create new account
+        const response = await apiClient.post<EmailAccount>('/api/email/accounts', formData);
+        if (response.success) {
+          toast.success('Email account added successfully');
+          loadAccounts();
+          setShowForm(false);
+          resetForm();
+        }
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to add email account'));
+      toast.error(getErrorMessage(error, editingAccount ? 'Failed to update email account' : 'Failed to add email account'));
     }
+  };
+
+  const handleEdit = (account: EmailAccount) => {
+    setEditingAccount(account);
+    setFormData({
+      email: account.email,
+      displayName: account.displayName || '',
+      imapHost: account.imapHost,
+      imapPort: account.imapPort,
+      imapUsername: account.imapUsername,
+      imapPassword: '', // Don't show existing password
+      imapUseSsl: account.imapUseSsl,
+      smtpHost: account.smtpHost,
+      smtpPort: account.smtpPort,
+      smtpUsername: account.smtpUsername,
+      smtpPassword: '', // Don't show existing password
+      smtpUseSsl: account.smtpUseSsl,
+      signature: account.signature || '',
+      isDefault: account.isDefault
+    });
+    
+    // Detect provider
+    if (account.imapHost.includes('zoho')) setSelectedProvider('zoho');
+    else if (account.imapHost.includes('gmail')) setSelectedProvider('gmail');
+    else if (account.imapHost.includes('outlook') || account.imapHost.includes('office365')) setSelectedProvider('outlook');
+    else setSelectedProvider('custom');
+    
+    setShowForm(true);
   };
 
   const handleDelete = async (accountId: string) => {
@@ -246,14 +286,23 @@ export default function EmailSettingsPage() {
                         </div>
                       </div>
                       {canManageAccounts && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(account.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(account)}
+                          >
+                            <SettingsIcon className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(account.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -268,8 +317,10 @@ export default function EmailSettingsPage() {
       {showForm && canManageAccounts && (
         <Card>
           <CardHeader>
-            <CardTitle>Add Email Account</CardTitle>
-            <CardDescription>Enter your email account details and IMAP/SMTP configuration</CardDescription>
+            <CardTitle>{editingAccount ? 'Edit Email Account' : 'Add Email Account'}</CardTitle>
+            <CardDescription>
+              {editingAccount ? 'Update your email account settings' : 'Enter your email account details and IMAP/SMTP configuration'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -295,6 +346,44 @@ export default function EmailSettingsPage() {
                 </div>
               </div>
 
+              {/* Important Setup Instructions */}
+              <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-4 space-y-2">
+                <h4 className="font-semibold text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
+                  ⚠️ Important Setup Requirements
+                </h4>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  {selectedProvider === 'gmail' && (
+                    <>
+                      <li>• <strong>Gmail requires an App Password</strong> (not your regular password)</li>
+                      <li>• Enable 2-Factor Authentication in your Google Account</li>
+                      <li>• Generate App Password: Google Account → Security → App Passwords</li>
+                      <li>• IMAP must be enabled: Gmail Settings → Forwarding and POP/IMAP</li>
+                    </>
+                  )}
+                  {selectedProvider === 'zoho' && (
+                    <>
+                      <li>• <strong>Zoho Mail requires an App Password</strong> for third-party apps</li>
+                      <li>• Generate App Password: Zoho Mail → Settings → Security → App Passwords</li>
+                      <li>• Or enable "Allow less secure apps" (not recommended)</li>
+                    </>
+                  )}
+                  {selectedProvider === 'outlook' && (
+                    <>
+                      <li>• <strong>Outlook/Office 365 may require an App Password</strong></li>
+                      <li>• Enable IMAP: Outlook Settings → Mail → Sync email → IMAP</li>
+                      <li>• If using 2FA, generate app password from Microsoft Account Security</li>
+                    </>
+                  )}
+                  {selectedProvider === 'custom' && (
+                    <>
+                      <li>• Ensure IMAP/SMTP access is enabled in your email provider</li>
+                      <li>• Some providers require app-specific passwords for third-party apps</li>
+                      <li>• Check firewall settings if connection times out</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+
               {/* Basic Info */}
               <div className="space-y-4">
                 <h3 className="font-semibold">Account Information</h3>
@@ -305,9 +394,20 @@ export default function EmailSettingsPage() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => {
+                        const email = e.target.value;
+                        setFormData({ 
+                          ...formData, 
+                          email,
+                          imapUsername: email,
+                          smtpUsername: email
+                        });
+                      }}
                       required
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Will be used as username for IMAP/SMTP
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="displayName">Display Name</Label>
@@ -344,24 +444,28 @@ export default function EmailSettingsPage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imapUsername">IMAP Username *</Label>
-                    <Input
-                      id="imapUsername"
-                      value={formData.imapUsername}
-                      onChange={(e) => setFormData({ ...formData, imapUsername: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="imapPassword">IMAP Password *</Label>
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="imapPassword">Password {!editingAccount && '*'}</Label>
                     <Input
                       id="imapPassword"
                       type="password"
                       value={formData.imapPassword}
-                      onChange={(e) => setFormData({ ...formData, imapPassword: e.target.value })}
-                      required
+                      onChange={(e) => {
+                        const pass = e.target.value;
+                        setFormData({ 
+                          ...formData, 
+                          imapPassword: pass,
+                          smtpPassword: pass
+                        });
+                      }}
+                      required={!editingAccount}
+                      placeholder={editingAccount ? 'Leave empty to keep current password' : ''}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      {editingAccount 
+                        ? 'Leave empty to keep the current password'
+                        : 'For Gmail: Use App Password (Google Account → Security → 2-Step Verification → App Passwords)'}
+                    </p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -398,25 +502,7 @@ export default function EmailSettingsPage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpUsername">SMTP Username *</Label>
-                    <Input
-                      id="smtpUsername"
-                      value={formData.smtpUsername}
-                      onChange={(e) => setFormData({ ...formData, smtpUsername: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="smtpPassword">SMTP Password *</Label>
-                    <Input
-                      id="smtpPassword"
-                      type="password"
-                      value={formData.smtpPassword}
-                      onChange={(e) => setFormData({ ...formData, smtpPassword: e.target.value })}
-                      required
-                    />
-                  </div>
+
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="smtpUseSsl"
@@ -454,7 +540,30 @@ export default function EmailSettingsPage() {
               <div className="flex items-center space-x-2">
                 <Button type="submit">
                   <Save className="h-4 w-4 mr-2" />
-                  Save Account
+                  {editingAccount ? 'Update Account' : 'Save Account'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={async () => {
+                    try {
+                      setIsLoading(true);
+                      toast.info('Testing IMAP connection...');
+                      
+                      const response = await apiClient.post('/api/email/test-connection', formData);
+                      
+                      if (response.success) {
+                        toast.success(response.message || 'Connection successful!');
+                      }
+                    } catch (error) {
+                      toast.error(getErrorMessage(error, 'Connection test failed'));
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Test Connection
                 </Button>
                 <Button type="button" variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
                   Cancel

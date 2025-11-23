@@ -9,6 +9,7 @@ import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
 import { EmailPriority, EmailFolderType } from '@/shared/types/database';
+import { SmtpEmailService } from '@/core/email/smtp-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,9 +46,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Sent folder not found' }, { status: 400 });
     }
 
-    // TODO: Implement actual SMTP email sending here
-    // For now, we'll just save to sent folder
+    console.log('[EMAIL SEND] Sending email from:', account.email);
+    console.log('[EMAIL SEND] SMTP Config:', {
+      host: account.smtpHost,
+      port: account.smtpPort,
+      username: account.smtpUsername,
+      ssl: account.smtpUseSsl,
+      hasPassword: !!account.smtpPassword,
+      passwordLength: account.smtpPassword?.length || 0
+    });
+
+    // Send email via SMTP
+    const smtpService = new SmtpEmailService();
+    const sendResult = await smtpService.sendEmailWithSignature(account, {
+      from: account.email,
+      to: Array.isArray(to) ? to : [to],
+      cc,
+      bcc,
+      subject,
+      text: emailBody,
+      html: bodyHtml,
+      inReplyTo
+    });
+
+    if (!sendResult.success) {
+      console.error('[EMAIL SEND] Failed:', sendResult.error);
+      return NextResponse.json(
+        { success: false, error: sendResult.error || 'Failed to send email' },
+        { status: 500 }
+      );
+    }
     
+    console.log('[EMAIL SEND] Email sent successfully, messageId:', sendResult.messageId);
+    
+    // Save to sent folder
     const emailService = new EmailService();
     const email = await emailService.createEmail({
       accountId,
@@ -68,13 +100,14 @@ export async function POST(request: NextRequest) {
       hasAttachments: false,
       sentAt: new Date().toISOString(),
       receivedAt: new Date().toISOString(),
-      inReplyTo
+      inReplyTo,
+      messageId: sendResult.messageId
     });
 
     return NextResponse.json({
       success: true,
       data: email,
-      message: 'Email sent successfully'
+      message: 'Email sent successfully via SMTP'
     }, { status: 201 });
   } catch (error) {
     logError('POST /api/email/send', error);
