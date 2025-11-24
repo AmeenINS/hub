@@ -77,17 +77,17 @@ export default function NewLeadPage() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [subordinates, setSubordinates] = useState<any[]>([]);
-  const [filteredSubordinates, setFilteredSubordinates] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loadingSubordinates, setLoadingSubordinates] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [contactSearchTerm, setContactSearchTerm] = useState('');
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [filteredContacts, setFilteredContacts] = useState<any[]>([]);
   const [filteredCompanies, setFilteredCompanies] = useState<any[]>([]);
   const [contactPage, setContactPage] = useState(1);
   const [companyPage, setCompanyPage] = useState(1);
-  const [subordinatesPage, setSubordinatesPage] = useState(1);
+  const [usersPage, setUsersPage] = useState(1);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const ITEMS_PER_PAGE = 10;
   const { canWrite, isLoading } = usePermissionLevel('crm_leads');
@@ -116,64 +116,91 @@ export default function NewLeadPage() {
     console.log('formData.assignedTo changed to:', formData.assignedTo);
   }, [formData.assignedTo]);
 
+  // Fetch current user immediately on mount
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  // Fetch other data when permissions are ready
   useEffect(() => {
     if (!isLoading && canWrite && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
-      fetchInitialData();
+      fetchContacts();
+      fetchCompanies();
     }
   }, [canWrite, isLoading]);
-
-  const fetchInitialData = async () => {
-    await Promise.all([
-      fetchContacts(),
-      fetchCompanies(),
-      fetchCurrentUser(),
-    ]);
-  };
 
   const fetchCurrentUser = async () => {
     try {
       const response = await apiClient.get('/api/users/me');
+      
       if (response.success && response.data) {
         setCurrentUser(response.data);
         setFormData(prev => ({ ...prev, assignedTo: response.data.id }));
-        fetchSubordinates();
+        fetchUsers(response.data.id);
       }
     } catch (error) {
       console.error('Failed to fetch current user:', error);
+      toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
     }
   };
 
-  const fetchSubordinates = async () => {
+  const fetchUsers = async (currentUserId: string) => {
     try {
-      setLoadingSubordinates(true);
-      const response = await apiClient.get('/api/users/me/subordinates');
+      setLoadingUsers(true);
+      
+      // Fetch all users (same as OrgChart page)
+      const response = await apiClient.get<{ success: boolean; data: any[] }>('/api/users');
+
       if (response.success && response.data) {
-        const subs = Array.isArray(response.data) ? response.data : [];
-        setSubordinates(subs);
-        setFilteredSubordinates(subs);
+        const allUsers = Array.isArray(response.data) ? response.data : [];
+        
+        // Find current user to check if they're top-level (no manager)
+        const currentUserData = allUsers.find((u: any) => u.id === currentUserId);
+        
+        // If user has no manager (Admin/CEO), show all users except self
+        if (!currentUserData?.managerId) {
+          const otherUsers = allUsers.filter((u: any) => u.id !== currentUserId);
+          setUsers(otherUsers);
+          setFilteredUsers(otherUsers);
+          return;
+        }
+        
+        // Otherwise, get subordinates recursively
+        const getSubordinates = (managerId: string, users: any[]): any[] => {
+          const direct = users.filter((u: any) => u.managerId === managerId);
+          const indirect = direct.flatMap((u: any) => getSubordinates(u.id, users));
+          return [...direct, ...indirect];
+        };
+        
+        const subordinates = getSubordinates(currentUserId, allUsers);
+        setUsers(subordinates);
+        setFilteredUsers(subordinates);
       }
     } catch (error) {
-      console.error('Failed to fetch subordinates:', error);
+      console.error('Failed to fetch users:', error);
+      toast.error(getErrorMessage(error, t('messages.errorFetchingData')));
     } finally {
-      setLoadingSubordinates(false);
+      setLoadingUsers(false);
     }
   };
 
-  // Filter subordinates based on search term
+  // Filter users based on search term
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      setFilteredSubordinates(subordinates);
+      setFilteredUsers(users);
     } else {
-      const filtered = subordinates.filter(
+      const filtered = users.filter(
         (user) =>
           user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.fullNameEn?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.fullNameAr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.role?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredSubordinates(filtered);
+      setFilteredUsers(filtered);
     }
-  }, [searchTerm, subordinates]);
+  }, [searchTerm, users]);
 
   const fetchContacts = async () => {
     try {
@@ -242,7 +269,7 @@ export default function NewLeadPage() {
   }, [companySearchTerm]);
 
   useEffect(() => {
-    setSubordinatesPage(1);
+    setUsersPage(1);
   }, [searchTerm]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -320,7 +347,7 @@ export default function NewLeadPage() {
 
   const getAvailableUsers = () => {
     if (!currentUser) return [];
-    return [currentUser, ...subordinates];
+    return [currentUser, ...users];
   };
 
   const uploadFiles = async (leadId: string) => {
@@ -1210,26 +1237,33 @@ export default function NewLeadPage() {
                     </div>
                   )}
 
-                  {/* Subordinates Section */}
-                  {(subordinates.length > 0 || loadingSubordinates) && (
+                  {/* Loading State */}
+                  {loadingUsers && (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <span className="ml-3 text-sm text-muted-foreground">
+                        {t('common.loading')}...
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Team Members Section */}
+                  {!loadingUsers && (
                     <>
                       <Separator className="my-6" />
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            {t('crm.subordinates')} 
-                            {!loadingSubordinates && `(${subordinates.length})`}
-                            {loadingSubordinates && <Loader2 className="h-3 w-3 animate-spin" />}
+                            {t('crm.teamMembers')} 
+                            {`(${users.length})`}
                           </Label>
                         </div>
 
-                        {!loadingSubordinates && (
-                          <>
-                            {/* Search Subordinates */}
-                            <div className="relative">
+                        {/* Search Users */}
+                        <div className="relative">
                               <Input
                                 type="text"
-                                placeholder={t('crm.searchSubordinates')}
+                                placeholder={t('crm.searchUsers')}
                                 className="h-11 pl-10"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -1237,20 +1271,20 @@ export default function NewLeadPage() {
                               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             </div>
 
-                            {/* Subordinates List */}
+                            {/* Users List */}
                             <div className="space-y-2">
                               {(() => {
-                                const startIdx = (subordinatesPage - 1) * ITEMS_PER_PAGE;
+                                const startIdx = (usersPage - 1) * ITEMS_PER_PAGE;
                                 const endIdx = startIdx + ITEMS_PER_PAGE;
-                                const paginatedSubordinates = filteredSubordinates.slice(startIdx, endIdx);
-                                const totalPages = Math.ceil(filteredSubordinates.length / ITEMS_PER_PAGE);
+                                const paginatedUsers = filteredUsers.slice(startIdx, endIdx);
+                                const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
 
                                 return (
                                   <>
-                                    {paginatedSubordinates.length > 0 ? (
+                                    {paginatedUsers.length > 0 ? (
                                       <>
                                         <div className="space-y-2 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                                          {paginatedSubordinates.map((user) => (
+                                          {paginatedUsers.map((user) => (
                                             <div
                                               key={user.id}
                                               className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all hover:border-primary/50 hover:shadow-md ${
@@ -1267,12 +1301,12 @@ export default function NewLeadPage() {
                                                 <Avatar className="h-10 w-10 shrink-0">
                                                   <AvatarImage src={user.avatarUrl || undefined} />
                                                   <AvatarFallback className="bg-muted text-foreground font-medium">
-                                                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                                                    {(user.fullNameEn || user.fullName || user.email).charAt(0).toUpperCase()}
                                                   </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex-1 min-w-0">
                                                   <p className="font-medium text-sm truncate">
-                                                    {user.fullName || user.email}
+                                                    {user.fullNameEn || user.fullName || user.email}
                                                   </p>
                                                   <p className="text-xs text-muted-foreground truncate">
                                                     {user.email}
@@ -1305,28 +1339,28 @@ export default function NewLeadPage() {
                                         {totalPages > 1 && (
                                           <div className="flex items-center justify-between pt-3 border-t">
                                             <p className="text-xs text-muted-foreground">
-                                              {t('common.showing')} {startIdx + 1}-{Math.min(endIdx, filteredSubordinates.length)} {t('common.of')} {filteredSubordinates.length}
+                                              {t('common.showing')} {startIdx + 1}-{Math.min(endIdx, filteredUsers.length)} {t('common.of')} {filteredUsers.length}
                                             </p>
                                             <div className="flex items-center gap-2">
                                               <Button
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => setSubordinatesPage(p => Math.max(1, p - 1))}
-                                                disabled={subordinatesPage === 1}
+                                                onClick={() => setUsersPage(p => Math.max(1, p - 1))}
+                                                disabled={usersPage === 1}
                                                 className="h-8 w-8 p-0"
                                               >
                                                 <ChevronLeft className="h-4 w-4" />
                                               </Button>
                                               <span className="text-xs text-muted-foreground">
-                                                {subordinatesPage} / {totalPages}
+                                                {usersPage} / {totalPages}
                                               </span>
                                               <Button
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => setSubordinatesPage(p => Math.min(totalPages, p + 1))}
-                                                disabled={subordinatesPage === totalPages}
+                                                onClick={() => setUsersPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={usersPage === totalPages}
                                                 className="h-8 w-8 p-0"
                                               >
                                                 <ChevronRight className="h-4 w-4" />
@@ -1339,7 +1373,7 @@ export default function NewLeadPage() {
                                       <div className="text-center py-8">
                                         <User className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
                                         <p className="text-sm text-muted-foreground">
-                                          {searchTerm ? t('crm.noSubordinatesFound') : t('crm.noSubordinates')}
+                                          {searchTerm ? t('crm.noUsersFound') : t('crm.noUsers')}
                                         </p>
                                         {searchTerm && (
                                           <Button
@@ -1358,14 +1392,12 @@ export default function NewLeadPage() {
                                 );
                               })()}
                             </div>
-                          </>
-                        )}
                       </div>
                     </>
                   )}
 
-                  {/* No Subordinates Message */}
-                  {subordinates.length === 0 && (
+                  {/* No Users Message */}
+                  {users.length === 0 && !loadingUsers && (
                     <Alert className="mt-4">
                       <User className="h-4 w-4" />
                       <AlertDescription>

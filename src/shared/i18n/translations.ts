@@ -1240,9 +1240,13 @@ export const translations = {
       expectedCloseDate: 'Expected Close Date',
       assignTo: 'Assign To',
       subordinates: 'Team Members',
+      teamMembers: 'Team Members',
       searchSubordinates: 'Search by name, email, or role...',
+      searchUsers: 'Search by name, email, or role...',
       noSubordinatesFound: 'No team members found matching your search',
       noSubordinates: 'No team members available',
+      noUsersFound: 'No users found matching your search',
+      noUsers: 'No users available',
       noSubordinatesMessage: 'You can only assign this lead to yourself as you have no subordinates',
       clearSearch: 'Clear search',
       
