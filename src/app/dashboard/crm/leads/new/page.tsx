@@ -132,12 +132,13 @@ export default function NewLeadPage() {
 
   const fetchCurrentUser = async () => {
     try {
-      const response = await apiClient.get('/api/users/me');
+      const response: any = await apiClient.get('/api/users/me');
       
-      if (response.success && response.data) {
-        setCurrentUser(response.data);
-        setFormData(prev => ({ ...prev, assignedTo: response.data.id }));
-        fetchUsers(response.data.id);
+      // /api/users/me returns the user object directly
+      if (response && response.id) {
+        setCurrentUser(response);
+        setFormData(prev => ({ ...prev, assignedTo: response.id }));
+        fetchUsers(response.id);
       }
     } catch (error) {
       console.error('Failed to fetch current user:', error);
@@ -155,25 +156,37 @@ export default function NewLeadPage() {
       if (response.success && response.data) {
         const allUsers = Array.isArray(response.data) ? response.data : [];
         
+        console.log('🔍 Debug - All users:', allUsers.length);
+        console.log('🆔 Debug - Current user ID:', currentUserId);
+        
         // Find current user to check if they're top-level (no manager)
         const currentUserData = allUsers.find((u: any) => u.id === currentUserId);
+        console.log('👤 Debug - Current user data:', currentUserData);
+        console.log('👔 Debug - Manager ID:', currentUserData?.managerId);
         
         // If user has no manager (Admin/CEO), show all users except self
         if (!currentUserData?.managerId) {
+          console.log('✅ Debug - User is top-level (Admin/CEO), showing all users');
           const otherUsers = allUsers.filter((u: any) => u.id !== currentUserId);
+          console.log('👥 Debug - Other users count:', otherUsers.length);
+          console.log('📋 Debug - Other users:', otherUsers.map(u => ({ id: u.id, name: u.fullNameEn || u.email, managerId: u.managerId })));
           setUsers(otherUsers);
           setFilteredUsers(otherUsers);
           return;
         }
         
         // Otherwise, get subordinates recursively
+        console.log('⚙️ Debug - Getting subordinates recursively for:', currentUserId);
         const getSubordinates = (managerId: string, users: any[]): any[] => {
           const direct = users.filter((u: any) => u.managerId === managerId);
+          console.log(`  📍 Direct reports for ${managerId}:`, direct.length);
           const indirect = direct.flatMap((u: any) => getSubordinates(u.id, users));
           return [...direct, ...indirect];
         };
         
         const subordinates = getSubordinates(currentUserId, allUsers);
+        console.log('👥 Debug - Total subordinates:', subordinates.length);
+        console.log('📋 Debug - Subordinates:', subordinates.map(u => ({ id: u.id, name: u.fullNameEn || u.email, managerId: u.managerId })));
         setUsers(subordinates);
         setFilteredUsers(subordinates);
       }
