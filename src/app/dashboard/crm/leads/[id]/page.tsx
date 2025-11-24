@@ -10,9 +10,10 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Separator } from '@/shared/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { Loader2, ArrowLeft, Edit, Trash2, CheckCircle2, XCircle, Calendar, DollarSign, Building2, User, Phone, Mail, FileText } from 'lucide-react';
+import { Loader2, ArrowLeft, Edit, Trash2, CheckCircle2, XCircle, Calendar, DollarSign, Building2, User, Phone, Mail, FileText, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Lead, Activity } from '@/shared/types/database';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import type { Lead, Activity, Contact, Company } from '@/shared/types/database';
 
 export default function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -20,7 +21,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const [lead, setLead] = useState<Lead | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [company, setCompany] = useState<Company | null>(null);
+  const [assignedUser, setAssignedUser] = useState<{ id: string; fullNameEn: string; fullNameAr?: string; email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_leads');
 
   useEffect(() => {
@@ -36,12 +41,60 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       const response = await apiClient.get<Lead>(`/api/crm/leads/${resolvedParams.id}`);
       if (response.success && response.data) {
         setLead(response.data);
+        
+        // Fetch related data
+        if (response.data.assignedTo) {
+          fetchAssignedUser(response.data.assignedTo);
+        }
+        if (response.data.contactId) {
+          fetchContact(response.data.contactId);
+        }
+        if (response.data.companyId) {
+          fetchCompany(response.data.companyId);
+        }
       }
     } catch (error) {
       toast.error(getErrorMessage(error, 'Failed to fetch lead'));
       router.push('/dashboard/crm/leads');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAssignedUser = async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}`);
+      if (response.success && response.data) {
+        console.log('Fetched user data:', response.data);
+        setAssignedUser(response.data);
+      } else {
+        console.log('User fetch failed:', response);
+      }
+    } catch (error) {
+      console.error('Failed to fetch assigned user:', error);
+      // If fetching fails, keep the user ID as fallback
+    }
+  };
+
+  const fetchContact = async (contactId: string) => {
+    try {
+      const response = await apiClient.get(`/api/crm/contacts/${contactId}`);
+      if (response.success && response.data) {
+        setContact(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch contact:', error);
+    }
+  };
+
+  const fetchCompany = async (companyId: string) => {
+    try {
+      const response = await apiClient.get(`/api/crm/companies/${companyId}`);
+      if (response.success && response.data) {
+        setCompany(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch company:', error);
     }
   };
 
@@ -53,6 +106,23 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
       }
     } catch (error) {
       console.error('Failed to fetch activities:', error);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      setStatusUpdating(true);
+      const response = await apiClient.patch(`/api/crm/leads/${resolvedParams.id}`, {
+        status: newStatus,
+      });
+      if (response.success) {
+        toast.success(t('crm.statusUpdated'));
+        fetchLead();
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to update status'));
+    } finally {
+      setStatusUpdating(false);
     }
   };
 
@@ -161,6 +231,53 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
+      {/* Quick Actions */}
+      {canWrite && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('crm.quickActions')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push(`/dashboard/crm/activities/new?leadId=${lead.id}`)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {t('crm.newActivity')}
+              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{t('crm.status')}:</span>
+                <Select value={lead.status} onValueChange={handleStatusChange} disabled={statusUpdating}>
+                  <SelectTrigger className="w-[180px] h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NEW">{t('crm.statusNew')}</SelectItem>
+                    <SelectItem value="QUALIFIED">{t('crm.statusQualified')}</SelectItem>
+                    <SelectItem value="PROPOSAL">{t('crm.statusProposal')}</SelectItem>
+                    <SelectItem value="NEGOTIATION">{t('crm.statusNegotiation')}</SelectItem>
+                    <SelectItem value="CLOSED_WON">{t('crm.statusClosed_won')}</SelectItem>
+                    <SelectItem value="CLOSED_LOST">{t('crm.statusClosed_lost')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {lead.status === 'QUALIFIED' && (
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={handleConvertToDeal}
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  {t('crm.convertToDeal')}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 md:grid-cols-3">
         {/* Main Info */}
         <div className="md:col-span-2 space-y-6">
@@ -264,9 +381,19 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                         {activity.description && (
                           <p className="text-sm text-muted-foreground mb-2">{activity.description}</p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(activity.startDate).toLocaleDateString()}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(activity.startDate).toLocaleDateString()}
+                          </p>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => router.push(`/dashboard/crm/activities/${activity.id}`)}
+                          >
+                            {t('crm.viewDetails')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -288,14 +415,47 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <Mail className="h-4 w-4 mr-2" />
-                  {t('crm.emailContact')}
-                </Button>
-                <Button variant="outline" className="w-full justify-start" size="sm">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {t('crm.callContact')}
-                </Button>
+                {contact ? (
+                  <>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">
+                        {locale === 'ar' && contact.fullNameAr ? contact.fullNameAr : contact.fullNameEn}
+                      </h4>
+                      {contact.email && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          <a href={`mailto:${contact.email}`} className="hover:underline">
+                            {contact.email}
+                          </a>
+                        </div>
+                      )}
+                      {contact.phone && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          <a href={`tel:${contact.phone}`} className="hover:underline">
+                            {contact.phone}
+                          </a>
+                        </div>
+                      )}
+                      {contact.type && (
+                        <Badge variant="outline" className="mt-2">
+                          {t(`crm.type${contact.type.charAt(0) + contact.type.slice(1).toLowerCase()}`)}
+                        </Badge>
+                      )}
+                    </div>
+                    <Separator />
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/crm/contacts/${contact.id}`)}
+                    >
+                      {t('crm.viewDetails')}
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -309,8 +469,56 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                   {t('crm.companyInfo')}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{t('crm.company')}</p>
+              <CardContent className="space-y-3">
+                {company ? (
+                  <>
+                    <div className="space-y-2">
+                      <h4 className="font-medium">
+                        {company.name}
+                      </h4>
+                      {company.industry && (
+                        <p className="text-sm text-muted-foreground">
+                          {t('crm.industry')}: {company.industry}
+                        </p>
+                      )}
+                      {company.email && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          <a href={`mailto:${company.email}`} className="hover:underline">
+                            {company.email}
+                          </a>
+                        </div>
+                      )}
+                      {company.phone && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          <a href={`tel:${company.phone}`} className="hover:underline">
+                            {company.phone}
+                          </a>
+                        </div>
+                      )}
+                      {company.website && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <FileText className="h-3 w-3" />
+                          <a href={company.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            {company.website}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    <Separator />
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      size="sm"
+                      onClick={() => router.push(`/dashboard/crm/companies/${company.id}`)}
+                    >
+                      {t('crm.viewDetails')}
+                    </Button>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -325,7 +533,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm">{lead.assignedTo}</p>
+                {assignedUser ? (
+                  <p className="text-sm">
+                    {locale === 'ar' && assignedUser.fullNameAr 
+                      ? assignedUser.fullNameAr 
+                      : assignedUser.fullNameEn || assignedUser.email || lead.assignedTo}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{lead.assignedTo}</p>
+                )}
               </CardContent>
             </Card>
           )}

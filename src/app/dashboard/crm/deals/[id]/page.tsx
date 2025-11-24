@@ -255,9 +255,19 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
                         {activity.description && (
                           <p className="text-sm text-muted-foreground mb-2">{activity.description}</p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(activity.startDate).toLocaleDateString()}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(activity.startDate).toLocaleDateString()}
+                          </p>
+                          <Button
+                            variant="link"
+                            size="sm"
+                            className="h-auto p-0 text-xs"
+                            onClick={() => router.push(`/dashboard/crm/activities/${activity.id}`)}
+                          >
+                            {t('crm.viewDetails')}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}

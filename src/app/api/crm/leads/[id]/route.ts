@@ -28,7 +28,7 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    const hasPermission = await checkPermission(payload.userId, 'leads', 'read');
+    const hasPermission = await checkPermission(payload.userId, 'crm_leads', 'read');
     if (!hasPermission) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
@@ -63,7 +63,7 @@ export async function PUT(
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    const hasPermission = await checkPermission(payload.userId, 'leads', 'update');
+    const hasPermission = await checkPermission(payload.userId, 'crm_leads', 'update');
     if (!hasPermission) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
@@ -100,7 +100,7 @@ export async function PATCH(
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    const hasPermission = await checkPermission(payload.userId, 'leads', 'update');
+    const hasPermission = await checkPermission(payload.userId, 'crm_leads', 'update');
     if (!hasPermission) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
@@ -137,7 +137,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    const hasPermission = await checkPermission(payload.userId, 'leads', 'delete');
+    const hasPermission = await checkPermission(payload.userId, 'crm_leads', 'delete');
     if (!hasPermission) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
