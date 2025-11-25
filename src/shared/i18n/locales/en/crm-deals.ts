@@ -1,0 +1,106 @@
+/**
+ * CRM Deals Module - English translations
+ */
+export const crmDealsEn = {
+  // Main
+  deal: 'Deal',
+  deals: 'Deals',
+  dealsDescription: 'Manage insurance deals and policies',
+  addDeal: 'Add Deal',
+  editDeal: 'Edit Deal',
+  deleteDeal: 'Delete Deal',
+  dealDetails: 'Deal Details',
+  allDeals: 'All Deals',
+  noDealsFound: 'No deals found',
+  dealCreated: 'Deal created successfully',
+  dealUpdated: 'Deal updated successfully',
+  dealDeleted: 'Deal deleted successfully',
+  
+  // Fields
+  dealStage: 'Deal Stage',
+  dealValue: 'Deal Value',
+  policyNumber: 'Policy Number',
+  policyStartDate: 'Policy Start Date',
+  policyEndDate: 'Policy End Date',
+  policyDuration: 'Policy Duration',
+  premium: 'Premium',
+  premiumAmount: 'Premium Amount',
+  premiumFrequency: 'Premium Frequency',
+  coverageAmount: 'Coverage Amount',
+  deductible: 'Deductible',
+  commission: 'Commission',
+  commissionRate: 'Commission Rate',
+  commissionAmount: 'Commission Amount',
+  totalPremium: 'Total Premium',
+  annualPremium: 'Annual Premium',
+  
+  // Deal Stage
+  statusPlanned: 'Planned',
+  statusIn_progress: 'In Progress',
+  stageProspecting: 'Prospecting',
+  stageQualification: 'Qualification',
+  stageProposal: 'Proposal',
+  stageNegotiation: 'Negotiation',
+  stageClosed: 'Closed',
+  stageClosedWon: 'Closed - Won',
+  stageClosedLost: 'Closed - Lost',
+  stageOnHold: 'On Hold',
+  stageCancelled: 'Cancelled',
+  stageUpdated: 'Deal stage updated successfully',
+  
+  // Premium Frequency
+  frequencyMonthly: 'Monthly',
+  frequencyQuarterly: 'Quarterly',
+  frequencySemiAnnually: 'Semi-Annually',
+  frequencyAnnually: 'Annually',
+  frequencyOneTime: 'One Time',
+  
+  // Deal Wizard
+  createNewDeal: 'Create New Deal',
+  dealWizardDescription: 'Complete all steps to create a comprehensive deal profile',
+  dealBasicInfo: 'Basic Information',
+  dealBasicInfoDescription: 'Enter deal title, stage, and value',
+  dealPolicy: 'Policy Details',
+  dealPolicyDescription: 'Enter policy number, dates, and coverage information',
+  dealPremium: 'Premium & Commission',
+  dealPremiumDescription: 'Configure premium amounts and commission structure',
+  dealInsurance: 'Insurance Product',
+  dealInsuranceDescription: 'Link insurance products to this deal',
+  dealTitlePlaceholder: 'e.g., Health Insurance Policy - John Doe',
+  dealTitleHint: 'Enter a clear and descriptive title for this deal',
+  policyNumberPlaceholder: 'e.g., POL-2024-001234',
+  policyNumberHint: 'Enter the unique policy number',
+  coverageAmountPlaceholder: 'e.g., 100000',
+  coverageAmountHint: 'Enter the total coverage amount',
+  deductiblePlaceholder: 'e.g., 1000',
+  deductibleHint: 'Enter the deductible amount',
+  premiumAmountPlaceholder: 'e.g., 500',
+  premiumAmountHint: 'Enter the premium amount per payment',
+  commissionRatePlaceholder: 'e.g., 10',
+  commissionRateHint: 'Enter commission rate as percentage',
+  
+  // Validation
+  dealTitleRequired: 'Deal title is required',
+  dealStageRequired: 'Deal stage is required',
+  policyNumberRequired: 'Policy number is required',
+  policyStartDateRequired: 'Policy start date is required',
+  premiumAmountRequired: 'Premium amount is required',
+  premiumFrequencyRequired: 'Premium frequency is required',
+  coverageAmountRequired: 'Coverage amount is required',
+  
+  // Actions
+  convertedFromLead: 'Converted from Lead',
+  relatedLead: 'Related Lead',
+  viewRelatedLead: 'View Related Lead',
+  dealMetrics: 'Deal Metrics',
+  policyInformation: 'Policy Information',
+  financialDetails: 'Financial Details',
+  quickActions: 'Quick Actions',
+  
+  // Status Messages
+  dealStageChanged: 'Deal stage changed to {stage}',
+  policyActive: 'Policy Active',
+  policyExpiringSoon: 'Policy Expiring Soon',
+  policyExpired: 'Policy Expired',
+  policyRenewable: 'Policy Renewable',
+};

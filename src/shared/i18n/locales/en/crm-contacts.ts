@@ -1,0 +1,175 @@
+/**
+ * CRM Contacts Module - English translations
+ */
+export const crmContactsEn = {
+  // Main
+  contacts: 'Contacts',
+  contactsDescription: 'Manage and organize your customer contacts',
+  addContact: 'Add Contact',
+  editContact: 'Edit Contact',
+  deleteContact: 'Delete Contact',
+  contactDetails: 'Contact Details',
+  allContacts: 'All Contacts',
+  contactDatabase: 'Your complete contact database',
+  noContactsFound: 'No contacts found',
+  tryAdjustingSearch: 'Try adjusting your search query',
+  getStarted: 'Get started by creating your first contact',
+  
+  // Form fields
+  basicInformation: 'Basic Information',
+  fullNameEn: 'Full Name (English)',
+  fullNameAr: 'Full Name (Arabic)',
+  email: 'Email Address',
+  phone: 'Phone Number',
+  
+  companyInformation: 'Company Information',
+  companyName: 'Company Name',
+  jobTitle: 'Job Title',
+  department: 'Department',
+  
+  addressInformation: 'Address Information',
+  streetAddress: 'Street Address',
+  city: 'City',
+  state: 'State',
+  zipCode: 'ZIP Code',
+  country: 'Country',
+  
+  statusClassification: 'Status & Classification',
+  contactType: 'Contact Type',
+  leadSource: 'Lead Source',
+  preferredContactMethod: 'Preferred Contact Method',
+  
+  tags: 'Tags',
+  addTag: 'Add tag',
+  
+  notes: 'Notes',
+  additionalNotes: 'Add any additional notes about this contact...',
+  
+  // Contact types
+  lead: 'Lead',
+  customer: 'Customer',
+  partner: 'Partner',
+  supplier: 'Supplier',
+  
+  // Actions and messages
+  createContact: 'Create Contact',
+  saveChanges: 'Save Changes',
+  creating: 'Creating...',
+  updating: 'Updating...',
+  loading: 'Loading...',
+  pleaseWait: 'Please wait while we load the contact data',
+  updateInfo: 'Update contact information in your CRM system',
+  createInfo: 'Create a new contact in your CRM system',
+  
+  contactCreated: 'Contact created successfully',
+  contactUpdated: 'Contact updated successfully',
+  contactDeleted: 'Contact deleted successfully',
+  failedToCreate: 'Failed to create contact',
+  failedToUpdate: 'Failed to update contact',
+  failedToDelete: 'Failed to delete contact',
+  failedToLoad: 'Failed to load contact data',
+  
+  deleteContactTitle: 'Delete Contact',
+  deleteContactDescription: 'Are you sure you want to delete this contact? This action cannot be undone and all associated data will be permanently removed.',
+  
+  // Contact Profile
+  contactProfile: 'Contact Profile',
+  viewContactDetails: 'View complete contact information',
+  overview: 'Overview',
+  details: 'Details',
+  activity: 'Activity',
+  contactInfo: 'Contact Info',
+  companyInfo: 'Company Info',
+  addressInfo: 'Address Info',
+  metadata: 'Metadata',
+  completeInformation: 'Complete Information',
+  allContactDetails: 'All contact details and information',
+  personalInformation: 'Personal Information',
+  professionalInformation: 'Professional Information',
+  recentActivity: 'Recent Activity',
+  activityHistory: 'Contact activity history and timeline',
+  internalNotes: 'Internal notes and comments',
+  noCompanyLinked: 'No company linked to this contact',
+  noAddressProvided: 'No address information provided',
+  noAdditionalActivity: 'No additional activity to display',
+  noNotesAvailable: 'No notes available for this contact',
+  preferredMethod: 'Preferred Method',
+  
+  requiredFields: 'Fields marked with asterisk (*) are required',
+  
+  // Actions
+  editContactAction: 'Edit Contact',
+  viewProfile: 'View Profile',
+  deleteContactAction: 'Delete Contact',
+  emailContact: 'Email',
+  callContact: 'Call',
+  restore: 'Restore',
+  permanentDelete: 'Delete Permanently',
+  
+  // Trash & Recovery
+  trash: 'Trash',
+  trashDescription: 'Deleted contacts that can be restored',
+  trashEmpty: 'Trash is empty',
+  movedToTrash: 'Contact moved to trash',
+  restoredFromTrash: 'Contact restored successfully',
+  permanentlyDeleted: 'Contact permanently deleted',
+  cannotBeUndone: 'This action cannot be undone',
+  deleteForever: 'Delete Forever',
+  restoreContact: 'Restore Contact',
+  deletedContacts: 'Deleted Contacts',
+  backToContacts: 'Back to Contacts',
+  
+  // Placeholders
+  fullNameEnPlaceholder: 'Ahmed Al Amri',
+  fullNameArPlaceholder: 'أحمد العامري',
+  emailPlaceholder: 'ahmed.alamri@company.om',
+  phonePlaceholder: '+968 9123 4567',
+  phoneNumberPlaceholder: '9123 4567',
+  countryCode: 'Country Code',
+  companyPlaceholder: 'Oman Telecom',
+  jobTitlePlaceholder: 'Sales Manager',
+  departmentPlaceholder: 'Sales',
+  addressPlaceholder: 'Sultan Qaboos Street, Muscat',
+  cityPlaceholder: 'Muscat',
+  statePlaceholder: 'Muscat Governorate',
+  zipPlaceholder: '100',
+  countryPlaceholder: 'Oman',
+  
+  selectContact: 'Select Contact',
+  selectType: 'Select type',
+  selectSource: 'Select source',
+  selectMethod: 'Select method',
+  
+  // Notes section
+  addNote: 'Add Note',
+  writeNote: 'Write your note here...',
+  noteContent: 'Please enter note content',
+  noteCreated: 'Note created successfully',
+  noteUpdated: 'Note updated successfully',
+  noteDeleted: 'Note deleted successfully',
+  failedToCreateNote: 'Failed to create note',
+  failedToUpdateNote: 'Failed to update note',
+  failedToDeleteNote: 'Failed to delete note',
+  deleteNoteTitle: 'Delete Note',
+  deleteNoteDescription: 'Are you sure you want to delete this note? This action cannot be undone.',
+  noteBy: 'Note by',
+  cancel: 'Cancel',
+  saveNote: 'Save Note',
+  noNotes: 'No notes yet',
+  notesPlaceholder: 'Add any additional notes about this contact...',
+  startAddingNotes: 'Start adding notes to keep track of important information',
+  
+  // Contact profile fields
+  company: 'Company',
+  selectCompany: 'Select Company',
+  noCompany: 'No Company',
+  position: 'Position',
+  createdAt: 'Created At',
+  updatedAt: 'Updated At',
+  
+  // Company logo
+  companyLogo: 'Company Logo',
+  uploadCompanyLogo: 'Upload a logo for this company. Recommended size: 400x400px',
+  logoUploaded: 'Logo uploaded',
+  noLogoUploaded: 'No logo uploaded',
+};

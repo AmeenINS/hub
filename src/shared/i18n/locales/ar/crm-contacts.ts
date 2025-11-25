@@ -1,0 +1,175 @@
+/**
+ * CRM Contacts Module - Arabic translations
+ */
+export const crmContactsAr = {
+  // Main
+  contacts: 'جهات الاتصال',
+  contactsDescription: 'إدارة وتنظيم جهات اتصال العملاء',
+  addContact: 'إضافة جهة اتصال',
+  editContact: 'تعديل جهة اتصال',
+  deleteContact: 'حذف جهة اتصال',
+  contactDetails: 'تفاصيل جهة الاتصال',
+  allContacts: 'جميع جهات الاتصال',
+  contactDatabase: 'قاعدة بيانات جهات الاتصال الكاملة',
+  noContactsFound: 'لم يتم العثور على جهات اتصال',
+  tryAdjustingSearch: 'حاول تعديل استعلام البحث الخاص بك',
+  getStarted: 'ابدأ بإنشاء جهة الاتصال الأولى',
+  
+  // Form fields
+  basicInformation: 'المعلومات الأساسية',
+  fullNameEn: 'الاسم الكامل (بالإنجليزية)',
+  fullNameAr: 'الاسم الكامل (بالعربية)',
+  email: 'عنوان البريد الإلكتروني',
+  phone: 'رقم الهاتف',
+  
+  companyInformation: 'معلومات الشركة',
+  companyName: 'اسم الشركة',
+  jobTitle: 'المسمى الوظيفي',
+  department: 'القسم',
+  
+  addressInformation: 'معلومات العنوان',
+  streetAddress: 'عنوان الشارع',
+  city: 'المدينة',
+  state: 'الولاية',
+  zipCode: 'الرمز البريدي',
+  country: 'الدولة',
+  
+  statusClassification: 'الحالة والتصنيف',
+  contactType: 'نوع جهة الاتصال',
+  leadSource: 'مصدر العميل المحتمل',
+  preferredContactMethod: 'طريقة الاتصال المفضلة',
+  
+  tags: 'الوسوم',
+  addTag: 'إضافة وسم',
+  
+  notes: 'الملاحظات',
+  additionalNotes: 'أضف أي ملاحظات إضافية حول جهة الاتصال هذه...',
+  
+  // Contact types
+  lead: 'عميل محتمل',
+  customer: 'عميل',
+  partner: 'شريك',
+  supplier: 'مورد',
+  
+  // Actions and messages
+  createContact: 'إنشاء جهة اتصال',
+  saveChanges: 'حفظ التغييرات',
+  creating: 'جاري الإنشاء...',
+  updating: 'جاري التحديث...',
+  loading: 'جاري التحميل...',
+  pleaseWait: 'يرجى الانتظار أثناء تحميل بيانات جهة الاتصال',
+  updateInfo: 'تحديث معلومات جهة الاتصال في نظام CRM الخاص بك',
+  createInfo: 'إنشاء جهة اتصال جديدة في نظام CRM الخاص بك',
+  
+  contactCreated: 'تم إنشاء جهة الاتصال بنجاح',
+  contactUpdated: 'تم تحديث جهة الاتصال بنجاح',
+  contactDeleted: 'تم حذف جهة الاتصال بنجاح',
+  failedToCreate: 'فشل إنشاء جهة الاتصال',
+  failedToUpdate: 'فشل تحديث جهة الاتصال',
+  failedToDelete: 'فشل حذف جهة الاتصال',
+  failedToLoad: 'فشل تحميل بيانات جهة الاتصال',
+  
+  deleteContactTitle: 'حذف جهة الاتصال',
+  deleteContactDescription: 'هل أنت متأكد من حذف جهة الاتصال هذه؟ لا يمكن التراجع عن هذا الإجراء وسيتم حذف جميع البيانات المرتبطة نهائياً.',
+  
+  // Contact Profile
+  contactProfile: 'ملف جهة الاتصال',
+  viewContactDetails: 'عرض معلومات جهة الاتصال الكاملة',
+  overview: 'نظرة عامة',
+  details: 'التفاصيل',
+  activity: 'النشاط',
+  contactInfo: 'معلومات الاتصال',
+  companyInfo: 'معلومات الشركة',
+  addressInfo: 'معلومات العنوان',
+  metadata: 'البيانات الوصفية',
+  completeInformation: 'المعلومات الكاملة',
+  allContactDetails: 'جميع تفاصيل ومعلومات جهة الاتصال',
+  personalInformation: 'المعلومات الشخصية',
+  professionalInformation: 'المعلومات المهنية',
+  recentActivity: 'النشاط الأخير',
+  activityHistory: 'سجل نشاط جهة الاتصال والجدول الزمني',
+  internalNotes: 'الملاحظات والتعليقات الداخلية',
+  noCompanyLinked: 'لا توجد شركة مرتبطة بجهة الاتصال هذه',
+  noAddressProvided: 'لا توجد معلومات عنوان متاحة',
+  noAdditionalActivity: 'لا يوجد نشاط إضافي للعرض',
+  noNotesAvailable: 'لا توجد ملاحظات متاحة لجهة الاتصال هذه',
+  preferredMethod: 'الطريقة المفضلة',
+  
+  requiredFields: 'الحقول الموسومة بعلامة النجمة (*) مطلوبة',
+  
+  // Actions
+  editContactAction: 'تعديل جهة الاتصال',
+  viewProfile: 'عرض الملف الشخصي',
+  deleteContactAction: 'حذف جهة الاتصال',
+  emailContact: 'بريد إلكتروني',
+  callContact: 'اتصال',
+  restore: 'استعادة',
+  permanentDelete: 'حذف نهائي',
+  
+  // Trash & Recovery
+  trash: 'سلة المهملات',
+  trashDescription: 'جهات الاتصال المحذوفة التي يمكن استعادتها',
+  trashEmpty: 'سلة المهملات فارغة',
+  movedToTrash: 'تم نقل جهة الاتصال إلى سلة المهملات',
+  restoredFromTrash: 'تم استعادة جهة الاتصال بنجاح',
+  permanentlyDeleted: 'تم حذف جهة الاتصال نهائياً',
+  cannotBeUndone: 'لا يمكن التراجع عن هذا الإجراء',
+  deleteForever: 'حذف للأبد',
+  restoreContact: 'استعادة جهة الاتصال',
+  deletedContacts: 'جهات الاتصال المحذوفة',
+  backToContacts: 'العودة إلى جهات الاتصال',
+  
+  // Placeholders
+  fullNameEnPlaceholder: 'Ahmed Al Amri',
+  fullNameArPlaceholder: 'أحمد العامري',
+  emailPlaceholder: 'ahmed.alamri@company.om',
+  phonePlaceholder: '+968 9123 4567',
+  phoneNumberPlaceholder: '9123 4567',
+  countryCode: 'رمز الدولة',
+  companyPlaceholder: 'عمان تل',
+  jobTitlePlaceholder: 'مدير المبيعات',
+  departmentPlaceholder: 'المبيعات',
+  addressPlaceholder: 'شارع السلطان قابوس، مسقط',
+  cityPlaceholder: 'مسقط',
+  statePlaceholder: 'محافظة مسقط',
+  zipPlaceholder: '100',
+  countryPlaceholder: 'عُمان',
+  
+  selectContact: 'اختر جهة الاتصال',
+  selectType: 'اختر النوع',
+  selectSource: 'اختر المصدر',
+  selectMethod: 'اختر الطريقة',
+  
+  // Notes section
+  addNote: 'إضافة ملاحظة',
+  writeNote: 'اكتب ملاحظتك هنا...',
+  noteContent: 'يرجى إدخال محتوى الملاحظة',
+  noteCreated: 'تم إنشاء الملاحظة بنجاح',
+  noteUpdated: 'تم تحديث الملاحظة بنجاح',
+  noteDeleted: 'تم حذف الملاحظة بنجاح',
+  failedToCreateNote: 'فشل إنشاء الملاحظة',
+  failedToUpdateNote: 'فشل تحديث الملاحظة',
+  failedToDeleteNote: 'فشل حذف الملاحظة',
+  deleteNoteTitle: 'حذف الملاحظة',
+  deleteNoteDescription: 'هل أنت متأكد من حذف هذه الملاحظة؟ لا يمكن التراجع عن هذا الإجراء.',
+  noteBy: 'ملاحظة بواسطة',
+  cancel: 'إلغاء',
+  saveNote: 'حفظ الملاحظة',
+  noNotes: 'لا توجد ملاحظات بعد',
+  notesPlaceholder: 'أضف أي ملاحظات إضافية حول جهة الاتصال هذه...',
+  startAddingNotes: 'ابدأ بإضافة ملاحظات لتتبع المعلومات المهمة',
+  
+  // Contact profile fields
+  company: 'الشركة',
+  selectCompany: 'اختر الشركة',
+  noCompany: 'بدون شركة',
+  position: 'المنصب',
+  createdAt: 'تم الإنشاء في',
+  updatedAt: 'تم التحديث في',
+  
+  // Company logo
+  companyLogo: 'شعار الشركة',
+  uploadCompanyLogo: 'قم بتحميل شعار لهذه الشركة. الحجم الموصى به: 400×400 بكسل',
+  logoUploaded: 'تم تحميل الشعار',
+  noLogoUploaded: 'لم يتم تحميل شعار',
+};

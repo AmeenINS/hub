@@ -1,0 +1,106 @@
+/**
+ * CRM Deals Module - Arabic translations
+ */
+export const crmDealsAr = {
+  // Main
+  deal: 'صفقة',
+  deals: 'الصفقات',
+  dealsDescription: 'إدارة صفقات وبوالص التأمين',
+  addDeal: 'إضافة صفقة',
+  editDeal: 'تعديل صفقة',
+  deleteDeal: 'حذف صفقة',
+  dealDetails: 'تفاصيل الصفقة',
+  allDeals: 'جميع الصفقات',
+  noDealsFound: 'لم يتم العثور على صفقات',
+  dealCreated: 'تم إنشاء الصفقة بنجاح',
+  dealUpdated: 'تم تحديث الصفقة بنجاح',
+  dealDeleted: 'تم حذف الصفقة بنجاح',
+  
+  // Fields
+  dealStage: 'مرحلة الصفقة',
+  dealValue: 'قيمة الصفقة',
+  policyNumber: 'رقم البوليصة',
+  policyStartDate: 'تاريخ بدء البوليصة',
+  policyEndDate: 'تاريخ انتهاء البوليصة',
+  policyDuration: 'مدة البوليصة',
+  premium: 'القسط',
+  premiumAmount: 'مبلغ القسط',
+  premiumFrequency: 'تكرار القسط',
+  coverageAmount: 'مبلغ التغطية',
+  deductible: 'التحمل',
+  commission: 'العمولة',
+  commissionRate: 'نسبة العمولة',
+  commissionAmount: 'مبلغ العمولة',
+  totalPremium: 'إجمالي القسط',
+  annualPremium: 'القسط السنوي',
+  
+  // Deal Stage
+  statusPlanned: 'مخطط',
+  statusIn_progress: 'قيد التنفيذ',
+  stageProspecting: 'التنقيب',
+  stageQualification: 'التأهيل',
+  stageProposal: 'العرض',
+  stageNegotiation: 'التفاوض',
+  stageClosed: 'مغلق',
+  stageClosedWon: 'مغلق - تم الفوز',
+  stageClosedLost: 'مغلق - خسارة',
+  stageOnHold: 'قيد الانتظار',
+  stageCancelled: 'ملغي',
+  stageUpdated: 'تم تحديث مرحلة الصفقة بنجاح',
+  
+  // Premium Frequency
+  frequencyMonthly: 'شهري',
+  frequencyQuarterly: 'ربع سنوي',
+  frequencySemiAnnually: 'نصف سنوي',
+  frequencyAnnually: 'سنوي',
+  frequencyOneTime: 'مرة واحدة',
+  
+  // Deal Wizard
+  createNewDeal: 'إنشاء صفقة جديدة',
+  dealWizardDescription: 'أكمل جميع الخطوات لإنشاء ملف تعريف شامل للصفقة',
+  dealBasicInfo: 'المعلومات الأساسية',
+  dealBasicInfoDescription: 'أدخل عنوان الصفقة والمرحلة والقيمة',
+  dealPolicy: 'تفاصيل البوليصة',
+  dealPolicyDescription: 'أدخل رقم البوليصة والتواريخ ومعلومات التغطية',
+  dealPremium: 'القسط والعمولة',
+  dealPremiumDescription: 'قم بتكوين مبالغ الأقساط وهيكل العمولة',
+  dealInsurance: 'منتج التأمين',
+  dealInsuranceDescription: 'ربط منتجات التأمين بهذه الصفقة',
+  dealTitlePlaceholder: 'مثال: بوليصة التأمين الصحي - أحمد علي',
+  dealTitleHint: 'أدخل عنواناً واضحاً ووصفياً لهذه الصفقة',
+  policyNumberPlaceholder: 'مثال: POL-2024-001234',
+  policyNumberHint: 'أدخل رقم البوليصة الفريد',
+  coverageAmountPlaceholder: 'مثال: 100000',
+  coverageAmountHint: 'أدخل مبلغ التغطية الإجمالي',
+  deductiblePlaceholder: 'مثال: 1000',
+  deductibleHint: 'أدخل مبلغ التحمل',
+  premiumAmountPlaceholder: 'مثال: 500',
+  premiumAmountHint: 'أدخل مبلغ القسط لكل دفعة',
+  commissionRatePlaceholder: 'مثال: 10',
+  commissionRateHint: 'أدخل نسبة العمولة كنسبة مئوية',
+  
+  // Validation
+  dealTitleRequired: 'عنوان الصفقة مطلوب',
+  dealStageRequired: 'مرحلة الصفقة مطلوبة',
+  policyNumberRequired: 'رقم البوليصة مطلوب',
+  policyStartDateRequired: 'تاريخ بدء البوليصة مطلوب',
+  premiumAmountRequired: 'مبلغ القسط مطلوب',
+  premiumFrequencyRequired: 'تكرار القسط مطلوب',
+  coverageAmountRequired: 'مبلغ التغطية مطلوب',
+  
+  // Actions
+  convertedFromLead: 'تم التحويل من عميل محتمل',
+  relatedLead: 'العميل المحتمل المرتبط',
+  viewRelatedLead: 'عرض العميل المحتمل المرتبط',
+  dealMetrics: 'مقاييس الصفقة',
+  policyInformation: 'معلومات البوليصة',
+  financialDetails: 'التفاصيل المالية',
+  quickActions: 'إجراءات سريعة',
+  
+  // Status Messages
+  dealStageChanged: 'تم تغيير مرحلة الصفقة إلى {stage}',
+  policyActive: 'البوليصة نشطة',
+  policyExpiringSoon: 'البوليصة تنتهي قريباً',
+  policyExpired: 'البوليصة منتهية الصلاحية',
+  policyRenewable: 'البوليصة قابلة للتجديد',
+};

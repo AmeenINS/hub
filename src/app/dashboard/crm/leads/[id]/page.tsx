@@ -404,16 +404,28 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
     return <Badge variant={variants[priority]}>{t(`crm.priority${priority.charAt(0) + priority.slice(1).toLowerCase()}`)}</Badge>;
   };
 
-  const getInsuranceIcon = (type?: string) => {
-    switch (type) {
-      case 'AUTO': return <Car className="h-5 w-5" />;
-      case 'HEALTH': return <Heart className="h-5 w-5" />;
-      case 'LIFE': return <Shield className="h-5 w-5" />;
-      case 'PROPERTY': return <Home className="h-5 w-5" />;
-      case 'TRAVEL': return <Plane className="h-5 w-5" />;
-      case 'MARINE': return <Ship className="h-5 w-5" />;
-      default: return <Package className="h-5 w-5" />;
-    }
+  const getInsuranceIcon = (type?: string, size: 'sm' | 'md' = 'md') => {
+    const iconSize = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
+    const containerSize = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
+    
+    const iconConfig = {
+      'AUTO': { icon: Car, color: 'text-blue-600', bg: 'bg-blue-100' },
+      'MOTOR': { icon: Car, color: 'text-blue-600', bg: 'bg-blue-100' },
+      'HEALTH': { icon: Heart, color: 'text-red-500', bg: 'bg-red-100' },
+      'LIFE': { icon: Shield, color: 'text-green-600', bg: 'bg-green-100' },
+      'PROPERTY': { icon: Home, color: 'text-orange-600', bg: 'bg-orange-100' },
+      'TRAVEL': { icon: Plane, color: 'text-sky-600', bg: 'bg-sky-100' },
+      'MARINE': { icon: Ship, color: 'text-cyan-600', bg: 'bg-cyan-100' },
+    };
+    
+    const config = iconConfig[type as keyof typeof iconConfig] || { icon: Package, color: 'text-gray-600', bg: 'bg-gray-100' };
+    const IconComponent = config.icon;
+    
+    return (
+      <div className={`${containerSize} rounded-lg ${config.bg} flex items-center justify-center shrink-0`}>
+        <IconComponent className={`${iconSize} ${config.color}`} />
+      </div>
+    );
   };
 
   const formatCurrency = (value: number) => {
@@ -794,10 +806,11 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                                 className={`border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer ${linkedProductCompanyIds.includes(relation.id) ? 'bg-muted/50' : ''}`}
                                 onClick={() => handleLinkProductCompany(relation.id)}
                               >
-                                <div className="space-y-2">
-                                  <div className="flex items-start justify-between">
+                                <div className="space-y-3">
+                                  <div className="flex items-start gap-3">
+                                    {getInsuranceIcon(relation.product?.type, 'md')}
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         <p className="font-medium">
                                           {locale === 'ar' && relation.product?.nameAr ? relation.product.nameAr : relation.product?.nameEn}
                                         </p>
@@ -805,18 +818,26 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                                         {relation.isPreferred && (
                                           <Badge variant="default" className="text-xs">Preferred</Badge>
                                         )}
+                                        {linkedProductCompanyIds.includes(relation.id) && (
+                                          <Badge variant="secondary" className="text-xs">Linked</Badge>
+                                        )}
                                       </div>
-                                      <p className="text-xs text-muted-foreground font-mono">{relation.product?.code}</p>
+                                      <p className="text-xs text-muted-foreground font-mono mt-1">{relation.product?.code}</p>
                                     </div>
-                                    {linkedProductCompanyIds.includes(relation.id) && (
-                                      <Badge variant="secondary">Linked</Badge>
-                                    )}
                                   </div>
                                   
                                   <Separator />
                                   
                                   <div className="flex items-center gap-2">
-                                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                                    {relation.company?.logoUrl ? (
+                                      <img 
+                                        src={relation.company.logoUrl} 
+                                        alt={relation.company.nameEn}
+                                        className="h-6 w-6 rounded object-contain"
+                                      />
+                                    ) : (
+                                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                                    )}
                                     <p className="text-sm font-medium">
                                       {locale === 'ar' && relation.company?.nameAr ? relation.company.nameAr : relation.company?.nameEn}
                                     </p>
@@ -878,7 +899,8 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                       className="border rounded-lg p-4"
                     >
                       <div className="space-y-3">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                          {getInsuranceIcon(relation.product?.type, 'md')}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-medium">
@@ -914,7 +936,15 @@ export default function LeadDetailPage({ params }: { params: Promise<{ id: strin
                         <Separator />
                         
                         <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          {relation.company?.logoUrl ? (
+                            <img 
+                              src={relation.company.logoUrl} 
+                              alt={relation.company.nameEn}
+                              className="h-6 w-6 rounded object-contain"
+                            />
+                          ) : (
+                            <Building2 className="h-4 w-4 text-muted-foreground" />
+                          )}
                           <p className="text-sm font-medium">
                             {locale === 'ar' && relation.company?.nameAr ? relation.company.nameAr : relation.company?.nameEn}
                           </p>

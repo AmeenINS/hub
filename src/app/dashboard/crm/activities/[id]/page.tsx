@@ -61,7 +61,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
     };
 
     fetchActivity();
-  }, [hasAccess, level, router, resolvedParams.id, t]);
+  }, [resolvedParams.id]);
 
   const handleDelete = async () => {
     if (!confirm(t('crm.activities.confirmDelete'))) return;

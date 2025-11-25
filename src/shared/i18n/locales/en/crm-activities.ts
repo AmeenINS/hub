@@ -1,0 +1,154 @@
+/**
+ * CRM Activities Module - English translations
+ */
+export const crmActivitiesEn = {
+  // Main
+  activities: 'Activities',
+  activitiesDescription: 'Track calls, meetings, emails, and tasks',
+  title: 'Activities',
+  description: 'Manage and track your activities',
+  addActivity: 'Add Activity',
+  activitiesNew: 'New Activity',
+  newActivity: 'New Activity',
+  activitiesSearchPlaceholder: 'Search activities...',
+  allActivities: 'All Activities',
+  activitiesFound: 'activities found',
+  noActivities: 'No Activities Yet',
+  noActivitiesDescription: 'Get started by creating your first activity',
+  activitiesCreateNew: 'Create New Activity',
+  filters: 'Filters',
+  filterByType: 'Filter by Type',
+  filterByStatus: 'Filter by Status',
+  showAll: 'Show All',
+  editActivity: 'Edit Activity',
+  deleteActivity: 'Delete Activity',
+  activityDetails: 'Activity Details',
+  noActivitiesFound: 'No activities found',
+  activityCreated: 'Activity created successfully',
+  activityUpdated: 'Activity updated successfully',
+  activityDeleted: 'Activity deleted successfully',
+  
+  // Activity Types
+  typeCall: 'Call',
+  typeMeeting: 'Meeting',
+  typeEmail: 'Email',
+  typeTask: 'Task',
+  typeNote: 'Note',
+  typeDeadline: 'Deadline',
+  
+  // Activity Status
+  statusScheduled: 'Scheduled',
+  statusInProgress: 'In Progress',
+  statusCompleted: 'Completed',
+  statusCancelled: 'Cancelled',
+  statusOverdue: 'Overdue',
+  statusPending: 'Pending',
+  statusUpdated: 'Activity status updated successfully',
+  
+  // Fields
+  activityType: 'Activity Type',
+  activityStatus: 'Activity Status',
+  type: 'Type',
+  status: 'Status',
+  subject: 'Subject',
+  selectActivityType: 'Choose the type of activity you want to create',
+  enterActivityDetails: 'Provide information about this activity',
+  basicInfo: 'Basic Information',
+  basicInfoDescription: 'Update the basic information of this activity',
+  assignment: 'Assignment',
+  metadata: 'Metadata',
+  subjectPlaceholder: 'e.g., Follow-up call with client',
+  description: 'Description',
+  descriptionPlaceholder: 'Add notes or details about this activity...',
+  scheduledAt: 'Scheduled Date & Time',
+  scheduledDate: 'Scheduled Date',
+  scheduledTime: 'Scheduled Time',
+  duration: 'Duration',
+  durationMinutes: 'Duration (minutes)',
+  minutes: 'minutes',
+  location: 'Location',
+  locationPlaceholder: 'e.g., Office, Phone, Online',
+  relatedTo: 'Related To',
+  relatedLead: 'Related Lead',
+  relatedDeal: 'Related Deal',
+  relatedContact: 'Related Contact',
+  assignedTo: 'Assigned To',
+  completedAt: 'Completed At',
+  notes: 'Notes',
+  notesPlaceholder: 'Add additional notes...',
+  
+  // Time Filters
+  overdue: 'Overdue',
+  today: 'Today',
+  upcoming: 'Upcoming',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  completed: 'Completed',
+  
+  // Related Items
+  noRelatedItems: 'No related items',
+  noActivitiesForLead: 'No activities for this lead',
+  noActivitiesForDeal: 'No activities for this deal',
+  noActivitiesForContact: 'No activities for this contact',
+  
+  // Actions
+  markAsCompleted: 'Mark as Completed',
+  markAsPending: 'Mark as Pending',
+  markAsCancelled: 'Mark as Cancelled',
+  reschedule: 'Reschedule',
+  confirmDelete: 'Are you sure you want to delete this activity?',
+  confirmComplete: 'Mark this activity as completed?',
+  confirmCancel: 'Cancel this activity?',
+  
+  // Validation
+  subjectRequired: 'Subject is required',
+  activityTypeRequired: 'Activity type is required',
+  scheduledAtRequired: 'Scheduled date is required',
+  durationRequired: 'Duration is required',
+  
+  // Messages
+  createSuccess: 'Activity created successfully',
+  createError: 'Error creating activity',
+  updateSuccess: 'Activity updated successfully',
+  updateError: 'Error updating activity',
+  deleteSuccess: 'Activity deleted successfully',
+  deleteError: 'Error deleting activity',
+  updating: 'Updating...',
+  errorLoading: 'Error loading activity',
+  errorCreating: 'Error creating activity',
+  errorUpdating: 'Error updating activity',
+  errorDeleting: 'Error deleting activity',
+  notFound: 'Activity not found',
+  
+  // Activity Details
+  activityInformation: 'Activity Information',
+  timelineDetails: 'Timeline Details',
+  relatedToDescription: 'Link this activity to a lead, deal, or contact',
+  notesDescription: 'Add any additional notes or details',
+  
+  // Related Items
+  activityForLead: 'Activity for Lead',
+  activityForDeal: 'Activity for Deal',
+  activityForContact: 'Activity for Contact',
+  selectLead: 'Select Lead',
+  selectDeal: 'Select Deal',
+  selectUser: 'Select User',
+  unnamed: 'Unnamed',
+  overview: 'Overview',
+  viewDetails: 'View Details',
+  createdAt: 'Created At',
+  updatedAt: 'Updated At',
+  notesPlaceholder: 'Add any additional notes...',
+  
+  // Quick Actions
+  createDescription: 'Create a new activity for leads, deals, or contacts',
+  backToList: 'Back to Activities',
+  edit: 'Edit Activity',
+  
+  // Activity Feed
+  activityFeed: 'Activity Feed',
+  recentActivities: 'Recent Activities',
+  upcomingActivities: 'Upcoming Activities',
+  overdueActivities: 'Overdue Activities',
+  activityHistory: 'Activity History',
+};
