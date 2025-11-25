@@ -39,6 +39,7 @@ export const crmActivitiesEn = {
   // Activity Status
   statusScheduled: 'Scheduled',
   statusInProgress: 'In Progress',
+  statusIn_progress: 'In Progress',
   statusCompleted: 'Completed',
   statusCancelled: 'Cancelled',
   statusOverdue: 'Overdue',

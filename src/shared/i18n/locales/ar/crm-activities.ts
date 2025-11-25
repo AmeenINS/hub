@@ -40,6 +40,7 @@ export const crmActivitiesAr = {
   // Activity Status
   statusScheduled: 'مجدول',
   statusInProgress: 'قيد التنفيذ',
+  statusIn_progress: 'قيد التنفيذ',
   statusCompleted: 'مكتمل',
   statusCancelled: 'ملغي',
   statusOverdue: 'متأخر',
