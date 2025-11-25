@@ -369,12 +369,27 @@ export default function NewLeadPage() {
     const uploadPromises = uploadedFiles.map(async ({ file, type }) => {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('category', type === 'image' ? 'images' : 'documents');
-      formData.append('relatedTo', 'lead');
-      formData.append('relatedId', leadId);
+      formData.append('entityType', 'lead');
+      formData.append('entityId', leadId);
+      
+      // Add file type validation
+      if (type === 'image') {
+        formData.append('allowedTypes', JSON.stringify([
+          'image/jpeg', 'image/png', 'image/gif', 'image/webp'
+        ]));
+      } else {
+        formData.append('allowedTypes', JSON.stringify([
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ]));
+      }
 
       try {
-        await apiClient.post('/api/files/upload', formData);
+        const response = await apiClient.upload('/api/upload', formData);
+        if (response.success) {
+          console.log('✅ File uploaded:', file.name);
+        }
       } catch (error) {
         console.error('Failed to upload file:', file.name, error);
         toast.error(`${t('common.failedToUpload')}: ${file.name}`);
