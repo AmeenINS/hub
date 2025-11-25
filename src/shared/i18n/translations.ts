@@ -985,6 +985,9 @@ export const translations = {
     // CRM
     crm: {
       title: 'CRM',
+      quickActions: 'Quick Actions',
+      status: 'Status',
+      type: 'Type',
       contacts: 'Contacts',
       contactsDescription: 'Manage and organize your customer contacts',
       addContact: 'Add Contact',
@@ -1171,6 +1174,7 @@ export const translations = {
       convertToDeal: 'Convert to Deal',
       leadStatus: 'Lead Status',
       insuranceType: 'Insurance Type',
+      insuranceDetails: 'Insurance Details',
       insuranceProducts: 'Insurance Products',
       insuranceCompanies: 'Insurance Companies',
       currentPremium: 'Current Premium',
@@ -1223,17 +1227,17 @@ export const translations = {
       leadTitleHint: 'Enter a clear, descriptive title for this lead',
       description: 'Description',
       descriptionPlaceholder: 'Add notes, requirements, or any important details about this lead...',
-      selectContact: 'Select a contact',
+      leadSelectContact: 'Select a contact',
       createNewContact: 'Create New Contact',
-      selectCompany: 'Select a company (optional)',
+      leadSelectCompany: 'Select a company (optional)',
       createNewCompany: 'Create New Company',
-      selectInsuranceType: 'Select insurance type',
-      searchContacts: 'Search by name, email, or phone...',
-      searchCompanies: 'Search by name, industry, or email...',
-      noContactsFound: 'No contacts found matching your search',
-      noContacts: 'No contacts available',
-      noCompaniesFound: 'No companies found matching your search',
-      noCompany: 'No Company',
+      leadSelectInsuranceType: 'Select insurance type',
+      leadSearchContacts: 'Search by name, email, or phone...',
+      leadSearchCompanies: 'Search by name, industry, or email...',
+      leadNoContactsFound: 'No contacts found matching your search',
+      leadNoContacts: 'No contacts available',
+      leadNoCompaniesFound: 'No companies found matching your search',
+      leadNoCompany: 'No Company',
       skipCompanySelection: 'Continue without selecting a company',
       optional: 'Optional',
       estimatedValue: 'Estimated Value',
@@ -1249,6 +1253,34 @@ export const translations = {
       noUsers: 'No users available',
       noSubordinatesMessage: 'You can only assign this lead to yourself as you have no subordinates',
       clearSearch: 'Clear search',
+      
+      // Lead Details - Files & Attachments
+      filesAndAttachments: 'Files & Attachments',
+      noFilesAttached: 'No files attached to this lead',
+      uploadMoreFiles: 'Upload More Files',
+      downloadFile: 'Download File',
+      viewFile: 'View File',
+      fileUploadedOn: 'Uploaded on',
+      fileUploadedBy: 'Uploaded by',
+      imagePreview: 'Image Preview',
+      documentFile: 'Document',
+      
+      // Lead Details - Insurance Products / Quotations
+      linkedProducts: 'Linked Insurance Products',
+      linkProduct: 'Link Insurance Product',
+      noProductsLinked: 'No insurance products linked to this lead',
+      unlinkProduct: 'Unlink Product',
+      searchProducts: 'Search products by name or code...',
+      productCode: 'Product Code',
+      productType: 'Product Type',
+      basePremiumValue: 'Base Premium',
+      coverageRange: 'Coverage Range',
+      selectProductToLink: 'Select a product to link to this lead',
+      productLinkedSuccessfully: 'Insurance product linked successfully',
+      productUnlinkedSuccessfully: 'Insurance product unlinked successfully',
+      confirmUnlinkProduct: 'Are you sure you want to unlink this product?',
+      noProductsAvailable: 'No insurance products available',
+      viewProductDetails: 'View Product Details',
       
       // Lead Status
       statusNew: 'New',
@@ -1460,11 +1492,6 @@ export const translations = {
       campaignCompleted: 'Completed',
       campaignCancelled: 'Cancelled',
       
-      // Companies (CRM)
-      companiesSearchPlaceholder: 'Search companies...',
-      noCompaniesFound: 'No companies found',
-      addYourFirstCompany: 'Add Your First Company',
-      
       // Statistics
       statistics: 'Statistics',
       totalLeads: 'Total Leads',
@@ -1482,22 +1509,15 @@ export const translations = {
       byStage: 'By Stage',
       
       // Common fields
-      selectInsuranceType: 'Select Insurance Type',
       selectInsuranceProduct: 'Select Insurance Product',
       selectInsuranceCompany: 'Select Insurance Company',
       selectLead: 'Select Lead',
       selectDeal: 'Select Deal',
       selectCampaign: 'Select Campaign',
       selectUser: 'Select User',
-      selectStatus: 'Select Status',
       selectPriority: 'Select Priority',
       selectStage: 'Select Stage',
       selectFrequency: 'Select Frequency',
-      selectContact: 'Select Contact',
-      
-      // Assignment
-      assignment: 'Assignment & Relations',
-      assignmentDescription: 'Assign this deal to a user and link related records',
       
       // Filters
       filterByStatus: 'Filter by Status',
@@ -1510,7 +1530,6 @@ export const translations = {
       
       // Actions
       viewDetails: 'View Details',
-      assignTo: 'Assign To',
       changeStatus: 'Change Status',
       changeStage: 'Change Stage',
       
@@ -2247,6 +2266,9 @@ export const translations = {
     // CRM
     crm: {
       title: 'إدارة علاقات العملاء',
+      quickActions: 'إجراءات سريعة',
+      status: 'الحالة',
+      type: 'النوع',
       contacts: 'جهات الاتصال',
       contactsDescription: 'إدارة وتنظيم جهات اتصال العملاء',
       addContact: 'إضافة جهة اتصال',
@@ -2433,6 +2455,7 @@ export const translations = {
       convertToDeal: 'تحويل إلى صفقة',
       leadStatus: 'حالة العميل المحتمل',
       insuranceType: 'نوع التأمين',
+      insuranceDetails: 'تفاصيل التأمين',
       insuranceProducts: 'منتجات التأمين',
       insuranceCompanies: 'شركات التأمين',
       currentPremium: 'القسط الحالي',
@@ -2484,17 +2507,17 @@ export const translations = {
       leadTitleHint: 'أدخل عنوانًا واضحًا ووصفيًا لهذا العميل المحتمل',
       description: 'الوصف',
       descriptionPlaceholder: 'أضف ملاحظات أو متطلبات أو أي تفاصيل مهمة عن هذا العميل المحتمل...',
-      selectContact: 'حدد جهة اتصال',
+      leadSelectContact: 'حدد جهة اتصال',
       createNewContact: 'إنشاء جهة اتصال جديدة',
-      selectCompany: 'حدد شركة (اختياري)',
+      leadSelectCompany: 'حدد شركة (اختياري)',
       createNewCompany: 'إنشاء شركة جديدة',
-      selectInsuranceType: 'حدد نوع التأمين',
-      searchContacts: 'البحث بالاسم أو البريد الإلكتروني أو الهاتف...',
-      searchCompanies: 'البحث بالاسم أو الصناعة أو البريد الإلكتروني...',
-      noContactsFound: 'لم يتم العثور على جهات اتصال مطابقة لبحثك',
-      noContacts: 'لا توجد جهات اتصال متاحة',
-      noCompaniesFound: 'لم يتم العثور على شركات مطابقة لبحثك',
-      noCompany: 'بدون شركة',
+      leadSelectInsuranceType: 'حدد نوع التأمين',
+      leadSearchContacts: 'البحث بالاسم أو البريد الإلكتروني أو الهاتف...',
+      leadSearchCompanies: 'البحث بالاسم أو الصناعة أو البريد الإلكتروني...',
+      leadNoContactsFound: 'لم يتم العثور على جهات اتصال مطابقة لبحثك',
+      leadNoContacts: 'لا توجد جهات اتصال متاحة',
+      leadNoCompaniesFound: 'لم يتم العثور على شركات مطابقة لبحثك',
+      leadNoCompany: 'بدون شركة',
       skipCompanySelection: 'المتابعة بدون اختيار شركة',
       optional: 'اختياري',
       estimatedValue: 'القيمة المقدرة',
@@ -2506,6 +2529,34 @@ export const translations = {
       noSubordinates: 'لا يوجد أعضاء فريق متاحين',
       noSubordinatesMessage: 'يمكنك فقط تعيين هذا العميل المحتمل لنفسك لأنه ليس لديك مرؤوسين',
       clearSearch: 'مسح البحث',
+      
+      // Lead Details - Files & Attachments (Arabic)
+      filesAndAttachments: 'الملفات والمرفقات',
+      noFilesAttached: 'لا توجد ملفات مرفقة لهذا العميل المحتمل',
+      uploadMoreFiles: 'تحميل المزيد من الملفات',
+      downloadFile: 'تحميل الملف',
+      viewFile: 'عرض الملف',
+      fileUploadedOn: 'تم التحميل في',
+      fileUploadedBy: 'تم التحميل بواسطة',
+      imagePreview: 'معاينة الصورة',
+      documentFile: 'مستند',
+      
+      // Lead Details - Insurance Products / Quotations (Arabic)
+      linkedProducts: 'منتجات التأمين المرتبطة',
+      linkProduct: 'ربط منتج تأمين',
+      noProductsLinked: 'لا توجد منتجات تأمين مرتبطة بهذا العميل المحتمل',
+      unlinkProduct: 'إلغاء ربط المنتج',
+      searchProducts: 'البحث عن المنتجات بالاسم أو الرمز...',
+      productCode: 'رمز المنتج',
+      productType: 'نوع المنتج',
+      basePremiumValue: 'القسط الأساسي',
+      coverageRange: 'نطاق التغطية',
+      selectProductToLink: 'اختر منتجًا لربطه بهذا العميل المحتمل',
+      productLinkedSuccessfully: 'تم ربط منتج التأمين بنجاح',
+      productUnlinkedSuccessfully: 'تم إلغاء ربط منتج التأمين بنجاح',
+      confirmUnlinkProduct: 'هل أنت متأكد من أنك تريد إلغاء ربط هذا المنتج؟',
+      noProductsAvailable: 'لا توجد منتجات تأمين متاحة',
+      viewProductDetails: 'عرض تفاصيل المنتج',
       
       // Lead Status (Arabic)
       statusNew: 'جديد',
@@ -2734,28 +2785,16 @@ export const translations = {
       byType: 'حسب النوع',
       byStage: 'حسب المرحلة',
       
-      // Companies (CRM) (Arabic)
-      companiesSearchPlaceholder: 'البحث عن الشركات...',
-      noCompaniesFound: 'لم يتم العثور على شركات',
-      addYourFirstCompany: 'أضف أول شركة لك',
-      
       // Common fields (Arabic)
-      selectInsuranceType: 'اختر نوع التأمين',
       selectInsuranceProduct: 'اختر منتج التأمين',
       selectInsuranceCompany: 'اختر شركة التأمين',
       selectLead: 'اختر عميل محتمل',
       selectDeal: 'اختر صفقة',
       selectCampaign: 'اختر حملة',
       selectUser: 'اختر مستخدم',
-      selectStatus: 'اختر الحالة',
       selectPriority: 'اختر الأولوية',
       selectStage: 'اختر المرحلة',
       selectFrequency: 'اختر التكرار',
-      selectContact: 'اختر جهة اتصال',
-      
-      // Assignment (Arabic)
-      assignment: 'التعيين والعلاقات',
-      assignmentDescription: 'قم بتعيين هذه الصفقة لمستخدم وربط السجلات ذات الصلة',
       
       // Filters (Arabic)
       filterByStatus: 'تصفية حسب الحالة',
@@ -2768,7 +2807,6 @@ export const translations = {
       
       // Actions (Arabic)
       viewDetails: 'عرض التفاصيل',
-      assignTo: 'تخصيص لـ',
       changeStatus: 'تغيير الحالة',
       changeStage: 'تغيير المرحلة',
       
