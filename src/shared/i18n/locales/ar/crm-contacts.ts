@@ -144,11 +144,10 @@ export const crmContactsAr = {
   filterByStatus: 'تصفية حسب الحالة',
   viewDetails: 'عرض التفاصيل',
   selectUser: 'اختر مستخدم',
-
-  // Common selectors
   showAll: 'عرض الكل',
   selectLead: 'اختر عميل محتمل',
   selectDeal: 'اختر صفقة',
+  companiesSearchPlaceholder: 'البحث عن الشركات...',
   
   // Notes section
   addNote: 'إضافة ملاحظة',

@@ -144,11 +144,10 @@ export const crmContactsEn = {
   filterByStatus: 'Filter by Status',
   viewDetails: 'View Details',
   selectUser: 'Select User',
-
-  // Common selectors
   showAll: 'Show All',
   selectLead: 'Select Lead',
   selectDeal: 'Select Deal',
+  companiesSearchPlaceholder: 'Search companies...',
   
   // Notes section
   addNote: 'Add Note',
