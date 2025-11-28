@@ -148,6 +148,7 @@ export const crmContactsEn = {
   selectLead: 'Select Lead',
   selectDeal: 'Select Deal',
   companiesSearchPlaceholder: 'Search companies...',
+  changeStatus: 'Change Status',
   
   // Notes section
   addNote: 'Add Note',

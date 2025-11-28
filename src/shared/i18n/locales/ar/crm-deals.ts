@@ -12,11 +12,15 @@ export const crmDealsAr = {
   dealDetails: 'تفاصيل الصفقة',
   allDeals: 'جميع الصفقات',
   noDealsFound: 'لم يتم العثور على صفقات',
+  dealsNoDeals: 'لا توجد صفقات متاحة',
+  dealsSearchPlaceholder: 'البحث عن الصفقات...',
   dealCreated: 'تم إنشاء الصفقة بنجاح',
   dealUpdated: 'تم تحديث الصفقة بنجاح',
   dealDeleted: 'تم حذف الصفقة بنجاح',
   
   // Fields
+  dealName: 'اسم الصفقة',
+  stage: 'المرحلة',
   dealStage: 'مرحلة الصفقة',
   dealValue: 'قيمة الصفقة',
   policyNumber: 'رقم البوليصة',
@@ -35,6 +39,8 @@ export const crmDealsAr = {
   annualPremium: 'القسط السنوي',
   
   // Deal Stage
+  statusProspecting: 'التنقيب',
+  statusQualification: 'التأهيل',
   statusPlanned: 'مخطط',
   statusIn_progress: 'قيد التنفيذ',
   stageProspecting: 'التنقيب',

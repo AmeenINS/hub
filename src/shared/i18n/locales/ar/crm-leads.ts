@@ -17,6 +17,15 @@ export const crmLeadsAr = {
   leadConverted: 'تم تحويل العميل المحتمل إلى صفقة بنجاح',
   convertToDeal: 'تحويل إلى صفقة',
   
+  // Views
+  tableView: 'عرض الجدول',
+  kanbanView: 'عرض كانبان',
+  noLeadsInColumn: 'لا توجد عملاء محتملين في هذا العمود',
+  leadsSearchPlaceholder: 'البحث عن العملاء المحتملين...',
+  leadsNoLeads: 'لا يوجد عملاء محتملون',
+  statusUpdated: 'تم تحديث حالة العميل المحتمل',
+  statusUpdateFailed: 'فشل تحديث حالة العميل المحتمل',
+  
   // Fields
   leadStatus: 'حالة العميل المحتمل',
   leadTitle: 'عنوان العميل المحتمل',
@@ -29,6 +38,7 @@ export const crmLeadsAr = {
   priority: 'الأولوية',
   nextFollowUp: 'المتابعة القادمة',
   followUp: 'متابعة',
+  assigned: 'مُعيَّن',
   assignedTo: 'مسند إلى',
   estimatedValue: 'القيمة المقدرة',
   expectedCloseDate: 'تاريخ الإغلاق المتوقع',
@@ -125,9 +135,10 @@ export const crmLeadsAr = {
   statusLost: 'مفقود',
   statusProposal: 'عرض',
   statusNegotiation: 'تفاوض',
+  statusClosedWon: 'مغلق - تم الفوز',
+  statusClosedLost: 'مغلق - خسارة',
   statusClosed_won: 'مغلق - تم الفوز',
   statusClosed_lost: 'مغلق - خسارة',
-  statusUpdated: 'تم تحديث الحالة بنجاح',
   
   // Lead Source
   sourceWebsite: 'الموقع الإلكتروني',
@@ -161,24 +172,6 @@ export const crmLeadsAr = {
   priorityUrgent: 'عاجل',
   
   // Shared CRM Keys
-  activityType: 'نوع النشاط',
-  subject: 'الموضوع',
-  subjectPlaceholder: 'مثال: مكالمة متابعة مع العميل',
-  descriptionPlaceholder: 'أضف ملاحظات أو تفاصيل حول هذا...',
-  location: 'الموقع',
-  locationPlaceholder: 'مثال: المكتب، الهاتف، عبر الإنترنت',
-  relatedTo: 'مرتبط بـ',
-  lead: 'عميل محتمل',
-  contact: 'جهة الاتصال',
-  notes: 'الملاحظات',
-  notesOptional: 'معلومات إضافية (اختياري)',
-  followUp: 'متابعة',
-  assignTo: 'تعيين إلى',
-  assignmentContact: 'التعيين وجهة الاتصال',
-  assignmentContactDesc: 'قم بتعيين هذا النشاط لعضو في الفريق',
-  linkToLeadOrDeal: 'اربط هذا النشاط اختيارياً بعميل محتمل أو صفقة',
-  scheduledDate: 'التاريخ المجدول',
-  
   // Actions & Details
   quickActions: 'إجراءات سريعة',
   overview: 'نظرة عامة',
@@ -190,16 +183,10 @@ export const crmLeadsAr = {
   activityDescription: 'جدولة المكالمات والاجتماعات ورسائل البريد الإلكتروني والمهام',
   selectActivityType: 'اختر نوع النشاط الذي تريد إنشاءه',
   enterActivityDetails: 'قدم معلومات حول هذا النشاط',
-  scheduledDate: 'التاريخ المجدول',
   duration: 'المدة',
   minutes: 'دقائق',
-  linkToLeadOrDeal: 'اربط هذا النشاط اختيارياً بعميل محتمل أو صفقة',
-  assignmentContact: 'التعيين وجهة الاتصال',
-  assignmentContactDesc: 'قم بتعيين هذا النشاط لعضو في الفريق',
-  notesOptional: 'معلومات إضافية (اختياري)',
   createActivity: 'إنشاء نشاط',
   none: 'لا شيء',
   activities: 'الأنشطة',
-  noActivitiesFound: 'لم يتم العثور على أنشطة',
   newActivity: 'نشاط جديد',
 };

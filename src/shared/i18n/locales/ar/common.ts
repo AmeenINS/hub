@@ -42,6 +42,8 @@ export const commonAr = {
   columns: 'الأعمدة',
   of: 'من',
   rowsSelected: 'صف محدد',
+  rowsPerPage: 'صفوف في الصفحة',
+  page: 'صفحة',
   noResults: 'لا توجد نتائج.',
   selectAll: 'تحديد الكل',
   clearSelection: 'إلغاء التحديد',

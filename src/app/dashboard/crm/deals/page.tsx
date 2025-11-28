@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Plus, Search, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { Deal, DealStage } from '@/shared/types/database';
+import { useViewPreference } from '@/shared/hooks/use-view-preference';
 
 export default function DealsPage() {
   const { t, locale } = useI18n();
@@ -21,7 +22,7 @@ export default function DealsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<DealStage | 'ALL'>('ALL');
-  const [view, setView] = useState<'kanban' | 'list'>('kanban');
+  const [view, setView] = useViewPreference({ key: 'deals-view', defaultView: 'kanban' });
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_deals');
   const hasFetchedRef = useRef(false);
 

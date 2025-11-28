@@ -42,6 +42,8 @@ export const commonEn = {
   columns: 'Columns',
   of: 'of',
   rowsSelected: 'row(s) selected',
+  rowsPerPage: 'Rows per page',
+  page: 'Page',
   noResults: 'No results.',
   selectAll: 'Select all',
   clearSelection: 'Clear selection',

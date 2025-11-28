@@ -140,6 +140,7 @@ export const crmActivitiesEn = {
     updateError: 'Error updating activity',
     deleteSuccess: 'Activity deleted successfully',
     deleteError: 'Error deleting activity',
+    deleteFailed: 'Failed to delete activity',
     updating: 'Updating...',
     errorLoading: 'Error loading activity',
     errorCreating: 'Error creating activity',

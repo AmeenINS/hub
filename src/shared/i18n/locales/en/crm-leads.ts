@@ -17,6 +17,15 @@ export const crmLeadsEn = {
   leadConverted: 'Lead converted to deal successfully',
   convertToDeal: 'Convert to Deal',
   
+  // Views
+  tableView: 'Table View',
+  kanbanView: 'Kanban View',
+  noLeadsInColumn: 'No leads in this column',
+  leadsSearchPlaceholder: 'Search leads...',
+  leadsNoLeads: 'No leads available',
+  statusUpdated: 'Lead status updated',
+  statusUpdateFailed: 'Failed to update lead status',
+  
   // Fields
   leadStatus: 'Lead Status',
   leadTitle: 'Lead Title',
@@ -29,6 +38,7 @@ export const crmLeadsEn = {
   priority: 'Priority',
   nextFollowUp: 'Next Follow-up',
   followUp: 'Follow-up',
+  assigned: 'Assigned',
   assignedTo: 'Assigned To',
   estimatedValue: 'Estimated Value',
   expectedCloseDate: 'Expected Close Date',
@@ -125,9 +135,10 @@ export const crmLeadsEn = {
   statusLost: 'Lost',
   statusProposal: 'Proposal',
   statusNegotiation: 'Negotiation',
+  statusClosedWon: 'Closed Won',
+  statusClosedLost: 'Closed Lost',
   statusClosed_won: 'Closed Won',
   statusClosed_lost: 'Closed Lost',
-  statusUpdated: 'Status updated successfully',
   
   // Lead Source
   sourceWebsite: 'Website',
@@ -161,24 +172,6 @@ export const crmLeadsEn = {
   priorityUrgent: 'Urgent',
   
   // Shared CRM Keys
-  activityType: 'Activity Type',
-  subject: 'Subject',
-  subjectPlaceholder: 'e.g., Follow-up call with client',
-  descriptionPlaceholder: 'Add notes or details about this...',
-  location: 'Location',
-  locationPlaceholder: 'e.g., Office, Phone, Online',
-  relatedTo: 'Related To',
-  lead: 'Lead',
-  contact: 'Contact',
-  notes: 'Notes',
-  notesOptional: 'Additional information (optional)',
-  followUp: 'Follow-up',
-  assignTo: 'Assign To',
-  assignmentContact: 'Assignment & Contact',
-  assignmentContactDesc: 'Assign this activity to a team member',
-  linkToLeadOrDeal: 'Optionally link this activity to a lead or deal',
-  scheduledDate: 'Scheduled Date',
-  
   // Actions & Details
   quickActions: 'Quick Actions',
   overview: 'Overview',
@@ -190,16 +183,10 @@ export const crmLeadsEn = {
   activityDescription: 'Schedule calls, meetings, emails, and tasks',
   selectActivityType: 'Choose the type of activity you want to create',
   enterActivityDetails: 'Provide information about this activity',
-  scheduledDate: 'Scheduled Date',
   duration: 'Duration',
   minutes: 'minutes',
-  linkToLeadOrDeal: 'Optionally link this activity to a lead or deal',
-  assignmentContact: 'Assignment & Contact',
-  assignmentContactDesc: 'Assign this activity to a team member',
-  notesOptional: 'Additional information (optional)',
   createActivity: 'Create Activity',
   none: 'None',
   activities: 'Activities',
-  noActivitiesFound: 'No activities found',
   newActivity: 'New Activity',
 };

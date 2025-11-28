@@ -12,11 +12,15 @@ export const crmDealsEn = {
   dealDetails: 'Deal Details',
   allDeals: 'All Deals',
   noDealsFound: 'No deals found',
+  dealsNoDeals: 'No deals available',
+  dealsSearchPlaceholder: 'Search deals...',
   dealCreated: 'Deal created successfully',
   dealUpdated: 'Deal updated successfully',
   dealDeleted: 'Deal deleted successfully',
   
   // Fields
+  dealName: 'Deal Name',
+  stage: 'Stage',
   dealStage: 'Deal Stage',
   dealValue: 'Deal Value',
   policyNumber: 'Policy Number',
@@ -35,6 +39,8 @@ export const crmDealsEn = {
   annualPremium: 'Annual Premium',
   
   // Deal Stage
+  statusProspecting: 'Prospecting',
+  statusQualification: 'Qualification',
   statusPlanned: 'Planned',
   statusIn_progress: 'In Progress',
   stageProspecting: 'Prospecting',

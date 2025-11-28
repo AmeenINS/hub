@@ -7,31 +7,11 @@ import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Badge } from '@/shared/components/ui/badge';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/shared/components/ui/table';
 import { toast } from 'sonner';
-import { 
-  Calendar, 
-  CheckCircle2, 
-  Clock, 
-  Loader2, 
-  Mail, 
-  Phone, 
-  Plus, 
-  Presentation, 
-  Search, 
-  Users 
-} from 'lucide-react';
+import { Calendar, Loader2, Plus } from 'lucide-react';
 import { Activity, ActivityType, ActivityStatus } from '@/shared/types/database';
+import { ActivitiesDataTable } from '@/features/crm/components/activities-data-table';
 
 const ACTIVITY_TYPES: ActivityType[] = [
   ActivityType.CALL,
@@ -58,7 +38,6 @@ export default function ActivitiesPage() {
   const [filteredActivities, setFilteredActivities] = useState<Activity[]>([]);
   
   // Filters
-  const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<ActivityType | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
   const [dateFilter, setDateFilter] = useState<'upcoming' | 'overdue' | 'all'>('all');
@@ -96,14 +75,6 @@ export default function ActivitiesPage() {
   useEffect(() => {
     let filtered = [...activities];
 
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(activity => 
-        activity.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
     // Type filter
     if (typeFilter !== 'ALL') {
       filtered = filtered.filter(activity => activity.type === typeFilter);
@@ -131,49 +102,24 @@ export default function ActivitiesPage() {
     }
 
     setFilteredActivities(filtered);
-  }, [activities, searchTerm, typeFilter, statusFilter, dateFilter]);
+  }, [activities, typeFilter, statusFilter, dateFilter]);
 
-  const getActivityIcon = (type: ActivityType) => {
-    switch (type) {
-      case 'CALL': return <Phone className="h-4 w-4" />;
-      case 'MEETING': return <Users className="h-4 w-4" />;
-      case 'EMAIL': return <Mail className="h-4 w-4" />;
-      case 'TASK': return <CheckCircle2 className="h-4 w-4" />;
-      case 'NOTE': return <Clock className="h-4 w-4" />;
-      default: return <Calendar className="h-4 w-4" />;
+  const handleEdit = (activity: Activity) => {
+    router.push(`/dashboard/crm/activities/${activity.id}/edit`);
+  };
+
+  const handleDelete = async (activity: Activity) => {
+    if (!confirm(t('common.confirm'))) return;
+    
+    try {
+      const response = await apiClient.delete(`/api/crm/activities/${activity.id}`);
+      if (response.success) {
+        toast.success(t('crm.activities.deleteSuccess'));
+        setActivities(prev => prev.filter(a => a.id !== activity.id));
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, t('crm.activities.deleteFailed')));
     }
-  };
-
-  const getStatusBadge = (status: ActivityStatus) => {
-    const variants: Record<ActivityStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      [ActivityStatus.PLANNED]: 'default',
-      [ActivityStatus.IN_PROGRESS]: 'secondary',
-      [ActivityStatus.COMPLETED]: 'outline',
-      [ActivityStatus.CANCELLED]: 'destructive'
-    };
-
-    return (
-      <Badge variant={variants[status]}>
-        {t(`crm.activities.status${status.charAt(0) + status.slice(1).toLowerCase()}`)}
-      </Badge>
-    );
-  };
-
-  const formatDate = (date: string | Date | undefined) => {
-    if (!date) return '-';
-    const d = new Date(date);
-    return d.toLocaleDateString('en-GB', { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const isOverdue = (activity: Activity) => {
-    if (!activity.startDate || activity.status !== ActivityStatus.PLANNED) return false;
-    return new Date(activity.startDate) < new Date();
   };
 
   if (!hasAccess) {
@@ -210,20 +156,7 @@ export default function ActivitiesPage() {
           <CardTitle>{t('crm.filters')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('crm.activities.activitiesSearchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Type Filter */}
             <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as ActivityType | 'ALL')}>
               <SelectTrigger>
@@ -269,7 +202,7 @@ export default function ActivitiesPage() {
         </CardContent>
       </Card>
 
-      {/* Activities Table */}
+      {/* Activities Data Table */}
       <Card>
         <CardHeader>
           <CardTitle>{t('crm.activities.title')}</CardTitle>
@@ -293,78 +226,11 @@ export default function ActivitiesPage() {
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('crm.activities.type')}</TableHead>
-                    <TableHead>{t('crm.activities.subject')}</TableHead>
-                    <TableHead>{t('crm.activities.status')}</TableHead>
-                    <TableHead>{t('crm.activities.scheduledAt')}</TableHead>
-                    <TableHead>{t('crm.activities.relatedTo')}</TableHead>
-                    <TableHead>{t('crm.activities.assignedTo')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredActivities.map((activity) => (
-                    <TableRow 
-                      key={activity.id}
-                      className={isOverdue(activity) ? 'bg-destructive/10' : ''}
-                    >
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getActivityIcon(activity.type)}
-                          <span className="text-sm">
-                            {t(`crm.activities.type${activity.type.charAt(0) + activity.type.slice(1).toLowerCase()}`)}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">{activity.subject}</div>
-                          {activity.description && (
-                            <div className="text-sm text-muted-foreground line-clamp-1">
-                              {activity.description}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(activity.status)}
-                        {isOverdue(activity) && (
-                          <Badge variant="destructive" className="ml-2">
-                            {t('crm.activities.overdue')}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(activity.startDate)}
-                      </TableCell>
-                      <TableCell>
-                        {activity.leadId && <Badge variant="outline">{t('crm.activities.lead')}</Badge>}
-                        {activity.dealId && <Badge variant="outline">{t('crm.activities.deal')}</Badge>}
-                        {activity.contactId && <Badge variant="outline">{t('crm.activities.contact')}</Badge>}
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {activity.assignedTo || '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/crm/activities/${activity.id}`)}
-                        >
-                          {t('crm.viewDetails')}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <ActivitiesDataTable 
+              data={filteredActivities} 
+              onEdit={canWrite ? handleEdit : undefined}
+              onDelete={canWrite ? handleDelete : undefined}
+            />
           )}
         </CardContent>
       </Card>

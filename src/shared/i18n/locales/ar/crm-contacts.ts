@@ -148,6 +148,7 @@ export const crmContactsAr = {
   selectLead: 'اختر عميل محتمل',
   selectDeal: 'اختر صفقة',
   companiesSearchPlaceholder: 'البحث عن الشركات...',
+  changeStatus: 'تغيير الحالة',
   
   // Notes section
   addNote: 'إضافة ملاحظة',

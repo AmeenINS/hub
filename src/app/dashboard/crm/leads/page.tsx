@@ -7,13 +7,15 @@ import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table';
-import { Loader2, Plus, Search, Users } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { Loader2, Plus, Search, Users, LayoutGrid, Table as TableIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Lead, LeadStatus } from '@/shared/types/database';
+import { LeadsDataTable } from '@/features/crm/components/leads-data-table';
+import { ProfessionalLeadsKanban } from '@/features/crm/components/professional-leads-kanban';
+import { useViewPreference } from '@/shared/hooks/use-view-preference';
 
 export default function LeadsPage() {
   const { t, locale } = useI18n();
@@ -23,6 +25,7 @@ export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL');
   const [insuranceTypeFilter, setInsuranceTypeFilter] = useState<string>('ALL');
+  const [activeView, setActiveView] = useViewPreference({ key: 'leads-view', defaultView: 'table' });
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_leads');
   const hasFetchedRef = useRef(false);
 
@@ -58,59 +61,63 @@ export default function LeadsPage() {
     }
   };
 
-  const getStatusBadge = (status: LeadStatus) => {
-    const variants: Record<LeadStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      NEW: 'default',
-      QUALIFIED: 'outline',
-      PROPOSAL: 'secondary',
-      NEGOTIATION: 'secondary',
-      CLOSED_WON: 'default',
-      CLOSED_LOST: 'destructive',
-    };
-
-    const labels: Record<LeadStatus, string> = {
-      NEW: t('crm.statusNew'),
-      QUALIFIED: t('crm.statusQualified'),
-      PROPOSAL: t('crm.statusProposal'),
-      NEGOTIATION: t('crm.statusNegotiation'),
-      CLOSED_WON: t('crm.statusClosedWon'),
-      CLOSED_LOST: t('crm.statusClosedLost'),
-    };
-
-    return (
-      <Badge variant={variants[status]}>
-        {labels[status]}
-      </Badge>
-    );
+  const handleEdit = (lead: Lead) => {
+    router.push(`/dashboard/crm/leads/${lead.id}/edit`);
   };
 
-  const getPriorityBadge = (priority?: string) => {
-    if (!priority) return null;
+  const handleDelete = async (lead: Lead) => {
+    if (!confirm(t('common.confirm'))) return;
     
-    const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
-      LOW: 'secondary',
-      MEDIUM: 'default',
-      HIGH: 'destructive',
-      URGENT: 'destructive',
-    };
-
-    const labels: Record<string, string> = {
-      LOW: t('crm.priorityLow'),
-      MEDIUM: t('crm.priorityMedium'),
-      HIGH: t('crm.priorityHigh'),
-      URGENT: t('crm.priorityUrgent'),
-    };
-
-    return (
-      <Badge variant={variants[priority] || 'default'}>
-        {labels[priority] || priority}
-      </Badge>
-    );
+    // Optimistic delete - remove from UI immediately
+    const previousLeads = [...leads];
+    setLeads(prevLeads => prevLeads.filter(l => l.id !== lead.id));
+    
+    try {
+      const response = await apiClient.delete(`/api/crm/leads/${lead.id}`);
+      if (response.success) {
+        toast.success(t('crm.deleteSuccess'));
+      } else {
+        // Revert on failure
+        setLeads(previousLeads);
+        toast.error(t('crm.deleteFailed'));
+      }
+    } catch (error) {
+      // Revert on error
+      setLeads(previousLeads);
+      toast.error(getErrorMessage(error, t('crm.deleteFailed')));
+    }
   };
 
-  const formatCurrency = (value: number) => {
-    const formatted = value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
-    return locale === 'ar' ? `${formatted} ر.ع` : `${formatted} OMR`;
+  const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
+    // Optimistic update - update UI immediately
+    const previousLeads = [...leads];
+    setLeads(prevLeads => 
+      prevLeads.map(lead => 
+        lead.id === leadId 
+          ? { ...lead, status: newStatus }
+          : lead
+      )
+    );
+
+    try {
+      const response = await apiClient.patch(`/api/crm/leads/${leadId}`, { status: newStatus });
+      if (response.success) {
+        toast.success(t('crm.statusUpdated'));
+        // No need to refetch - already updated optimistically
+      } else {
+        // Revert on failure
+        setLeads(previousLeads);
+        toast.error(t('crm.statusUpdateFailed'));
+      }
+    } catch (error) {
+      // Revert on error
+      setLeads(previousLeads);
+      toast.error(getErrorMessage(error, t('crm.statusUpdateFailed')));
+    }
+  };
+
+  const handleCreateNew = (status: LeadStatus) => {
+    router.push(`/dashboard/crm/leads/new?status=${status}`);
   };
 
   if (isLoading || loading) {
@@ -204,78 +211,78 @@ export default function LeadsPage() {
         </CardContent>
       </Card>
 
-      {/* Leads Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('crm.allLeads')}</CardTitle>
-          <CardDescription>
-            {leads.length} {t('crm.leads').toLowerCase()}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {leads.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">{t('crm.noLeadsFound')}</h3>
-              <p className="text-muted-foreground">{t('crm.getStarted')}</p>
-              {canCreate && (
-                <Button className="mt-4" onClick={() => router.push('/dashboard/crm/leads/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('crm.addLead')}
-                </Button>
+      {/* Leads Views */}
+      <Tabs value={activeView} onValueChange={(value) => setActiveView(value as 'table' | 'kanban')} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="table" className="gap-2">
+            <TableIcon className="h-4 w-4" />
+            {t('crm.tableView')}
+          </TabsTrigger>
+          <TabsTrigger value="kanban" className="gap-2">
+            <LayoutGrid className="h-4 w-4" />
+            {t('crm.kanbanView')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="table" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('crm.allLeads')}</CardTitle>
+              <CardDescription>
+                {leads.length} {t('crm.leads').toLowerCase()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {leads.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">{t('crm.noLeadsFound')}</h3>
+                  <p className="text-muted-foreground">{t('crm.getStarted')}</p>
+                  {canCreate && (
+                    <Button className="mt-4" onClick={() => router.push('/dashboard/crm/leads/new')}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('crm.addLead')}
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <LeadsDataTable 
+                  data={leads}
+                  onEdit={canWrite ? handleEdit : undefined}
+                  onDelete={canFull ? handleDelete : undefined}
+                />
               )}
-            </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="kanban" className="space-y-4">
+          {leads.length === 0 ? (
+            <Card>
+              <CardContent className="py-12">
+                <div className="text-center">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <h3 className="mt-4 text-lg font-semibold">{t('crm.noLeadsFound')}</h3>
+                  <p className="text-muted-foreground">{t('crm.getStarted')}</p>
+                  {canCreate && (
+                    <Button className="mt-4" onClick={() => router.push('/dashboard/crm/leads/new')}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('crm.addLead')}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('crm.fullNameEn')}</TableHead>
-                  <TableHead>{t('crm.leadStatus')}</TableHead>
-                  <TableHead>{t('crm.insuranceType')}</TableHead>
-                  <TableHead>{t('crm.priority')}</TableHead>
-                  <TableHead>{t('crm.currentPremium')}</TableHead>
-                  <TableHead>{t('crm.nextFollowUp')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leads.map((lead) => (
-                  <TableRow 
-                    key={lead.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/dashboard/crm/leads/${lead.id}`)}
-                  >
-                    <TableCell className="font-medium">{lead.title}</TableCell>
-                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                    <TableCell>
-                      {lead.insuranceType ? t(`crm.insurance${lead.insuranceType.charAt(0) + lead.insuranceType.slice(1).toLowerCase()}`) : '-'}
-                    </TableCell>
-                    <TableCell>{getPriorityBadge(lead.priority)}</TableCell>
-                    <TableCell>{lead.currentPremium ? formatCurrency(lead.currentPremium) : '-'}</TableCell>
-                    <TableCell>
-                      {lead.nextFollowUpDate 
-                        ? new Date(lead.nextFollowUpDate).toLocaleDateString() 
-                        : '-'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/dashboard/crm/leads/${lead.id}`);
-                        }}
-                      >
-                        {t('crm.viewDetails')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <ProfessionalLeadsKanban 
+              leads={leads}
+              onStatusChange={handleStatusChange}
+              onCardClick={(leadId) => router.push(`/dashboard/crm/leads/${leadId}`)}
+              onCreateNew={canCreate ? handleCreateNew : undefined}
+            />
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

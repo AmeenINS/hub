@@ -140,6 +140,7 @@ export const crmActivitiesAr = {
     updateError: 'خطأ في تحديث النشاط',
     deleteSuccess: 'تم حذف النشاط بنجاح',
     deleteError: 'خطأ في حذف النشاط',
+    deleteFailed: 'فشل في حذف النشاط',
     updating: 'جاري التحديث...',
     errorLoading: 'خطأ في تحميل النشاط',
     errorCreating: 'خطأ في إنشاء النشاط',
