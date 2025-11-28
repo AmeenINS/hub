@@ -237,8 +237,8 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
 
           <Card>
             <CardHeader>
-              <CardTitle>{t('crm.activities')}</CardTitle>
-              <CardDescription>{activities.length} {t('crm.activities').toLowerCase()}</CardDescription>
+              <CardTitle>{t('crm.activities.title')}</CardTitle>
+              <CardDescription>{activities.length} {t('crm.activities.title').toLowerCase()}</CardDescription>
             </CardHeader>
             <CardContent>
               {activities.length === 0 ? (

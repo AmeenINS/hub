@@ -305,7 +305,7 @@ export default function EditActivityPage({ params }: { params: Promise<{ id: str
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t('crm.activities.description')}</Label>
+              <Label htmlFor="description">{t('crm.activities.descriptionLabel')}</Label>
               <Textarea
                 id="description"
                 rows={3}
@@ -335,7 +335,7 @@ export default function EditActivityPage({ params }: { params: Promise<{ id: str
                     <SelectValue placeholder={t('crm.selectLead')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="">{t('crm.none')}</SelectItem>
                     {leads.map(lead => (
                       <SelectItem key={lead.id} value={lead.id}>
                         {lead.title || t('crm.unnamed')}
@@ -355,7 +355,7 @@ export default function EditActivityPage({ params }: { params: Promise<{ id: str
                     <SelectValue placeholder={t('crm.selectDeal')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="">{t('crm.none')}</SelectItem>
                     {deals.map(deal => (
                       <SelectItem key={deal.id} value={deal.id}>
                         {deal.name || t('crm.unnamed')}
@@ -375,7 +375,7 @@ export default function EditActivityPage({ params }: { params: Promise<{ id: str
                     <SelectValue placeholder={t('crm.selectContact')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="">{t('crm.none')}</SelectItem>
                     {contacts.map(contact => (
                       <SelectItem key={contact.id} value={contact.id}>
                         {contact.fullNameEn || contact.fullNameAr || t('crm.unnamed')}

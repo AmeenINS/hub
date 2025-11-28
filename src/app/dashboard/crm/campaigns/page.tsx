@@ -20,17 +20,14 @@ import {
 } from '@/shared/components/ui/table';
 import { toast } from 'sonner';
 import { 
-  BarChart3, 
-  DollarSign, 
   Loader2, 
   Mail, 
   MessageSquare, 
   Plus, 
   Search, 
-  Share2, 
-  Target, 
-  TrendingUp, 
-  Users 
+  Share2,
+  Users,
+  Target
 } from 'lucide-react';
 import { Campaign, CampaignType, CampaignStatus } from '@/shared/types/database';
 
@@ -66,15 +63,6 @@ export default function CampaignsPage() {
   const [typeFilter, setTypeFilter] = useState<CampaignType | 'ALL'>('ALL');
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'ALL'>('ALL');
 
-  // Stats
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    totalBudget: 0,
-    totalLeads: 0,
-    averageROI: 0
-  });
-
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
@@ -89,19 +77,12 @@ export default function CampaignsPage() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const [campaignsRes, statsRes] = await Promise.all([
-          apiClient.get('/api/crm/campaigns'),
-          apiClient.get('/api/crm/campaigns/stats')
-        ]);
+        const campaignsRes = await apiClient.get('/api/crm/campaigns');
         
         if (campaignsRes.success && campaignsRes.data) {
           const campaignList = Array.isArray(campaignsRes.data) ? campaignsRes.data : [];
           setCampaigns(campaignList);
           setFilteredCampaigns(campaignList);
-        }
-
-        if (statsRes.success && statsRes.data) {
-          setStats(statsRes.data);
         }
       } catch (error) {
         toast.error(getErrorMessage(error, 'Failed to load campaigns'));
@@ -211,59 +192,6 @@ export default function CampaignsPage() {
             {t('crm.campaigns.campaignsCreateNew')}
           </Button>
         )}
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalCampaigns')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.total ?? 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crm.campaigns.activeCampaigns')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.active ?? 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalBudget')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats?.totalBudget ?? 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crm.campaigns.totalLeads')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalLeads ?? 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('crm.campaigns.averageROI')}</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{(stats?.averageROI ?? 0).toFixed(1)}%</div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters */}

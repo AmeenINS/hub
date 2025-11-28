@@ -11,24 +11,14 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table';
-import { Loader2, Plus, Search, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Loader2, Plus, Search, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Lead, LeadStatus } from '@/shared/types/database';
-
-interface LeadStats {
-  total: number;
-  byStatus: Record<string, number>;
-  bySource: Record<string, number>;
-  byInsuranceType: Record<string, number>;
-  totalValue: number;
-  averageValue: number;
-}
 
 export default function LeadsPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [stats, setStats] = useState<LeadStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<LeadStatus | 'ALL'>('ALL');
@@ -40,7 +30,6 @@ export default function LeadsPage() {
     if (!isLoading && canView && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchLeads();
-      fetchStats();
     }
   }, [canView, isLoading]);
 
@@ -66,17 +55,6 @@ export default function LeadsPage() {
       toast.error(getErrorMessage(error, 'Failed to fetch leads'));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const response = await apiClient.get<LeadStats>('/api/crm/leads/stats');
-      if (response.success && response.data) {
-        setStats(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
     }
   };
 
@@ -164,51 +142,6 @@ export default function LeadsPage() {
           </Button>
         )}
       </div>
-
-      {/* Statistics Cards */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.totalLeads')}</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.statusQualified')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.byStatus.QUALIFIED || 0}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.totalRevenue')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.averageValue')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.averageValue)}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Filters */}
       <Card>

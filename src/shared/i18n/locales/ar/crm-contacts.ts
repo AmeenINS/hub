@@ -139,6 +139,16 @@ export const crmContactsAr = {
   selectType: 'اختر النوع',
   selectSource: 'اختر المصدر',
   selectMethod: 'اختر الطريقة',
+  filters: 'الفلاتر',
+  filterByType: 'تصفية حسب النوع',
+  filterByStatus: 'تصفية حسب الحالة',
+  viewDetails: 'عرض التفاصيل',
+  selectUser: 'اختر مستخدم',
+
+  // Common selectors
+  showAll: 'عرض الكل',
+  selectLead: 'اختر عميل محتمل',
+  selectDeal: 'اختر صفقة',
   
   // Notes section
   addNote: 'إضافة ملاحظة',
@@ -172,4 +182,10 @@ export const crmContactsAr = {
   uploadCompanyLogo: 'قم بتحميل شعار لهذه الشركة. الحجم الموصى به: 400×400 بكسل',
   logoUploaded: 'تم تحميل الشعار',
   noLogoUploaded: 'لم يتم تحميل شعار',
+  
+  // Dashboard stats
+  totalLeads: 'إجمالي العملاء المحتملين',
+  qualified: 'المؤهلون',
+  totalRevenue: 'إجمالي الإيرادات',
+  averageValue: 'متوسط القيمة',
 };

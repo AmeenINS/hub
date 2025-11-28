@@ -325,13 +325,13 @@ export default function NewActivityPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t('crm.description')}</Label>
+              <Label htmlFor="description">{t('crm.activities.descriptionLabel')}</Label>
               <Textarea
                 id="description"
                 rows={3}
                 value={formData.description || ''}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder={t('crm.descriptionPlaceholder')}
+                placeholder={t('crm.activities.descriptionPlaceholder')}
               />
             </div>
 

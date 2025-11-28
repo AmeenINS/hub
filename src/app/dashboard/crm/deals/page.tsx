@@ -10,28 +10,14 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Loader2, Plus, Search, DollarSign, TrendingUp, Target, Calendar } from 'lucide-react';
+import { Loader2, Plus, Search, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { Deal, DealStage } from '@/shared/types/database';
-
-interface DealStats {
-  total: number;
-  byStage: Record<string, number>;
-  byInsuranceType: Record<string, number>;
-  totalValue: number;
-  totalPremium: number;
-  totalCommission: number;
-  averageValue: number;
-  wonDeals: number;
-  lostDeals: number;
-  winRate: number;
-}
 
 export default function DealsPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [stats, setStats] = useState<DealStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<DealStage | 'ALL'>('ALL');
@@ -51,7 +37,6 @@ export default function DealsPage() {
     if (!isLoading && canView && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchDeals();
-      fetchStats();
     }
   }, [canView, isLoading]);
 
@@ -78,18 +63,6 @@ export default function DealsPage() {
       setLoading(false);
     }
   };
-
-  const fetchStats = async () => {
-    try {
-      const response = await apiClient.get<DealStats>('/api/crm/deals/stats');
-      if (response.success && response.data) {
-        setStats(response.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
-    }
-  };
-
   const handleDragStart = (e: React.DragEvent, dealId: string) => {
     e.dataTransfer.setData('dealId', dealId);
   };
@@ -161,55 +134,6 @@ export default function DealsPage() {
           )}
         </div>
       </div>
-
-      {/* Statistics Cards */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.totalDeals')}</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground">{formatCurrency(stats.totalValue)}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.totalPremium')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalPremium)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.totalCommission')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalCommission)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('crm.winRate')}</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.winRate.toFixed(1)}%</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.wonDeals} / {stats.wonDeals + stats.lostDeals}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search Bar */}
       <Card>

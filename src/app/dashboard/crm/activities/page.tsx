@@ -342,9 +342,9 @@ export default function ActivitiesPage() {
                         {formatDate(activity.startDate)}
                       </TableCell>
                       <TableCell>
-                        {activity.leadId && <Badge variant="outline">Lead</Badge>}
-                        {activity.dealId && <Badge variant="outline">Deal</Badge>}
-                        {activity.contactId && <Badge variant="outline">Contact</Badge>}
+                        {activity.leadId && <Badge variant="outline">{t('crm.activities.lead')}</Badge>}
+                        {activity.dealId && <Badge variant="outline">{t('crm.activities.deal')}</Badge>}
+                        {activity.contactId && <Badge variant="outline">{t('crm.activities.contact')}</Badge>}
                       </TableCell>
                       <TableCell>
                         <span className="text-sm text-muted-foreground">

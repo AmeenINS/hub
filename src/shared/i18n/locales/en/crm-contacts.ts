@@ -139,6 +139,16 @@ export const crmContactsEn = {
   selectType: 'Select type',
   selectSource: 'Select source',
   selectMethod: 'Select method',
+  filters: 'Filters',
+  filterByType: 'Filter by Type',
+  filterByStatus: 'Filter by Status',
+  viewDetails: 'View Details',
+  selectUser: 'Select User',
+
+  // Common selectors
+  showAll: 'Show All',
+  selectLead: 'Select Lead',
+  selectDeal: 'Select Deal',
   
   // Notes section
   addNote: 'Add Note',
@@ -172,4 +182,10 @@ export const crmContactsEn = {
   uploadCompanyLogo: 'Upload a logo for this company. Recommended size: 400x400px',
   logoUploaded: 'Logo uploaded',
   noLogoUploaded: 'No logo uploaded',
+  
+  // Dashboard stats
+  totalLeads: 'Total Leads',
+  qualified: 'Qualified',
+  totalRevenue: 'Total Revenue',
+  averageValue: 'Average Value',
 };

@@ -313,7 +313,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
             <CardContent className="space-y-3">
               {activity.leadId && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Lead</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('crm.activities.lead')}</h3>
                   <Button
                     variant="link"
                     className="h-auto p-0 text-sm"
@@ -326,7 +326,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
 
               {activity.dealId && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Deal</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('crm.activities.deal')}</h3>
                   <Button
                     variant="link"
                     className="h-auto p-0 text-sm"
@@ -339,7 +339,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
 
               {activity.contactId && (
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Contact</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('crm.activities.contact')}</h3>
                   <Button
                     variant="link"
                     className="h-auto p-0 text-sm"

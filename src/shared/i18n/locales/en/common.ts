@@ -66,6 +66,7 @@ export const commonEn = {
   error: 'Error',
   warning: 'Warning',
   info: 'Info',
+  none: 'None',
   unauthorized: 'Unauthorized',
   forbidden: 'Forbidden',
   notFound: 'Not Found',

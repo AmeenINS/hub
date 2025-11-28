@@ -2,7 +2,6 @@
 
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { Card, CardContent } from '@/shared/components/ui/card';
-import type { Note } from '@/core/data/notes-service';
 import { 
   Users, 
   ListTodo, 
@@ -81,13 +80,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const { unreadCount } = useRealTimeNotifications();
   const { hasAccess: canAccessModule, isLoading: permissionsLoading } = useModuleVisibility();
+
+  // Removed: notesStats and crmStats states (stats cards removed from UI)
   const [selectedModule, setSelectedModule] = React.useState<AppModule | null>(null);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [notesStats, setNotesStats] = React.useState<{
-    total: number;
-    pinned: number;
-    archived: number;
-  }>({ total: 0, pinned: 0, archived: 0 });
 
   const getModuleColor = (iconColor: string) => {
     const colorMap: Record<string, string> = {
@@ -136,39 +132,7 @@ export default function DashboardPage() {
     return colorMap[iconColor] || 'from-gray-500 to-gray-600';
   };
 
-  // Fetch notes statistics
-  React.useEffect(() => {
-    const fetchNotesStats = async () => {
-      if (!token) return;
-      
-      try {
-        const [activeResponse, archivedResponse] = await Promise.all([
-          apiClient.get<Note[]>('/api/notes'),
-          apiClient.get<Note[]>('/api/notes?archived=true')
-        ]);
-        
-        if (activeResponse.success && activeResponse.data) {
-          const activeNotes = activeResponse.data;
-          const pinnedCount = activeNotes.filter((note: Note) => note.pinned).length;
-          
-          let archivedCount = 0;
-          if (archivedResponse.success && archivedResponse.data) {
-            archivedCount = archivedResponse.data.filter((note: Note) => note.archived).length;
-          }
-          
-          setNotesStats({
-            total: activeNotes.length,
-            pinned: pinnedCount,
-            archived: archivedCount
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch notes stats:', getErrorMessage(error));
-      }
-    };
-
-    fetchNotesStats();
-  }, [token]);
+  // Removed: useEffect for fetching notes and CRM stats (stats cards removed from UI)
 
   const hasModuleAccess = React.useCallback(
     (module: string) => canAccessModule(module),
@@ -416,93 +380,6 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Notes - Only show if user has access to notes */}
-        {hasModuleAccess('notes') && (
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {t('notes.title')}
-                  </p>
-                  <p className="text-3xl font-bold mt-2">
-                    {notesStats.total}
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-600">
-                  <Lightbulb className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Pinned Notes - Only show if user has access to notes */}
-        {hasModuleAccess('notes') && (
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {t('notes.pinned')}
-                  </p>
-                  <p className="text-3xl font-bold mt-2">
-                    {notesStats.pinned}
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
-                  <CheckCircle2 className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Archived Notes - Only show if user has access to notes */}
-        {hasModuleAccess('notes') && (
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {t('notes.archivedNotes')}
-                  </p>
-                  <p className="text-3xl font-bold mt-2">
-                    {notesStats.archived}
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600">
-                  <Folder className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Notifications - Only show if user has access to notifications */}
-        {hasModuleAccess('notifications') && (
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {t('nav.notifications')}
-                  </p>
-                  <p className="text-3xl font-bold mt-2">
-                    {unreadCount}
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-red-600">
-                  <Bell className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
       {/* Modules Grid */}
       <div className="grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
         {permissionsLoading ? (
