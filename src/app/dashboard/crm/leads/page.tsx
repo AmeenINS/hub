@@ -14,7 +14,7 @@ import { Loader2, Plus, Search, Users, LayoutGrid, Table as TableIcon } from 'lu
 import { toast } from 'sonner';
 import type { Lead, LeadStatus } from '@/shared/types/database';
 import { LeadsDataTable } from '@/features/crm/components/leads-data-table';
-import { ProfessionalLeadsKanban } from '@/features/crm/components/professional-leads-kanban';
+import LeadsKanban from '@/features/crm/components/leads-kanban';
 import { useViewPreference } from '@/shared/hooks/use-view-preference';
 
 export default function LeadsPage() {
@@ -116,6 +116,75 @@ export default function LeadsPage() {
     }
   };
 
+  const handleReorder = async (leadId: string, newIndex: number, status: LeadStatus) => {
+    // Get leads with this status, sorted by displayOrder or createdAt
+    const columnLeads = leads
+      .filter(lead => lead.status === status)
+      .sort((a, b) => {
+        if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+          return a.displayOrder - b.displayOrder;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+    
+    // Find current position of dragged lead
+    const draggedLead = columnLeads.find(lead => lead.id === leadId);
+    if (!draggedLead) return;
+
+    const currentIndex = columnLeads.findIndex(lead => lead.id === leadId);
+    
+    // Clamp newIndex to valid range
+    const targetIndex = Math.max(0, Math.min(newIndex, columnLeads.length - 1));
+    
+    // If no actual change, return early
+    if (currentIndex === targetIndex) return;
+
+    // Optimistic reorder - swap positions
+    const previousLeads = [...leads];
+    const reorderedColumnLeads = [...columnLeads];
+    
+    // Remove the dragged lead from its current position
+    const [draggedItem] = reorderedColumnLeads.splice(currentIndex, 1);
+    
+    // Insert it at the target position (this will shift other items)
+    reorderedColumnLeads.splice(targetIndex, 0, draggedItem);
+
+    // Update displayOrder for all leads in this column
+    const updatedColumnLeads = reorderedColumnLeads.map((lead, index) => ({
+      ...lead,
+      displayOrder: index
+    }));
+
+    // Build new leads array with reordered column and updated displayOrders
+    const reorderedLeads = leads.map(lead => {
+      if (lead.status !== status) return lead;
+      const updatedLead = updatedColumnLeads.find(l => l.id === lead.id);
+      return updatedLead || lead;
+    });
+
+    setLeads(reorderedLeads);
+
+    try {
+      // Call API to persist the new order if backend supports it
+      // Note: This endpoint might not exist yet, but we handle it gracefully
+      const response = await apiClient.patch(`/api/crm/leads/${leadId}`, { 
+        displayOrder: newIndex
+      });
+      
+      if (response.success) {
+        toast.success(t('crm.leadReordered'));
+      } else {
+        // Revert on failure
+        setLeads(previousLeads);
+        toast.error(t('crm.reorderFailed'));
+      }
+    } catch (error) {
+      // Revert on error
+      setLeads(previousLeads);
+      toast.error(getErrorMessage(error, t('crm.reorderFailed')));
+    }
+  };
+
   const handleCreateNew = (status: LeadStatus) => {
     router.push(`/dashboard/crm/leads/new?status=${status}`);
   };
@@ -152,10 +221,6 @@ export default function LeadsPage() {
 
       {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('common.filter')}</CardTitle>
-          <CardDescription>{t('crm.filterByStatus')}</CardDescription>
-        </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
@@ -274,11 +339,11 @@ export default function LeadsPage() {
               </CardContent>
             </Card>
           ) : (
-            <ProfessionalLeadsKanban 
+            <LeadsKanban
               leads={leads}
               onStatusChange={handleStatusChange}
-              onCardClick={(leadId) => router.push(`/dashboard/crm/leads/${leadId}`)}
-              onCreateNew={canCreate ? handleCreateNew : undefined}
+              onReorder={handleReorder}
+              onLeadClick={(lead: Lead) => router.push(`/dashboard/crm/leads/${lead.id}`)}
             />
           )}
         </TabsContent>

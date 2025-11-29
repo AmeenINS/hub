@@ -10,14 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Badge } from '@/shared/components/ui/badge';
 import { Input } from '@/shared/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/shared/components/ui/table';
+import { CampaignsDataTable } from '@/features/crm/components/campaigns-data-table';
 import { toast } from 'sonner';
 import { 
   Loader2, 
@@ -196,9 +189,6 @@ export default function CampaignsPage() {
 
       {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('crm.filters')}</CardTitle>
-        </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
@@ -247,7 +237,7 @@ export default function CampaignsPage() {
         </CardContent>
       </Card>
 
-      {/* Campaigns Table */}
+      {/* Campaigns DataTable (shadcn) */}
       <Card>
         <CardHeader>
           <CardTitle>{t('crm.campaigns.title')}</CardTitle>
@@ -256,80 +246,9 @@ export default function CampaignsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredCampaigns.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Target className="h-12 w-12 text-muted-foreground" />
-              <div className="text-center">
-                <h3 className="text-lg font-semibold">{t('crm.campaigns.noCampaigns')}</h3>
-                <p className="text-sm text-muted-foreground">{t('crm.campaigns.noCampaignsDescription')}</p>
-              </div>
-              {canWrite && (
-                <Button onClick={() => router.push('/dashboard/crm/campaigns/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('crm.campaigns.campaignsCreateNew')}
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('crm.campaigns.name')}</TableHead>
-                    <TableHead>{t('crm.campaigns.type')}</TableHead>
-                    <TableHead>{t('crm.campaigns.status')}</TableHead>
-                    <TableHead>{t('crm.campaigns.budget')}</TableHead>
-                    <TableHead>{t('crm.campaigns.leads')}</TableHead>
-                    <TableHead>{t('crm.campaigns.roi')}</TableHead>
-                    <TableHead>{t('crm.campaigns.startDate')}</TableHead>
-                    <TableHead className="text-right">{t('common.actions')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCampaigns.map((campaign) => (
-                    <TableRow key={campaign.id}>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="font-medium">{campaign.name}</div>
-                          {campaign.description && (
-                            <div className="text-sm text-muted-foreground line-clamp-1">
-                              {campaign.description}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          {getCampaignIcon(campaign.type)}
-                          <span className="text-sm">
-                            {t(`crm.campaigns.type${campaign.type.charAt(0) + campaign.type.slice(1).toLowerCase()}`)}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(campaign.status)}</TableCell>
-                      <TableCell>{formatCurrency(campaign.budget)}</TableCell>
-                      <TableCell>{campaign.metrics?.leads || 0}</TableCell>
-                      <TableCell>
-                        <span className={calculateROI(campaign) >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {calculateROI(campaign).toFixed(1)}%
-                        </span>
-                      </TableCell>
-                      <TableCell>{formatDate(campaign.startDate)}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/crm/campaigns/${campaign.id}`)}
-                        >
-                          {t('crm.viewDetails')}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <div className="overflow-x-auto">
+            <CampaignsDataTable data={filteredCampaigns} />
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -21,10 +21,13 @@ export const crmLeadsAr = {
   tableView: 'عرض الجدول',
   kanbanView: 'عرض كانبان',
   noLeadsInColumn: 'لا توجد عملاء محتملين في هذا العمود',
-  leadsSearchPlaceholder: 'البحث عن العملاء المحتملين...',
-  leadsNoLeads: 'لا يوجد عملاء محتملون',
+  leadsSearchPlaceholder: 'بحث في العملاء المحتملين...',
+  leadsNoLeads: 'لا توجد عملاء محتملين متاحين',
   statusUpdated: 'تم تحديث حالة العميل المحتمل',
   statusUpdateFailed: 'فشل تحديث حالة العميل المحتمل',
+  movedTo: 'تم نقل إلى',
+  leadReordered: 'تم إعادة ترتيب العميل المحتمل بنجاح',
+  reorderFailed: 'فشل إعادة ترتيب العميل المحتمل',
   
   // Fields
   leadStatus: 'حالة العميل المحتمل',

@@ -439,6 +439,7 @@ export interface Lead {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   lastContactedAt?: string;
   nextFollowUpDate?: string;
+  displayOrder?: number; // Order within status column for Kanban view
   
   tags?: string[];
   notes?: string;

@@ -25,6 +25,9 @@ export const crmLeadsEn = {
   leadsNoLeads: 'No leads available',
   statusUpdated: 'Lead status updated',
   statusUpdateFailed: 'Failed to update lead status',
+  movedTo: 'Moved to',
+  leadReordered: 'Lead reordered successfully',
+  reorderFailed: 'Failed to reorder lead',
   
   // Fields
   leadStatus: 'Lead Status',
