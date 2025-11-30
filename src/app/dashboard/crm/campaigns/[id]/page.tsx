@@ -78,7 +78,8 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
     };
 
     fetchData();
-  }, [hasAccess, level, router, resolvedParams.id, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedParams.id, hasAccess]);
 
   const handleDelete = async () => {
     if (!confirm(t('crm.campaigns.confirmDelete'))) return;
@@ -440,8 +441,9 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
                 </h3>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    {/* eslint-disable-next-line react/forbid-dom-props */}
                     <div 
-                      className="h-full bg-primary" 
+                      className="h-full bg-primary transition-all" 
                       style={{ 
                         width: `${campaign.budget ? Math.min(((campaign.actualCost || 0) / campaign.budget) * 100, 100) : 0}%` 
                       }}
@@ -460,8 +462,9 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
                   </h3>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      {/* eslint-disable-next-line react/forbid-dom-props */}
                       <div 
-                        className="h-full bg-green-500" 
+                        className="h-full bg-green-500 transition-all" 
                         style={{ 
                           width: `${Math.min(((campaign.metrics?.leads || 0) / (campaign.targetLeads || 1)) * 100, 100)}%` 
                         }}

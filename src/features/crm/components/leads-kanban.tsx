@@ -67,14 +67,14 @@ export default function LeadsKanban({ leads, onLeadClick, onStatusChange, onReor
     })
   );
 
-  const statusColumns = [
+  const statusColumns = useMemo(() => [
     { status: LeadStatus.NEW, label: t('crm.statusNew') },
     { status: LeadStatus.QUALIFIED, label: t('crm.statusQualified') },
     { status: LeadStatus.PROPOSAL, label: t('crm.statusProposal') },
     { status: LeadStatus.NEGOTIATION, label: t('crm.statusNegotiation') },
     { status: LeadStatus.CLOSED_WON, label: t('crm.statusClosedWon') },
     { status: LeadStatus.CLOSED_LOST, label: t('crm.statusClosedLost') },
-  ];
+  ], [t]);
 
   const leadsByStatus = useMemo(() => {
     const grouped: Record<LeadStatus, Lead[]> = {
@@ -178,7 +178,7 @@ export default function LeadsKanban({ leads, onLeadClick, onStatusChange, onReor
           const columnValue = calculateColumnValue(column.status);
 
           return (
-            <Card key={column.status} className="flex flex-col overflow-hidden w-[340px] flex-shrink-0">
+            <Card key={column.status} className="flex flex-col overflow-hidden w-[340px] shrink-0">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

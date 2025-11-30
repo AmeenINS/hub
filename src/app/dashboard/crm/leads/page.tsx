@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, getErrorMessage } from '@/core/api/client';
 import { useI18n } from '@/shared/i18n/i18n-context';
@@ -29,20 +29,7 @@ export default function LeadsPage() {
   const { canView, canWrite, canFull, isLoading } = usePermissionLevel('crm_leads');
   const hasFetchedRef = useRef(false);
 
-  useEffect(() => {
-    if (!isLoading && canView && !hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      fetchLeads();
-    }
-  }, [canView, isLoading]);
-
-  useEffect(() => {
-    if (hasFetchedRef.current) {
-      fetchLeads();
-    }
-  }, [statusFilter, insuranceTypeFilter, searchQuery]);
-
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -59,7 +46,20 @@ export default function LeadsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, insuranceTypeFilter, searchQuery]);
+
+  useEffect(() => {
+    if (!isLoading && canView && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
+      fetchLeads();
+    }
+  }, [canView, isLoading, fetchLeads]);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) {
+      fetchLeads();
+    }
+  }, [fetchLeads]);
 
   const handleEdit = (lead: Lead) => {
     router.push(`/dashboard/crm/leads/${lead.id}/edit`);
