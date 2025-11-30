@@ -161,7 +161,7 @@ export const crmLeadsAr = {
   insuranceTypeRequired: 'نوع التأمين مطلوب',
   
   // Insurance Types
-  insuranceAuto: 'تأمين السيارات',
+  insuranceAuto: 'التأمين على المركبات',
   insuranceHealth: 'التأمين الصحي',
   insuranceLife: 'التأمين على الحياة',
   insuranceProperty: 'تأمين الممتلكات',
@@ -193,4 +193,48 @@ export const crmLeadsAr = {
   none: 'لا شيء',
   activities: 'الأنشطة',
   newActivity: 'نشاط جديد',
+  
+  // Common CRM keys (only adding what's truly missing - most already exist in Lead Status section)
+  status: 'الحالة',
+  viewDetails: 'عرض التفاصيل',
+  changeStatus: 'تغيير الحالة',
+  showAll: 'عرض الكل',
+  
+  // Activity type translations
+  typeCall: 'مكالمة',
+  typeMeeting: 'اجتماع',
+  typeEmail: 'بريد إلكتروني',
+  typeTask: 'مهمة',
+  typeNote: 'ملاحظة',
+  
+  // Activity status translations
+  statusPlanned: 'مخطط',
+  statusInProgress: 'قيد التنفيذ',
+  statusIn_progress: 'قيد التنفيذ',
+  statusCompleted: 'مكتمل',
+  statusCancelled: 'ملغي',
+  
+  // Activity form fields (avoiding duplicates - basicInfo, contact, assignTo exist above)
+  activityType: 'نوع النشاط',
+  subject: 'الموضوع',
+  subjectPlaceholder: 'مثال: مكالمة متابعة مع العميل',
+  scheduledDate: 'التاريخ المجدول',
+  location: 'الموقع',
+  locationPlaceholder: 'مثال: المكتب، الهاتف، عبر الإنترنت',
+  relatedTo: 'مرتبط بـ',
+  linkToLeadOrDeal: 'ربط هذا النشاط بعميل محتمل أو صفقة',
+  lead: 'عميل محتمل',
+  deal: 'صفقة',
+  selectLead: 'اختر عميل محتمل',
+  selectDeal: 'اختر صفقة',
+  selectUser: 'اختر مستخدم',
+  selectContact: 'اختر جهة اتصال',
+  assignmentContact: 'الإسناد وجهة الاتصال',
+  assignmentContactDesc: 'أسند هذا النشاط إلى مستخدم وربطه بجهة اتصال',
+  notes: 'ملاحظات',
+  notesOptional: 'اختياري - أضف أي ملاحظات إضافية',
+  notesPlaceholder: 'أضف أي ملاحظات إضافية حول جهة الاتصال هذه...',
+  activityForLead: 'نشاط للعميل المحتمل',
+  activityForDeal: 'نشاط للصفقة',
+  activityForContact: 'نشاط لجهة الاتصال',
 };

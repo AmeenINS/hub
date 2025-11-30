@@ -55,7 +55,9 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
             try {
               const userResponse = await apiClient.get(`/api/users/${response.data.assignedTo}`);
               if (userResponse.success && userResponse.data) {
-                setAssignedUserName(userResponse.data.fullName || userResponse.data.email || response.data.assignedTo);
+                // Use fullNameEn or fullNameAr, then fallback to email
+                const userName = userResponse.data.fullNameEn?.trim() || userResponse.data.fullNameAr?.trim() || userResponse.data.email || response.data.assignedTo;
+                setAssignedUserName(userName);
               }
             } catch (error) {
               console.error('Failed to fetch assigned user:', error);

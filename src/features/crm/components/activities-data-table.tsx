@@ -68,7 +68,9 @@ export function ActivitiesDataTable({ data, onEdit, onDelete }: ActivitiesDataTa
             if (response.ok) {
               const result = await response.json();
               if (result.success && result.data) {
-                names[userId] = result.data.fullName || result.data.email || userId;
+                // Use fullNameEn or fullNameAr, then fallback to email
+                const userName = result.data.fullNameEn?.trim() || result.data.fullNameAr?.trim() || result.data.email || userId;
+                names[userId] = userName;
               }
             }
           } catch (error) {

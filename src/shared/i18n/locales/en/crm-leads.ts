@@ -161,7 +161,7 @@ export const crmLeadsEn = {
   insuranceTypeRequired: 'Insurance type is required',
   
   // Insurance Types
-  insuranceAuto: 'Auto Insurance',
+  insuranceAuto: 'Motor Insurance',
   insuranceHealth: 'Health Insurance',
   insuranceLife: 'Life Insurance',
   insuranceProperty: 'Property Insurance',
@@ -193,4 +193,48 @@ export const crmLeadsEn = {
   none: 'None',
   activities: 'Activities',
   newActivity: 'New Activity',
+  
+  // Common CRM keys (only adding what's truly missing)
+  status: 'Status',
+  viewDetails: 'View Details',
+  changeStatus: 'Change Status',
+  showAll: 'Show All',
+  
+  // Activity type translations
+  typeCall: 'Call',
+  typeMeeting: 'Meeting',
+  typeEmail: 'Email',
+  typeTask: 'Task',
+  typeNote: 'Note',
+  
+  // Activity status translations
+  statusPlanned: 'Planned',
+  statusInProgress: 'In Progress',
+  statusIn_progress: 'In Progress',
+  statusCompleted: 'Completed',
+  statusCancelled: 'Cancelled',
+  
+  // Activity form fields (avoiding duplicates - basicInfo, contact, assignTo exist above)
+  activityType: 'Activity Type',
+  subject: 'Subject',
+  subjectPlaceholder: 'e.g., Follow-up call with client',
+  scheduledDate: 'Scheduled Date',
+  location: 'Location',
+  locationPlaceholder: 'e.g., Office, Phone, Online',
+  relatedTo: 'Related To',
+  linkToLeadOrDeal: 'Link this activity to a lead or deal',
+  lead: 'Lead',
+  deal: 'Deal',
+  selectLead: 'Select Lead',
+  selectDeal: 'Select Deal',
+  selectUser: 'Select User',
+  selectContact: 'Select Contact',
+  assignmentContact: 'Assignment & Contact',
+  assignmentContactDesc: 'Assign this activity to a user and link to a contact',
+  notes: 'Notes',
+  notesOptional: 'Optional - Add any additional notes',
+  notesPlaceholder: 'Add any additional notes about this contact...',
+  activityForLead: 'Activity for Lead',
+  activityForDeal: 'Activity for Deal',
+  activityForContact: 'Activity for Contact',
 };

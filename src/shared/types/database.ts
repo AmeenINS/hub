@@ -485,6 +485,7 @@ export interface Deal {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   lostReason?: string; // If CLOSED_LOST
   competitorInfo?: string;
+  displayOrder?: number; // Order within stage column for Kanban view
   
   tags?: string[];
   notes?: string;
