@@ -36,12 +36,12 @@ interface DealsKanbanProps {
 }
 
 const stageConfig = {
-  [DealStage.PROSPECTING]: { label: 'crm.stageProspecting', color: 'bg-slate-100 dark:bg-slate-900' },
-  [DealStage.QUALIFICATION]: { label: 'crm.stageQualification', color: 'bg-blue-100 dark:bg-blue-900' },
-  [DealStage.PROPOSAL]: { label: 'crm.stageProposal', color: 'bg-yellow-100 dark:bg-yellow-900' },
-  [DealStage.NEGOTIATION]: { label: 'crm.stageNegotiation', color: 'bg-orange-100 dark:bg-orange-900' },
-  [DealStage.CLOSED_WON]: { label: 'crm.stageClosed', color: 'bg-green-100 dark:bg-green-900' },
-  [DealStage.CLOSED_LOST]: { label: 'crm.stageLost', color: 'bg-red-100 dark:bg-red-900' },
+  [DealStage.PROSPECTING]: { label: 'crm.stageProspecting', color: 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700' },
+  [DealStage.QUALIFICATION]: { label: 'crm.stageQualification', color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' },
+  [DealStage.PROPOSAL]: { label: 'crm.stageProposal', color: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800' },
+  [DealStage.NEGOTIATION]: { label: 'crm.stageNegotiation', color: 'bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800' },
+  [DealStage.CLOSED_WON]: { label: 'crm.stageClosed', color: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-700' },
+  [DealStage.CLOSED_LOST]: { label: 'crm.stageLost', color: 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700' },
 };
 
 export default function DealsKanban({ deals, onDealClick, onStageChange, onReorder }: DealsKanbanProps) {
@@ -180,14 +180,14 @@ export default function DealsKanban({ deals, onDealClick, onStageChange, onReord
               <div className={`p-4 border-b ${stageConfig[column.stage].color} border-b-2`}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm">{column.label}</h3>
-                    <Badge variant="secondary" className="text-xs">
+                    <h3 className="font-semibold text-sm text-foreground">{column.label}</h3>
+                    <Badge variant="secondary" className="text-xs font-medium">
                       {columnDeals.length}
                     </Badge>
                   </div>
                   {columnValue > 0 && (
-                    <div className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
-                      <DollarSign className="h-3 w-3" />
+                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <DollarSign className="h-3.5 w-3.5" />
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
                         currency: 'OMR',

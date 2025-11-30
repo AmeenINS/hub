@@ -37,19 +37,19 @@ interface LeadsKanbanProps {
 }
 
 const statusConfig = {
-  [LeadStatus.NEW]: { label: 'crm.statusNew', color: 'bg-slate-100 dark:bg-slate-900' },
-  [LeadStatus.QUALIFIED]: { label: 'crm.statusQualified', color: 'bg-blue-100 dark:bg-blue-900' },
-  [LeadStatus.PROPOSAL]: { label: 'crm.statusProposal', color: 'bg-yellow-100 dark:bg-yellow-900' },
-  [LeadStatus.NEGOTIATION]: { label: 'crm.statusNegotiation', color: 'bg-orange-100 dark:bg-orange-900' },
-  [LeadStatus.CLOSED_WON]: { label: 'crm.statusClosedWon', color: 'bg-green-100 dark:bg-green-900' },
-  [LeadStatus.CLOSED_LOST]: { label: 'crm.statusClosedLost', color: 'bg-red-100 dark:bg-red-900' },
+  [LeadStatus.NEW]: { label: 'crm.statusNew', color: 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700' },
+  [LeadStatus.QUALIFIED]: { label: 'crm.statusQualified', color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' },
+  [LeadStatus.PROPOSAL]: { label: 'crm.statusProposal', color: 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800' },
+  [LeadStatus.NEGOTIATION]: { label: 'crm.statusNegotiation', color: 'bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800' },
+  [LeadStatus.CLOSED_WON]: { label: 'crm.statusClosedWon', color: 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-700' },
+  [LeadStatus.CLOSED_LOST]: { label: 'crm.statusClosedLost', color: 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700' },
 };
 
 const priorityConfig = {
-  LOW: { variant: 'secondary' as const, color: 'border-l-blue-500' },
-  MEDIUM: { variant: 'default' as const, color: 'border-l-yellow-500' },
-  HIGH: { variant: 'default' as const, color: 'border-l-orange-500' },
-  URGENT: { variant: 'destructive' as const, color: 'border-l-red-500' },
+  LOW: { variant: 'secondary' as const, color: 'border-l-slate-400' },
+  MEDIUM: { variant: 'default' as const, color: 'border-l-blue-500' },
+  HIGH: { variant: 'default' as const, color: 'border-l-violet-500' },
+  URGENT: { variant: 'destructive' as const, color: 'border-l-rose-500' },
 };
 
 export default function LeadsKanban({ leads, onLeadClick, onStatusChange, onReorder }: LeadsKanbanProps) {
@@ -189,14 +189,14 @@ export default function LeadsKanban({ leads, onLeadClick, onStatusChange, onReor
               <div className={`p-4 border-b ${statusConfig[column.status].color} border-b-2`}>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-sm">{column.label}</h3>
-                    <Badge variant="secondary" className="text-xs">
+                    <h3 className="font-semibold text-sm text-foreground">{column.label}</h3>
+                    <Badge variant="secondary" className="text-xs font-medium">
                       {columnLeads.length}
                     </Badge>
                   </div>
                   {columnValue > 0 && (
-                    <div className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
-                      <DollarSign className="h-3 w-3" />
+                    <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <DollarSign className="h-3.5 w-3.5" />
                       {new Intl.NumberFormat('en-US', {
                         style: 'currency',
                         currency: 'OMR',
