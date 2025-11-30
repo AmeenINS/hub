@@ -113,13 +113,6 @@ export default function CompanyDealsPage() {
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
         <div className="flex-1">
           <h1 className="text-3xl font-bold">
             {company?.name || 'Company Deals'}

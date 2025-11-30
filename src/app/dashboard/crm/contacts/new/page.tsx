@@ -41,19 +41,11 @@ export default function NewContactPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add New Contact</h1>
-          <p className="text-muted-foreground">
-            Create a new contact in your CRM system
-          </p>
-        </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/crm/contacts">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Contacts
-          </Link>
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Add New Contact</h1>
+        <p className="text-muted-foreground">
+          Create a new contact in your CRM system
+        </p>
       </div>
 
       {/* Form */}

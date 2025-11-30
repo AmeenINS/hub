@@ -197,15 +197,6 @@ export default function NewSchedulerPage() {
   return (
     <div className="container mx-auto p-6 max-w-4xl">
       <div className="flex items-center gap-4 mb-6">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.back()}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
         <div>
           <h1 className="text-2xl font-bold">Create New Event</h1>
           <p className="text-muted-foreground">Schedule a new event or reminder</p>

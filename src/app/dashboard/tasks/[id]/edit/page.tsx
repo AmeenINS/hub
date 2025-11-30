@@ -262,16 +262,6 @@ export default function EditTaskPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <RTLChevron>
-              <ArrowLeft className="h-4 w-4 ltr:mr-2 rtl:ml-2" />
-            </RTLChevron>
-            {t('common.back')}
-          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight ltr:text-left rtl:text-right">
               {t('tasks.edit')}

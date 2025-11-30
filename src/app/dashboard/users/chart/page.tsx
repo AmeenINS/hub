@@ -107,22 +107,12 @@ export default function OrgChartPage() {
   return (
     <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push('/dashboard/users')}
-          >
-            <RTLChevron>
-              <ArrowLeft className="h-4 w-4" />
-            </RTLChevron>
-          </Button>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              {t('users.orgChart')}
-            </h2>
-            <p className="text-muted-foreground">
-              {t('users.orgChartDescription')}
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            {t('users.orgChart')}
+          </h2>
+          <p className="text-muted-foreground">
+            {t('users.orgChartDescription')}
             </p>
           </div>
         </div>

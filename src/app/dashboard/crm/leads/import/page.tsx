@@ -110,13 +110,6 @@ export default function LeadsImportPage() {
     <div className="container mx-auto py-6 space-y-6 max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
         <div>
           <h1 className="text-3xl font-bold">Import Leads</h1>
           <p className="text-muted-foreground">

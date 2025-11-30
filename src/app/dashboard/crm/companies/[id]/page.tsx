@@ -118,12 +118,6 @@ export default function CompanyDetailsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/crm/companies">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Link>
-          </Button>
           <Avatar className="h-16 w-16">
             <AvatarImage src={company.logoUrl} alt={company.name} />
             <AvatarFallback className="text-xl bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold">

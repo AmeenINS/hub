@@ -138,12 +138,6 @@ export default function NewInsuranceCompanyPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/insurance-companies">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('common.back')}
-          </Button>
-        </Link>
         <div>
           <h2 className="text-3xl font-bold tracking-tight">{t('insuranceProducts.addCompany')}</h2>
           <p className="text-muted-foreground">{t('insuranceProducts.companyManagement')}</p>

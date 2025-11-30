@@ -206,14 +206,6 @@ export default function EditRolePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/roles">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <RTLChevron>
-                <ArrowLeft className="h-4 w-4" />
-              </RTLChevron>
-              {t('common.back')}
-            </Button>
-          </Link>
           <div>
             <h2 className="text-3xl font-bold tracking-tight">
               {t('roles.edit')}

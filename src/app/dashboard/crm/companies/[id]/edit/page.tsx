@@ -162,21 +162,11 @@ export default function EditCompanyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/dashboard/crm/companies/${companyId}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Company</h1>
-            <p className="text-muted-foreground">
-              {company?.name || "Update company information"}
-            </p>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Edit Company</h1>
+        <p className="text-muted-foreground">
+          {company?.name || "Update company information"}
+        </p>
       </div>
 
       <Form {...form}>

@@ -72,21 +72,13 @@ export default function EditContactPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t('crm.editContact')}
-          </h1>
-          <p className="text-muted-foreground">
-            {t('crm.updateInfo')}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/crm/contacts">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            {t('common.back')}
-          </Link>
-        </Button>
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">
+          {t('crm.editContact')}
+        </h1>
+        <p className="text-muted-foreground">
+          {t('crm.updateInfo')}
+        </p>
       </div>
 
       {/* Form */}

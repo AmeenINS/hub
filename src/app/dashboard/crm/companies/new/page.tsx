@@ -136,19 +136,11 @@ export default function NewCompanyPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/crm/companies">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Companies
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add New Company</h1>
-          <p className="text-muted-foreground">
-            Create a new company in your CRM system
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Add New Company</h1>
+        <p className="text-muted-foreground">
+          Create a new company in your CRM system
+        </p>
       </div>
 
       <Form {...form}>

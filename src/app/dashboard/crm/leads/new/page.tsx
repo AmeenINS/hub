@@ -456,9 +456,6 @@ export default function NewLeadPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/crm/leads')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />

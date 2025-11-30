@@ -169,13 +169,6 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
           <div>
             <div className="flex items-center gap-3">
               {getActivityIcon(activity.type)}

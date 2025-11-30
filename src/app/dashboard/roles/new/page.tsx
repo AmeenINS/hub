@@ -156,14 +156,6 @@ export default function CreateRolePage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/roles">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <RTLChevron>
-              <ArrowLeft className="h-4 w-4" />
-            </RTLChevron>
-            {t('common.back')}
-          </Button>
-        </Link>
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t('roles.createRole')}
