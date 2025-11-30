@@ -171,7 +171,7 @@ export default function LeadsKanban({ leads, onLeadClick, onStatusChange, onReor
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="relative overflow-x-auto pb-6">
+      <div className="relative overflow-x-auto pb-4">
         <div className="flex gap-4 min-w-max px-1">
         {statusColumns.map((column) => {
           const columnLeads = leadsByStatus[column.status];
