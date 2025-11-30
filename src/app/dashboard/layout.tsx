@@ -29,6 +29,7 @@ import { Button } from '@/shared/components/ui/button';
 import SchedulerNotificationService from '@/features/scheduler/components/notification-service';
 import { NotificationButton } from '@/features/dashboard/components/notification-button';
 import { useModuleVisibility } from '@/shared/hooks/use-module-visibility';
+import { BackButton } from '@/shared/components/navigation/back-button';
 import 'overlayscrollbars/overlayscrollbars.css';
 
 export default function DashboardLayout({
@@ -84,6 +85,9 @@ export default function DashboardLayout({
               {/* Desktop sidebar toggle */}
               <SidebarTrigger className="hidden md:flex -ml-1 rtl:ml-0 rtl:-mr-1" />
               <Separator orientation="vertical" className="mr-2 rtl:mr-0 rtl:ml-2 h-4" />
+              
+              {/* Back Button */}
+              <BackButton className="ml-1 rtl:ml-0 rtl:mr-1" />
               
               {/* Spacer to push buttons to the right */}
               <div className="flex-1" />

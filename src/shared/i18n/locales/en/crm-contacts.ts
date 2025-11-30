@@ -21,6 +21,7 @@ export const crmContactsEn = {
   fullNameAr: 'Full Name (Arabic)',
   email: 'Email Address',
   phone: 'Phone Number',
+  phoneNumber: 'Phone Number',
   
   companyInformation: 'Company Information',
   companyName: 'Company Name',

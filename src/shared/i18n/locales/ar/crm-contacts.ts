@@ -21,6 +21,7 @@ export const crmContactsAr = {
   fullNameAr: 'الاسم الكامل (بالعربية)',
   email: 'عنوان البريد الإلكتروني',
   phone: 'رقم الهاتف',
+  phoneNumber: 'رقم الهاتف',
   
   companyInformation: 'معلومات الشركة',
   companyName: 'اسم الشركة',

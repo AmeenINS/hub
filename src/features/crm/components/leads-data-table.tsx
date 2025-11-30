@@ -200,10 +200,20 @@ export function LeadsDataTable({ data, onEdit, onDelete }: LeadsDataTableProps) 
       header: t('crm.insuranceType'),
       cell: ({ row }) => {
         const type = row.getValue('insuranceType') as string;
-        return type ? (
-          <Badge variant="outline">{t(`crm.${type.toLowerCase()}`)}</Badge>
-        ) : (
-          <span className="text-muted-foreground">-</span>
+        if (!type) return <span className="text-muted-foreground">-</span>;
+        
+        const insuranceTypeMap: Record<string, string> = {
+          'AUTO': t('crm.insuranceAuto'),
+          'HEALTH': t('crm.insuranceHealth'),
+          'LIFE': t('crm.insuranceLife'),
+          'PROPERTY': t('crm.insuranceProperty'),
+          'TRAVEL': t('crm.insuranceTravel'),
+          'MARINE': t('crm.insuranceMarine'),
+          'OTHER': t('crm.insuranceOther'),
+        };
+        
+        return (
+          <Badge variant="outline">{insuranceTypeMap[type] || type}</Badge>
         );
       },
     },
