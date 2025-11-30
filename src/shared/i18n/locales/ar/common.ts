@@ -103,6 +103,8 @@ export const commonAr = {
   
   // Modules
   crm: 'إدارة علاقات العملاء',
+  crmDashboard: 'لوحة تحكم CRM',
+  crmDashboardDescription: 'إدارة علاقات العملاء وخط المبيعات',
   insurance: 'التأمين',
   products: 'المنتجات',
   companies: 'الشركات',

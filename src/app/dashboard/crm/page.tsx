@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePermissionLevel } from "@/shared/hooks/use-permission-level";
+import { useI18n } from "@/shared/hooks/use-i18n";
 
 
 
@@ -111,6 +112,7 @@ const recentActivities = [
 
 export default function CRMDashboard() {
   const { canView, isLoading } = usePermissionLevel('crm');
+  const { t } = useI18n();
 
   if (isLoading) {
     return (
@@ -129,16 +131,22 @@ export default function CRMDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">CRM Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t('crm.crmDashboard')}</h1>
           <p className="text-muted-foreground">
-            Manage your customer relationships and sales pipeline
+            {t('crm.crmDashboardDescription')}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href="/dashboard/crm/leads/new">
+              <Plus className="h-4 w-4 mr-2" />
+              {t('crm.addLead')}
+            </Link>
+          </Button>
           <Button asChild>
             <Link href="/dashboard/crm/contacts/new">
               <Plus className="h-4 w-4 mr-2" />
-              Add Contact
+              {t('crm.addContact')}
             </Link>
           </Button>
         </div>
@@ -254,14 +262,14 @@ export default function CRMDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
           <Link href="/dashboard/crm/contacts">
             <CardContent className="flex items-center space-x-4 p-6">
               <Users className="h-8 w-8 text-blue-600" />
               <div>
-                <h3 className="font-semibold">Contacts</h3>
-                <p className="text-sm text-muted-foreground">Manage contacts</p>
+                <h3 className="font-semibold">{t('common.contacts')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.manageContacts')}</p>
               </div>
             </CardContent>
           </Link>
@@ -272,8 +280,8 @@ export default function CRMDashboard() {
             <CardContent className="flex items-center space-x-4 p-6">
               <Building2 className="h-8 w-8 text-green-600" />
               <div>
-                <h3 className="font-semibold">Companies</h3>
-                <p className="text-sm text-muted-foreground">Company database</p>
+                <h3 className="font-semibold">{t('common.companies')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.companyDatabase')}</p>
               </div>
             </CardContent>
           </Link>
@@ -284,8 +292,8 @@ export default function CRMDashboard() {
             <CardContent className="flex items-center space-x-4 p-6">
               <Target className="h-8 w-8 text-orange-600" />
               <div>
-                <h3 className="font-semibold">Leads</h3>
-                <p className="text-sm text-muted-foreground">Lead management</p>
+                <h3 className="font-semibold">{t('common.leads')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.leadManagement')}</p>
               </div>
             </CardContent>
           </Link>
@@ -296,8 +304,20 @@ export default function CRMDashboard() {
             <CardContent className="flex items-center space-x-4 p-6">
               <Handshake className="h-8 w-8 text-purple-600" />
               <div>
-                <h3 className="font-semibold">Deals</h3>
-                <p className="text-sm text-muted-foreground">Sales pipeline</p>
+                <h3 className="font-semibold">{t('common.deals')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.salesPipeline')}</p>
+              </div>
+            </CardContent>
+          </Link>
+        </Card>
+
+        <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+          <Link href="/dashboard/crm/activities">
+            <CardContent className="flex items-center space-x-4 p-6">
+              <Calendar className="h-8 w-8 text-cyan-600" />
+              <div>
+                <h3 className="font-semibold">{t('common.activities')}</h3>
+                <p className="text-sm text-muted-foreground">{t('crm.trackActivities')}</p>
               </div>
             </CardContent>
           </Link>

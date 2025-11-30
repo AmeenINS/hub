@@ -19,6 +19,7 @@ export const crmDealsAr = {
   dealUpdated: 'تم تحديث الصفقة بنجاح',
   dealDeleted: 'تم حذف الصفقة بنجاح',
   dealsCreateNew: 'إنشاء صفقة جديدة',
+  dealCreate: 'إنشاء صفقة',
   dealsBasicInfo: 'المعلومات الأساسية',
   dealsBasicInfoDescription: 'أدخل عنوان الصفقة والمرحلة وتفاصيل التأمين',
   dealTitle: 'عنوان الصفقة',

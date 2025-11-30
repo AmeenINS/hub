@@ -19,6 +19,8 @@ export const crmDealsEn = {
   dealUpdated: 'Deal updated successfully',
   dealDeleted: 'Deal deleted successfully',
   dealsCreateNew: 'Create New Deal',
+  dealCreate: 'Create Deal',
+  salesPipeline: 'Sales pipeline',
   dealsBasicInfo: 'Basic Information',
   dealsBasicInfoDescription: 'Enter the deal title, stage, and insurance details',
   dealTitle: 'Deal Title',

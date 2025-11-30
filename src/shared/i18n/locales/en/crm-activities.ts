@@ -6,6 +6,7 @@ export const crmActivitiesEn = {
     // Main
     title: 'Activities',
     activitiesDescription: 'Track calls, meetings, emails, and tasks',
+    trackActivities: 'Track activities',
     description: 'Manage and track your activities',
     addActivity: 'Add Activity',
     activitiesNew: 'New Activity',

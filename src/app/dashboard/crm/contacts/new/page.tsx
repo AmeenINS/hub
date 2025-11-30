@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { useI18n } from "@/shared/hooks/use-i18n";
 import { useContactForm } from "./use-contact-form";
 import { ContactAvatarUpload } from "@/features/crm/components/contact-avatar-upload";
 import {
@@ -38,13 +39,15 @@ export default function NewContactPage() {
     removeTag,
   } = useContactForm();
 
+  const { t } = useI18n();
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Add New Contact</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('crm.addNewContact')}</h1>
         <p className="text-muted-foreground">
-          Create a new contact in your CRM system
+          {t('crm.createInfo')}
         </p>
       </div>
 

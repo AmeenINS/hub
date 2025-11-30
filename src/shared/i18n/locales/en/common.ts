@@ -103,6 +103,8 @@ export const commonEn = {
   
   // Modules
   crm: 'CRM',
+  crmDashboard: 'CRM Dashboard',
+  crmDashboardDescription: 'Manage your customer relationships and sales pipeline',
   insurance: 'Insurance',
   products: 'Products',
   companies: 'Companies',

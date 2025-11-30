@@ -5,6 +5,7 @@ export const crmContactsEn = {
   // Main
   contacts: 'Contacts',
   contactsDescription: 'Manage and organize your customer contacts',
+  manageContacts: 'Manage contacts',
   addContact: 'Add Contact',
   editContact: 'Edit Contact',
   deleteContact: 'Delete Contact',
@@ -133,6 +134,7 @@ export const crmContactsEn = {
   addressPlaceholder: 'Sultan Qaboos Street, Muscat',
   cityPlaceholder: 'Muscat',
   statePlaceholder: 'Muscat Governorate',
+  zip: 'Postal/ZIP Code',
   zipPlaceholder: '100',
   countryPlaceholder: 'Oman',
   

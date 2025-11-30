@@ -6,6 +6,7 @@ export const crmLeadsEn = {
   title: 'Leads',
   leads: 'Leads',
   leadsDescription: 'Manage potential insurance customers',
+  leadManagement: 'Lead management',
   addLead: 'Add Lead',
   editLead: 'Edit Lead',
   deleteLead: 'Delete Lead',
