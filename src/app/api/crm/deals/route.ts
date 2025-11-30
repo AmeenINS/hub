@@ -4,6 +4,7 @@ import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
 import { DealStage } from '@/shared/types/database';
+import { getAccessibleUserIds, filterByHierarchicalAccess } from '@/core/utils/hierarchical-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +57,11 @@ export async function GET(request: NextRequest) {
       deals = await dealService.getAllDeals();
     }
 
-    return NextResponse.json({ success: true, data: deals });
+    // Filter deals by hierarchical access
+    const accessibleUserIds = await getAccessibleUserIds(payload.userId);
+    const filteredDeals = filterByHierarchicalAccess(deals, accessibleUserIds);
+
+    return NextResponse.json({ success: true, data: filteredDeals });
   } catch (error) {
     logError('GET /api/crm/deals', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

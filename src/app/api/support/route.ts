@@ -3,6 +3,7 @@ import { JWTService } from '@/core/auth/jwt';
 import { SupportService } from '@/core/data/support-service';
 import { AdvancedPermissionService } from '@/core/auth/advanced-permission-service';
 import { PermissionLevel } from '@/core/auth/permission-levels';
+import { getAccessibleUserIds } from '@/core/utils/hierarchical-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +24,13 @@ export async function GET(request: NextRequest) {
     }
 
     const supportService = new SupportService();
-    const messages = await supportService.getUserMessages(payload.userId);
+    
+    // Get accessible user IDs (self + subordinates)
+    const accessibleUserIds = await getAccessibleUserIds(payload.userId);
+    
+    // Get messages from all accessible users
+    const allMessages = await supportService.getAllMessages();
+    const messages = allMessages.filter(msg => accessibleUserIds.includes(msg.userId));
 
     return NextResponse.json(messages);
   } catch (error) {

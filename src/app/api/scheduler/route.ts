@@ -11,6 +11,7 @@ import {
 import { JWTService } from '@/core/auth/jwt';
 import { UserService } from '@/core/data/user-service';
 import { v4 as uuidv4 } from 'uuid';
+import { getAccessibleUserIds } from '@/core/utils/hierarchical-access';
 
 // Initialize Scheduler Service globally
 import '@/core/scheduler/init';
@@ -48,9 +49,12 @@ export async function GET(request: NextRequest) {
     // Get all scheduled events using LMDB
     let events = await lmdb.getAll<ScheduledEvent>('scheduledEvents');
     
-    // Filter to show only events created by user or assigned to user
+    // Get accessible user IDs (self + subordinates)
+    const accessibleUserIds = await getAccessibleUserIds(user.id);
+    
+    // Filter to show events created by user or their subordinates, or assigned to user
     events = events.filter(event => 
-      event.createdBy === user.id || 
+      accessibleUserIds.includes(event.createdBy) || 
       event.assignedTo === user.id
     );
 

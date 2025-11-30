@@ -4,6 +4,7 @@ import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
 import { CampaignType, CampaignStatus } from '@/shared/types/database';
+import { getAccessibleUserIds, filterByHierarchicalAccess } from '@/core/utils/hierarchical-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +42,11 @@ export async function GET(request: NextRequest) {
       campaigns = await campaignService.getAllCampaigns();
     }
 
-    return NextResponse.json({ success: true, data: campaigns });
+    // Filter campaigns by hierarchical access
+    const accessibleUserIds = await getAccessibleUserIds(payload.userId);
+    const filteredCampaigns = filterByHierarchicalAccess(campaigns, accessibleUserIds);
+
+    return NextResponse.json({ success: true, data: filteredCampaigns });
   } catch (error) {
     logError('GET /api/crm/campaigns', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

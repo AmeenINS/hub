@@ -3,6 +3,7 @@ import { CompanyService } from '@/core/data/crm-service';
 import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
+import { getAccessibleUserIds, filterByHierarchicalAccess } from '@/core/utils/hierarchical-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,6 +26,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
 
+    // Get accessible user IDs (self + subordinates)
+    const accessibleUserIds = await getAccessibleUserIds(payload.userId);
+
     let companies;
     if (search) {
       companies = await companyService.searchCompanies(search);
@@ -32,7 +36,10 @@ export async function GET(request: NextRequest) {
       companies = await companyService.getAllCompanies();
     }
 
-    return NextResponse.json({ success: true, data: companies });
+    // Filter companies by hierarchical access
+    const filteredCompanies = filterByHierarchicalAccess(companies, accessibleUserIds);
+
+    return NextResponse.json({ success: true, data: filteredCompanies });
   } catch (error) {
     logError('GET /api/crm/companies', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

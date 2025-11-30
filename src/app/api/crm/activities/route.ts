@@ -4,6 +4,7 @@ import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
 import { ActivityType, ActivityStatus } from '@/shared/types/database';
+import { getAccessibleUserIds, filterByHierarchicalAccess } from '@/core/utils/hierarchical-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,7 +66,11 @@ export async function GET(request: NextRequest) {
       activities = await activityService.getAllActivities();
     }
 
-    return NextResponse.json({ success: true, data: activities });
+    // Filter activities by hierarchical access
+    const accessibleUserIds = await getAccessibleUserIds(payload.userId);
+    const filteredActivities = filterByHierarchicalAccess(activities, accessibleUserIds);
+
+    return NextResponse.json({ success: true, data: filteredActivities });
   } catch (error) {
     logError('GET /api/crm/activities', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });

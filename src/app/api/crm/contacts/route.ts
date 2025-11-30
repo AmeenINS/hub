@@ -4,6 +4,7 @@ import { ContactService } from '@/core/data/crm-service';
 import { JWTService } from '@/core/auth/jwt';
 import { checkPermission } from '@/core/auth/middleware';
 import { logError } from '@/core/logging/logger';
+import { getAccessibleUserIds, filterByHierarchicalAccess } from '@/core/utils/hierarchical-access';
 
 /**
  * GET /api/crm/contacts
@@ -33,6 +34,9 @@ export async function GET(request: NextRequest) {
     const assigneeId = searchParams.get('assignee');
     const companyId = searchParams.get('companyId');
 
+    // Get accessible user IDs (self + subordinates)
+    const accessibleUserIds = await getAccessibleUserIds(userId);
+
     let contacts;
     if (companyId) {
       contacts = await contactService.getContactsByCompany(companyId);
@@ -44,9 +48,12 @@ export async function GET(request: NextRequest) {
       contacts = await contactService.getAllContacts();
     }
 
+    // Filter contacts by hierarchical access
+    const filteredContacts = filterByHierarchicalAccess(contacts, accessibleUserIds);
+
     return NextResponse.json({
       success: true,
-      data: contacts,
+      data: filteredContacts,
     });
   } catch (error) {
     logError('GET /api/crm/contacts', error);
