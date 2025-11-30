@@ -3,6 +3,7 @@
  */
 export const crmLeadsEn = {
   // Main
+  title: 'Leads',
   leads: 'Leads',
   leadsDescription: 'Manage potential insurance customers',
   addLead: 'Add Lead',

@@ -3,6 +3,7 @@
  */
 export const crmLeadsAr = {
   // Main
+  title: 'العملاء المحتملون',
   leads: 'العملاء المحتملون',
   leadsDescription: 'إدارة العملاء المحتملين للتأمين',
   addLead: 'إضافة عميل محتمل',

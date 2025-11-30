@@ -52,7 +52,7 @@ export function CampaignsDataTable({ data }: CampaignsDataTableProps) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const getCampaignIcon = (type: CampaignType) => {
+  const getCampaignIcon = React.useCallback((type: CampaignType) => {
     switch (type) {
       case CampaignType.EMAIL:
         return <Mail className="h-4 w-4" />;
@@ -69,9 +69,9 @@ export function CampaignsDataTable({ data }: CampaignsDataTableProps) {
       default:
         return <Target className="h-4 w-4" />;
     }
-  };
+  }, []);
 
-  const getStatusBadge = (status: CampaignStatus) => {
+  const getStatusBadge = React.useCallback((status: CampaignStatus) => {
     const variants: Record<CampaignStatus, "default" | "secondary" | "destructive" | "outline"> = {
       DRAFT: "outline",
       SCHEDULED: "secondary",
@@ -85,28 +85,28 @@ export function CampaignsDataTable({ data }: CampaignsDataTableProps) {
         {t(`crm.campaigns.status${status.charAt(0) + status.slice(1).toLowerCase()}`)}
       </Badge>
     );
-  };
+  }, [t]);
 
-  const formatCurrency = (value: number | undefined) => {
+  const formatCurrency = React.useCallback((value: number | undefined) => {
     if (!value) return locale === "ar" ? "ر.ع 0" : "0 OMR";
     const formatted = value.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
     return locale === "ar" ? `${formatted} ر.ع` : `${formatted} OMR`;
-  };
+  }, [locale]);
 
-  const formatDate = (date: string | Date | undefined) => {
+  const formatDate = React.useCallback((date: string | Date | undefined) => {
     if (!date) return "-";
     const d = new Date(date);
     return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  };
+  }, []);
 
-  const calculateROI = (campaign: Campaign) => {
+  const calculateROI = React.useCallback((campaign: Campaign) => {
     if (!campaign.actualCost || campaign.actualCost === 0) return 0;
     const revenue = campaign.metrics?.revenue || 0;
     const cost = campaign.actualCost;
     return ((revenue - cost) / cost) * 100;
-  };
+  }, []);
 
-  const columns: ColumnDef<Campaign>[] = [
+  const columns: ColumnDef<Campaign>[] = React.useMemo(() => [
     {
       id: "select",
       header: ({ table }) => (
@@ -222,7 +222,7 @@ export function CampaignsDataTable({ data }: CampaignsDataTableProps) {
         );
       },
     },
-  ];
+  ], [t, locale, router, getCampaignIcon, getStatusBadge, formatCurrency, formatDate, calculateROI]);
 
   const table = useReactTable({
     data,

@@ -52,6 +52,35 @@ export function ActivitiesDataTable({ data, onEdit, onDelete }: ActivitiesDataTa
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [userNames, setUserNames] = React.useState<Record<string, string>>({});
+
+  // Fetch user names for assignedTo IDs
+  React.useEffect(() => {
+    const fetchUserNames = async () => {
+      const uniqueUserIds = [...new Set(data.map(a => a.assignedTo).filter(Boolean))] as string[];
+      if (uniqueUserIds.length === 0) return;
+
+      const names: Record<string, string> = {};
+      await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          try {
+            const response = await fetch(`/api/users/${userId}`);
+            if (response.ok) {
+              const result = await response.json();
+              if (result.success && result.data) {
+                names[userId] = result.data.fullName || result.data.email || userId;
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch user ${userId}:`, error);
+          }
+        })
+      );
+      setUserNames(names);
+    };
+
+    fetchUserNames();
+  }, [data]);
 
   const getActivityIcon = (type: ActivityType) => {
     switch (type) {
@@ -245,7 +274,7 @@ export function ActivitiesDataTable({ data, onEdit, onDelete }: ActivitiesDataTa
       cell: ({ row }) => {
         const activity = row.original;
         return activity.assignedTo ? (
-          <span className="text-sm">{activity.assignedTo}</span>
+          <span className="text-sm">{userNames[activity.assignedTo] || activity.assignedTo}</span>
         ) : (
           <span className="text-muted-foreground">-</span>
         );

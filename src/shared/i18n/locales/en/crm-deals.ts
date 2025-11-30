@@ -3,6 +3,7 @@
  */
 export const crmDealsEn = {
   // Main
+  title: 'Deals',
   deal: 'Deal',
   deals: 'Deals',
   dealsDescription: 'Manage insurance deals and policies',

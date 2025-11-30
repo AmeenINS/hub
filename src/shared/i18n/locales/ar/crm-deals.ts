@@ -3,6 +3,7 @@
  */
 export const crmDealsAr = {
   // Main
+  title: 'الصفقات',
   deal: 'صفقة',
   deals: 'الصفقات',
   dealsDescription: 'إدارة صفقات وبوالص التأمين',

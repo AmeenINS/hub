@@ -34,6 +34,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activity, setActivity] = useState<Activity | null>(null);
+  const [assignedUserName, setAssignedUserName] = useState<string>('');
 
   useEffect(() => {
     if (!hasAccess) {
@@ -48,6 +49,18 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
         
         if (response.success && response.data) {
           setActivity(response.data);
+          
+          // Fetch assigned user name if exists
+          if (response.data.assignedTo) {
+            try {
+              const userResponse = await apiClient.get(`/api/users/${response.data.assignedTo}`);
+              if (userResponse.success && userResponse.data) {
+                setAssignedUserName(userResponse.data.fullName || userResponse.data.email || response.data.assignedTo);
+              }
+            } catch (error) {
+              console.error('Failed to fetch assigned user:', error);
+            }
+          }
         } else {
           toast.error(t('crm.activities.notFound'));
           router.push('/dashboard/crm/activities');
@@ -61,7 +74,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
     };
 
     fetchActivity();
-  }, [resolvedParams.id]);
+  }, [resolvedParams.id, hasAccess, router, t]);
 
   const handleDelete = async () => {
     if (!confirm(t('crm.activities.confirmDelete'))) return;
@@ -300,7 +313,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ id: s
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
                   {t('crm.activities.assignedTo')}
                 </h3>
-                <p className="text-sm">{activity.assignedTo || '-'}</p>
+                <p className="text-sm">{assignedUserName || activity.assignedTo || '-'}</p>
               </div>
             </CardContent>
           </Card>

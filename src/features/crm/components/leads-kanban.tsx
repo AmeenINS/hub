@@ -291,6 +291,15 @@ export function LeadCard({ lead, onClick, isDragging = false }: LeadCardProps) {
 
   const isOverdue = lead.nextFollowUpDate && new Date(lead.nextFollowUpDate) < new Date();
 
+  const statusColors = {
+    NEW: 'bg-slate-500',
+    QUALIFIED: 'bg-blue-500',
+    PROPOSAL: 'bg-yellow-500',
+    NEGOTIATION: 'bg-orange-500',
+    CLOSED_WON: 'bg-green-500',
+    CLOSED_LOST: 'bg-red-500',
+  };
+
   return (
     <motion.div
       layout
@@ -301,17 +310,18 @@ export function LeadCard({ lead, onClick, isDragging = false }: LeadCardProps) {
     >
       <Card
         onClick={onClick}
-        className={`cursor-pointer transition-all border-l-4 ${
-          priorityInfo.color
-        } ${isDragging ? 'opacity-50 shadow-lg' : 'hover:shadow-md'}`}
+        className={`cursor-pointer transition-all ${isDragging ? 'opacity-50 shadow-lg' : 'hover:shadow-md'}`}
       >
         <div className="p-3 space-y-3">
-          {/* Title */}
-          <div>
-            <h4 className="font-semibold text-sm line-clamp-2">{lead.title}</h4>
-            {lead.source && (
-              <p className="text-xs text-muted-foreground mt-1">{lead.source}</p>
-            )}
+          {/* Title with status dot */}
+          <div className="flex items-start gap-2">
+            <div className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${statusColors[lead.status]}`} />
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-sm line-clamp-2">{lead.title}</h4>
+              {lead.source && (
+                <p className="text-xs text-muted-foreground mt-1">{lead.source}</p>
+              )}
+            </div>
           </div>
 
           {/* Priority */}

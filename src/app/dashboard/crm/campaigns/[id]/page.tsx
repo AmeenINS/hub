@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/shared/i18n/i18n-context';
 import { usePermissionLevel } from '@/shared/hooks/use-permission-level';
@@ -39,12 +39,17 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [relatedLeads, setRelatedLeads] = useState<Lead[]>([]);
   const [relatedDeals, setRelatedDeals] = useState<Deal[]>([]);
+  
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     if (!hasAccess) {
       router.push('/dashboard/access-denied');
       return;
     }
+
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
     const fetchData = async () => {
       setIsLoading(true);
