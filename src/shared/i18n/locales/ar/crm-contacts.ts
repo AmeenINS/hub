@@ -189,4 +189,9 @@ export const crmContactsAr = {
   qualified: 'المؤهلون',
   totalRevenue: 'إجمالي الإيرادات',
   averageValue: 'متوسط القيمة',
+  
+  // Additional contact fields
+  address: 'العنوان',
+  type: 'النوع',
+  source: 'المصدر',
 };

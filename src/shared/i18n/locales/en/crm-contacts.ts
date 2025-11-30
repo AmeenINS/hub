@@ -189,4 +189,9 @@ export const crmContactsEn = {
   qualified: 'Qualified',
   totalRevenue: 'Total Revenue',
   averageValue: 'Average Value',
+  
+  // Additional contact fields
+  address: 'Address',
+  type: 'Type',
+  source: 'Source',
 };

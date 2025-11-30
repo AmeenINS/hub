@@ -71,11 +71,14 @@ export const crmDealsEn = {
   frequencyMonthly: 'Monthly',
   frequencyQuarterly: 'Quarterly',
   frequencySemiAnnually: 'Semi-Annually',
+  frequencySemiannually: 'Semi-Annually', // Alias for case variations
   frequencyAnnually: 'Annually',
   frequencyOneTime: 'One Time',
+  frequencyOnetime: 'One Time', // Alias for case variations
   
   // Deal Wizard
   createNewDeal: 'Create New Deal',
+  dealsCreateNewDescription: 'Fill in the information below to create a new deal',
   dealWizardDescription: 'Complete all steps to create a comprehensive deal profile',
   dealPolicy: 'Policy Details',
   dealPolicyDescription: 'Enter policy number, dates, and coverage information',
@@ -143,4 +146,11 @@ export const crmDealsEn = {
   showAll: 'Show All',
   insuranceType: 'Insurance Type',
   expectedCloseDate: 'Expected Close Date',
+  // Policy Details
+  dealPolicyDetails: 'Policy Details',
+  dealPolicyDetailsDescription: 'Enter the insurance policy information',
+  dealPolicyNumber: 'Policy Number',
+  dealPolicyNumberPlaceholder: 'Enter policy number',
+  dealAdditionalPolicyDetails: 'Additional Policy Details',
+  dealAdditionalPolicyDetailsPlaceholder: 'Enter any additional policy information or notes',
 };

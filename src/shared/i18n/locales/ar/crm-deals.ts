@@ -71,11 +71,14 @@ export const crmDealsAr = {
   frequencyMonthly: 'شهري',
   frequencyQuarterly: 'ربع سنوي',
   frequencySemiAnnually: 'نصف سنوي',
+  frequencySemiannually: 'نصف سنوي', // Alias for case variations
   frequencyAnnually: 'سنوي',
   frequencyOneTime: 'مرة واحدة',
+  frequencyOnetime: 'مرة واحدة', // Alias for case variations
   
   // Deal Wizard
   createNewDeal: 'إنشاء صفقة جديدة',
+  dealsCreateNewDescription: 'املأ المعلومات أدناه لإنشاء صفقة جديدة',
   dealWizardDescription: 'أكمل جميع الخطوات لإنشاء ملف تعريف شامل للصفقة',
   dealPolicy: 'تفاصيل البوليصة',
   dealPolicyDescription: 'أدخل رقم البوليصة والتواريخ ومعلومات التغطية',
@@ -143,4 +146,11 @@ export const crmDealsAr = {
   showAll: 'عرض الكل',
   insuranceType: 'نوع التأمين',
   expectedCloseDate: 'تاريخ الإغلاق المتوقع',
+  // تفاصيل الوثيقة
+  dealPolicyDetails: 'تفاصيل الوثيقة',
+  dealPolicyDetailsDescription: 'أدخل معلومات وثيقة التأمين',
+  dealPolicyNumber: 'رقم الوثيقة',
+  dealPolicyNumberPlaceholder: 'أدخل رقم الوثيقة',
+  dealAdditionalPolicyDetails: 'تفاصيل إضافية للوثيقة',
+  dealAdditionalPolicyDetailsPlaceholder: 'أدخل أي معلومات أو ملاحظات إضافية عن الوثيقة',
 };

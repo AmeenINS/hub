@@ -197,18 +197,9 @@ export default function NewDealPage() {
     <div className="container mx-auto py-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{t('crm.dealsCreateNew')}</h1>
-            <p className="text-muted-foreground">{t('crm.dealsCreateNewDescription')}</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">{t('crm.dealsCreateNew')}</h1>
+          <p className="text-muted-foreground">{t('crm.dealsCreateNewDescription')}</p>
         </div>
       </div>
 
